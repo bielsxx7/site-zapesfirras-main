@@ -7,61 +7,52 @@
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <div class="container-autenticacao">
-        <div class="coluna-visual">
-            <div class="overlay-visual"></div>
-            <div class="conteudo-visual">
-                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="logo-visual">
+
+    <main class="auth-container">
+        <section class="auth-visual-side">
+            <div class="auth-visual-content">
+                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="auth-logo">
                 <h1>O sabor que conecta você.</h1>
-                <p>Faça login para acessar promoções exclusivas e pedir suas esfirras favoritas em segundos.</p>
+                <p>Acesse sua conta para ter acesso a um universo de sabores e promoções exclusivas.</p>
             </div>
-        </div>
+        </section>
 
-        <div class="coluna-formulario">
-            <div class="conteudo-formulario">
-                <a href="index.html" class="link-voltar">
+        <section class="auth-form-side">
+            <div class="auth-form-wrapper">
+                <a href="index.html" class="auth-back-link">
                     <ion-icon name="arrow-back-outline"></ion-icon>
-                    <span>Voltar ao Início</span>
+                    <span>Voltar para o site</span>
                 </a>
-                <h2>Bem-vindo de volta!</h2>
-                <p>Entre com suas credenciais para continuar.</p>
 
-                <form id="formulario-login">
-                    <div class="grupo-campo">
-                        <label for="email"><ion-icon name="mail-outline"></ion-icon></label>
-                        <input type="email" id="email" name="email" placeholder="Seu e-mail" required>
+                <div class="auth-form-header">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Insira suas credenciais para continuar.</p>
+                </div>
+
+                <form id="form-login" class="auth-form">
+                    <div class="input-group">
+                        <ion-icon name="mail-outline"></ion-icon>
+                        <input type="email" id="email" name="email" placeholder=" " required>
+                        <label for="email">E-mail</label>
                     </div>
-                    <div class="grupo-campo">
-                        <label for="senha"><ion-icon name="lock-closed-outline"></ion-icon></label>
-                        <input type="password" id="senha" name="senha" placeholder="Sua senha" required>
+                    <div class="input-group">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" id="password" name="password" placeholder=" " required>
+                        <label for="password">Senha</label>
                     </div>
-                    <div class="opcoes-extras">
-                        <a href="#" class="link-esqueci-senha">Esqueceu a senha?</a>
-                    </div>
-                    <button type="submit" class="botao-principal">Entrar na Conta</button>
+
+                    <button type="submit" class="auth-button">
+                        <span>Entrar</span>
+                        <ion-icon name="arrow-forward-outline"></ion-icon>
+                    </button>
                 </form>
 
-                <div class="separador">
-                    <span>OU ENTRE COM</span>
-                </div>
-
-                <div class="social-login">
-                    <button class="botao-social botao-google">
-                        <ion-icon name="logo-google"></ion-icon>
-                        <span>Google</span>
-                    </button>
-                    <button class="botao-social botao-facebook">
-                        <ion-icon name="logo-facebook"></ion-icon>
-                        <span>Facebook</span>
-                    </button>
-                </div>
-
-                <div class="link-mudar-form">
-                    <p>Não tem uma conta? <a href="cadastro.html">Cadastre-se agora</a></p>
+                <div class="auth-form-footer">
+                    <p>Não tem uma conta? <a href="cadastro.html">Crie agora</a></p>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>

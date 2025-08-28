@@ -570,39 +570,127 @@
     </div>
     
     <div id="sobreposicao-carrinho" class="sobreposicao-carrinho"></div>
-    <div id="painel-carrinho" class="painel-carrinho">
-        <header class="cabecalho-carrinho">
-            <h3>Meu Carrinho</h3>
-            <button class="botao-fechar-painel" id="botao-fechar-painel">
-                <ion-icon name="close-outline"></ion-icon>
-            </button>
-        </header>
+<div id="painel-carrinho" class="painel-carrinho">
+    <header class="cabecalho-carrinho">
+        <h3>Meu Pedido</h3>
+        <button class="botao-fechar-painel" id="botao-fechar-painel">
+            <ion-icon name="close-outline"></ion-icon>
+        </button>
+    </header>
+
+    <div class="corpo-carrinho">
         <div class="itens-carrinho" id="itens-carrinho">
-            <p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>
-        </div>
-        <div class="rodape-carrinho">
-            <div class="area-cupom">
-                <input type="text" placeholder="Adicionar cupom" class="entrada-cupom">
-                <button class="botao-cupom">Aplicar</button>
             </div>
+    </div>
+
+    <div class="rodape-carrinho-container">
+        <div class="rodape-carrinho">
             <div class="linha-resumo">
                 <span>Subtotal</span>
                 <span class="valor-resumo" id="subtotal-carrinho">R$ 0,00</span>
             </div>
-            <div class="linha-resumo">
+            <div class="linha-resumo" id="linha-taxa-entrega">
                 <span>Taxa de Entrega</span>
-                <span class="valor-resumo" id="taxa-entrega-carrinho">R$ 5,00</span>
+                <span class="valor-resumo" id="taxa-entrega-carrinho">R$ 0,00</span>
             </div>
             <div class="linha-resumo total">
                 <span>Total</span>
-                <span class="valor-resumo" id="total-carrinho">R$ 5,00</span>
+                <span class="valor-resumo" id="total-carrinho">R$ 0,00</span>
             </div>
-            <button class="botao-finalizar-compra" id="botao-finalizar-compra">
-                Escolher forma de pagamento
-            </button>
+        </div>
+
+        <div class="area-finalizar-pedido">
+            <h4>Falta pouco!</h4>
+            <form id="form-finalizar-pedido" class="form-finalizar-pedido" novalidate>
+                <div class="grupo-campo-pedido">
+                    <input type="text" id="nome-cliente" placeholder="Seu Nome Completo*" required>
+                </div>
+                <div class="grupo-campo-pedido">
+                    <input type="tel" id="telefone-cliente" placeholder="Seu Telefone (WhatsApp)*" required>
+                </div>
+                <div class="grupo-campo-pedido">
+                    <label>Tipo de Pedido*</label>
+                    <div class="opcoes-radio-container">
+                        <label for="tipo-retirada" class="radio-label">
+                            <input type="radio" id="tipo-retirada" name="tipo-pedido" value="retirada" checked>
+                            <span class="radio-custom"></span> Retirada
+                        </label>
+                        <label for="tipo-entrega" class="radio-label">
+                            <input type="radio" id="tipo-entrega" name="tipo-pedido" value="entrega">
+                            <span class="radio-custom"></span> Entrega
+                        </label>
+                    </div>
+                </div>
+
+                <div class="container-campos-dinamicos" id="campos-endereco-container">
+                    <div class="grupo-campo-pedido">
+                        <input type="text" id="endereco-cliente" placeholder="Endereço (Rua, Av.)*">
+                    </div>
+                    <div class="grupo-campos-inline">
+                        <div class="grupo-campo-pedido">
+                            <input type="text" id="bairro-cliente" placeholder="Bairro*">
+                        </div>
+                        <div class="grupo-campo-pedido">
+                            <input type="text" id="numero-cliente" placeholder="Número*">
+                        </div>
+                    </div>
+                    <div class="grupo-campo-pedido">
+                        <input type="text" id="complemento-cliente" placeholder="Complemento (Apto, Bloco, etc)">
+                    </div>
+                </div>
+
+                <div class="grupo-campo-pedido">
+                    <label>Forma de Pagamento*</label>
+                    <div class="opcoes-radio-container">
+                        <label class="radio-label">
+                            <input type="radio" name="forma-pagamento" value="cartao" checked>
+                            <span class="radio-custom"></span> Cartão
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="forma-pagamento" value="pix">
+                            <span class="radio-custom"></span> Pix
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="forma-pagamento" value="dinheiro">
+                            <span class="radio-custom"></span> Dinheiro
+                        </label>
+                    </div>
+                </div>
+
+                <div class="container-campos-dinamicos" id="campo-troco-container">
+                    <label>Precisa de troco?*</label>
+                    <div class="opcoes-radio-container">
+                         <label class="radio-label">
+                            <input type="radio" name="precisa-troco" value="nao" checked>
+                            <span class="radio-custom"></span> Não
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="precisa-troco" value="sim">
+                            <span class="radio-custom"></span> Sim
+                        </label>
+                    </div>
+                    <div class="container-campos-dinamicos" id="campo-valor-troco">
+                         <div class="grupo-campo-pedido">
+                            <input type="text" id="valor-troco" placeholder="Troco para quanto?">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="botao-finalizar-compra">
+                    Finalizar Pedido
+                </button>
+            </form>
         </div>
     </div>
-    
+</div>
+    <div id="modal-confirmacao-pedido" class="modal-confirmacao-overlay">
+    <div class="modal-confirmacao-box">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <h2>Pedido Enviado!</h2>
+        <p>Seu pedido foi enviado com sucesso. Em breve você receberá uma confirmação no WhatsApp.</p>
+        <button id="botao-fechar-confirmacao">Ok</button>
+    </div>
+</div>
     <script src="static/js/script.js"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>

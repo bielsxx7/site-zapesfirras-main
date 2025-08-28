@@ -7,62 +7,57 @@
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <div class="container-autenticacao">
-        <div class="coluna-visual">
-            <div class="overlay-visual"></div>
-            <div class="conteudo-visual">
-                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="logo-visual">
-                <h1>O sabor que conecta você.</h1>
-                <p>Crie sua conta para acessar promoções exclusivas e pedir suas esfirras favoritas em segundos.</p>
+
+    <main class="auth-container">
+        <section class="auth-visual-side">
+            <div class="auth-visual-content">
+                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="auth-logo">
+                <h1>Um novo mundo de sabores.</h1>
+                <p>Crie sua conta e comece a explorar nosso cardápio e ofertas exclusivas hoje mesmo.</p>
             </div>
-        </div>
+        </section>
 
-        <div class="coluna-formulario">
-            <div class="conteudo-formulario">
-                <a href="index.html" class="link-voltar">
+        <section class="auth-form-side">
+            <div class="auth-form-wrapper">
+                <a href="index.html" class="auth-back-link">
                     <ion-icon name="arrow-back-outline"></ion-icon>
-                    <span>Voltar ao Início</span>
+                    <span>Voltar para o site</span>
                 </a>
-                <h2>Crie sua Conta</h2>
-                <p>É rápido, fácil e delicioso.</p>
 
-                <form id="formulario-cadastro">
-                     <div class="grupo-campo">
-                        <label for="nome"><ion-icon name="person-outline"></ion-icon></label>
-                        <input type="text" id="nome" name="nome" placeholder="Nome completo" required>
+                <div class="auth-form-header">
+                    <h2>Crie sua Conta</h2>
+                    <p>É rápido, fácil e delicioso.</p>
+                </div>
+
+                <form id="form-cadastro" class="auth-form">
+                    <div class="input-group">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input type="text" id="name" name="name" placeholder=" " required>
+                        <label for="name">Nome Completo</label>
                     </div>
-                    <div class="grupo-campo">
-                        <label for="email"><ion-icon name="mail-outline"></ion-icon></label>
-                        <input type="email" id="email" name="email" placeholder="Seu e-mail" required>
+                    <div class="input-group">
+                        <ion-icon name="mail-outline"></ion-icon>
+                        <input type="email" id="email" name="email" placeholder=" " required>
+                        <label for="email">E-mail</label>
                     </div>
-                    <div class="grupo-campo">
-                        <label for="senha"><ion-icon name="lock-closed-outline"></ion-icon></label>
-                        <input type="password" id="senha" name="senha" placeholder="Crie uma senha" required>
+                    <div class="input-group">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" id="password" name="password" placeholder=" " required>
+                        <label for="password">Crie uma Senha</label>
                     </div>
-                    <button type="submit" class="botao-principal">Criar Conta Gratuitamente</button>
+
+                    <button type="submit" class="auth-button">
+                        <span>Criar Conta</span>
+                        <ion-icon name="arrow-forward-outline"></ion-icon>
+                    </button>
                 </form>
 
-                <div class="separador">
-                    <span>OU CADASTRE-SE COM</span>
-                </div>
-
-                <div class="social-login">
-                    <button class="botao-social botao-google">
-                        <ion-icon name="logo-google"></ion-icon>
-                        <span>Google</span>
-                    </button>
-                    <button class="botao-social botao-facebook">
-                        <ion-icon name="logo-facebook"></ion-icon>
-                        <span>Facebook</span>
-                    </button>
-                </div>
-
-                <div class="link-mudar-form">
-                    <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
+                <div class="auth-form-footer">
+                    <p>Já possui uma conta? <a href="login.html">Faça login</a></p>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
