@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // =================================================================
     // ESTADO DA APLICAÇÃO E CONSTANTES
-    // =================================================================
     let carrinho = [];
     const TAXA_ENTREGA = 5.00;
     let precoProdutoAtualModal = 0;
@@ -12,9 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pagamento: { metodo: 'Cartão', tipo: 'Crédito' }
     };
 
-    // =================================================================
     // SELETORES DE ELEMENTOS
-    // =================================================================
     const telaCarregamento = document.getElementById('tela-carregamento');
     const conteudoPrincipal = document.getElementById('conteudo-principal');
     const barraNavegacao = document.querySelector('.barra-navegacao');
@@ -25,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const textoNotificacao = document.getElementById('texto-notificacao');
     const painelCarrinho = document.getElementById('painel-carrinho');
     const sobreposicaoCarrinho = document.getElementById('sobreposicao-carrinho');
-    const contadorCarrinhoEl = document.getElementById('contador-carrinho');
     const tituloCarrinho = document.getElementById('titulo-carrinho');
     const btnVoltarCarrinho = document.getElementById('btn-voltar-carrinho');
     const btnContinuarCarrinho = document.getElementById('btn-continuar-carrinho');
@@ -45,16 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const todosCartoesProduto = document.querySelectorAll('.cartao-produto');
     const secaoPecaTambem = document.querySelector('.secao-peca-tambem');
     const secoesProdutos = document.querySelectorAll('.container-secao[data-category]');
-
-    // SELETORES PARA O SCROLL DOS FILTROS
     const barraFiltros = document.querySelector('.barra-filtros');
     const btnScrollLeft = document.getElementById('scroll-left');
     const btnScrollRight = document.getElementById('scroll-right');
+    const btnCarrinhoMobile = document.getElementById('botao-carrinho-mobile');
+    const contadorCarrinhoMobileEl = document.getElementById('contador-carrinho-mobile');
 
-
-    // =================================================================
     // INICIALIZAÇÃO E LÓGICAS DE LAYOUT
-    // =================================================================
     function ajustarPaddingCorpo() {
         if (barraNavegacao) {
             const alturaHeader = barraNavegacao.offsetHeight;
@@ -85,72 +77,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (menuHamburguer) menuHamburguer.addEventListener('click', () => menuNavegacao.classList.toggle('ativo'));
-    
 
-    // =================================================================
     // LÓGICA DO SCROLL DA BARRA DE FILTROS
-    // =================================================================
     function gerenciarSetasScroll() {
         if (!barraFiltros || !btnScrollLeft || !btnScrollRight) return;
-
         const temScroll = barraFiltros.scrollWidth > barraFiltros.clientWidth;
-
         if (!temScroll) {
             btnScrollLeft.classList.remove('visivel');
             btnScrollRight.classList.remove('visivel');
             return;
         }
-
         btnScrollLeft.classList.toggle('visivel', barraFiltros.scrollLeft > 0);
-
         const maxScrollLeft = barraFiltros.scrollWidth - barraFiltros.clientWidth;
         btnScrollRight.classList.toggle('visivel', barraFiltros.scrollLeft < maxScrollLeft - 1);
     }
 
-    if(barraFiltros) {
+    if (barraFiltros) {
         btnScrollLeft.addEventListener('click', () => {
             barraFiltros.scrollBy({ left: -250, behavior: 'smooth' });
         });
-
         btnScrollRight.addEventListener('click', () => {
             barraFiltros.scrollBy({ left: 250, behavior: 'smooth' });
         });
-
         barraFiltros.addEventListener('scroll', gerenciarSetasScroll);
     }
 
-    // =================================================================
     // LÓGICA DE BUSCA E FILTRO DE CATEGORIAS
-    // =================================================================
     function filtrarEBuscarProdutos(termo) {
         let produtoEncontrado = false;
-        let primeiroProdutoEncontradoEl = null;
-
         todosCartoesProduto.forEach(cartao => {
             const nomeProduto = cartao.dataset.nome.toLowerCase();
             const deveMostrar = nomeProduto.includes(termo);
             cartao.style.display = deveMostrar ? 'flex' : 'none';
-            if (deveMostrar) {
-                produtoEncontrado = true;
-                if (!primeiroProdutoEncontradoEl) {
-                    primeiroProdutoEncontradoEl = cartao;
-                }
-            }
+            if (deveMostrar) produtoEncontrado = true;
         });
-
         document.querySelectorAll('.container-secao[data-category]').forEach(secao => {
             const produtosVisiveis = secao.querySelectorAll('.cartao-produto[style*="display: flex"]').length;
             secao.style.display = produtosVisiveis > 0 || termo === '' ? 'block' : 'none';
         });
-
         if (mensagemSemResultados) {
             mensagemSemResultados.style.display = !produtoEncontrado && termo !== '' ? 'block' : 'none';
         }
-
-        if (primeiroProdutoEncontradoEl && termo) {
-            primeiroProdutoEncontradoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
         if (termo) {
             document.querySelector('.botao-filtro.ativo')?.classList.remove('ativo');
             document.querySelector('.botao-filtro[data-categoria="Todos"]')?.classList.add('ativo');
@@ -164,18 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
             filtrarEBuscarProdutos(termo);
         });
     });
-    
+
     function filtrarPorCategoria(categoriaAlvo) {
         secoesProdutos.forEach(secao => {
             const categoriaDaSecao = secao.dataset.category;
             if (categoriaDaSecao === 'Destaques') {
                 secao.style.display = (categoriaAlvo === 'Todos') ? 'block' : 'none';
-            } 
-            else {
+            } else {
                 secao.style.display = (categoriaAlvo === 'Todos' || categoriaDaSecao === categoriaAlvo) ? 'block' : 'none';
             }
         });
-        
         todasEntradasPesquisa.forEach(input => input.value = '');
         todosCartoesProduto.forEach(cartao => cartao.style.display = 'flex');
         if (mensagemSemResultados) mensagemSemResultados.style.display = 'none';
@@ -184,27 +149,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (barraFiltros) {
         barraFiltros.addEventListener('click', (e) => {
             if (e.target.classList.contains('botao-filtro')) {
-                const botaoAtivoAtual = barraFiltros.querySelector('.ativo');
-                if (botaoAtivoAtual) {
-                    botaoAtivoAtual.classList.remove('ativo');
-                }
-                
+                barraFiltros.querySelector('.ativo')?.classList.remove('ativo');
                 e.target.classList.add('ativo');
-                const categoriaSelecionada = e.target.dataset.categoria;
-                filtrarPorCategoria(categoriaSelecionada);
+                filtrarPorCategoria(e.target.dataset.categoria);
             }
         });
     }
 
-    // =================================================================
     // LÓGICA DO MODAL, CARRINHO E DEMAIS FUNÇÕES
-    // =================================================================
     function atualizarPrecoTotalModal() {
         const quantidade = parseInt(document.querySelector('.modal-produto .entrada-quantidade').value);
         const precoTotal = precoProdutoAtualModal * quantidade;
         document.querySelector('.botao-adicionar-carrinho-modal').textContent = `Adicionar R$ ${precoTotal.toFixed(2).replace('.', ',')}`;
     }
-    
+
     document.getElementById('botao-fechar-modal').addEventListener('click', () => sobreposicaoModal.classList.remove('ativo'));
     document.querySelector('.modal-produto .botao-mais').addEventListener('click', () => {
         const input = document.querySelector('.modal-produto .entrada-quantidade');
@@ -221,10 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const navegarCarrinho = (novaEtapa) => {
         etapaAtualCarrinho = novaEtapa;
-        telasCarrinho.forEach(tela => {
-            tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`);
-        });
-
+        telasCarrinho.forEach(tela => tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`));
         const textoBotao = document.querySelector('#btn-continuar-carrinho span:first-child');
         switch (novaEtapa) {
             case 'itens':
@@ -242,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnVoltarCarrinho.style.display = 'block';
                 textoBotao.textContent = 'Finalizar Pedido';
                 break;
-             case 'escolher-pagamento':
+            case 'escolher-pagamento':
                 tituloCarrinho.textContent = 'Forma de Pagamento';
                 btnVoltarCarrinho.style.display = 'block';
                 textoBotao.textContent = 'Confirmar Seleção';
@@ -254,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const adicionarAoCarrinho = (produto, quantidade = 1, observacao = null) => {
         const idUnicoItem = produto.nome + (observacao || '').trim().toLowerCase();
         const itemExistente = carrinho.find(item => item.idUnico === idUnicoItem);
-
         if (itemExistente) {
             itemExistente.quantidade += quantidade;
         } else {
@@ -267,15 +221,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const atualizarQuantidade = (idUnico, novaQuantidade) => {
         const itemIndex = carrinho.findIndex(item => item.idUnico === idUnico);
-        if (itemIndex === -1) return;
-
-        if (novaQuantidade > 0) {
-            carrinho[itemIndex].quantidade = novaQuantidade;
-        } else {
-            carrinho.splice(itemIndex, 1);
+        if (itemIndex > -1) {
+            if (novaQuantidade > 0) {
+                carrinho[itemIndex].quantidade = novaQuantidade;
+            } else {
+                carrinho.splice(itemIndex, 1);
+            }
+            salvarCarrinhoLocalStorage();
+            renderizarItensCarrinho();
         }
-        salvarCarrinhoLocalStorage();
-        renderizarItensCarrinho();
     };
 
     const removerItemDoCarrinho = (idUnico) => {
@@ -283,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         salvarCarrinhoLocalStorage();
         renderizarItensCarrinho();
     };
-    
+
     const renderizarItensCarrinho = () => {
         const container = document.getElementById('lista-itens-carrinho');
         if (carrinho.length === 0) {
@@ -315,11 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const atualizarTodosResumos = () => {
         const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-        const tipoEntregaSelecionado = document.querySelector('input[name="tipo-entrega"]:checked')?.value;
-        const taxaEntregaAtual = tipoEntregaSelecionado === 'retirada' ? 0 : TAXA_ENTREGA;
-        
-        const total = subtotal + taxaEntregaAtual;
-
+        const tipoEntrega = document.querySelector('input[name="tipo-entrega"]:checked')?.value;
+        const taxaEntrega = tipoEntrega === 'retirada' ? 0 : TAXA_ENTREGA;
+        const total = subtotal + taxaEntrega;
         const resumoHTML = `
             <div class="linha-resumo">
                 <span>Subtotal</span>
@@ -327,22 +279,23 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="linha-resumo">
                 <span>Taxa de entrega</span>
-                <span>R$ ${taxaEntregaAtual.toFixed(2).replace('.',',')}</span>
+                <span>R$ ${taxaEntrega.toFixed(2).replace('.',',')}</span>
             </div>
             <div class="linha-resumo total">
                 <span>Total</span>
                 <span>R$ ${total.toFixed(2).replace('.',',')}</span>
             </div>
         `;
-        
         document.getElementById('resumo-tela-itens').innerHTML = resumoHTML;
         document.getElementById('resumo-tela-entrega').innerHTML = resumoHTML;
         document.getElementById('resumo-tela-pagamento').innerHTML = resumoHTML;
-        document.getElementById('total-botao-carrinho').textContent = `R$ ${total.toFixed(2).replace('.',',')}`;
-
+        document.getElementById('total-botao-carrinho').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
         const totalItens = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
-        contadorCarrinhoEl.textContent = totalItens;
-        contadorCarrinhoEl.classList.toggle('ativo', totalItens > 0);
+
+        if (contadorCarrinhoMobileEl) {
+            contadorCarrinhoMobileEl.textContent = totalItens;
+            contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0);
+        }
     };
 
     const atualizarDisplayPagamento = () => {
@@ -350,17 +303,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let iconName = 'card-outline';
         let titulo = '';
         let subtitulo = '';
-
         if (pedido.pagamento.metodo === 'Pix') {
             iconName = 'cash-outline';
             titulo = 'Pix';
             subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via QR Code' : 'Pagar na entrega';
-        } else { 
+        } else {
             iconName = 'card-outline';
             titulo = `Cartão de ${pedido.pagamento.tipo}`;
             subtitulo = 'Pagamento na entrega';
         }
-
         container.innerHTML = `
             <ion-icon name="${iconName}"></ion-icon>
             <div class="card-info-texto">
@@ -377,17 +328,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const togglePainelCarrinho = (abrir = null) => {
         const ativo = abrir === null ? !painelCarrinho.classList.contains('ativo') : abrir;
-        if (ativo) {
-            navegarCarrinho('itens');
-        }
+        if (ativo) navegarCarrinho('itens');
         painelCarrinho.classList.toggle('ativo', ativo);
         sobreposicaoCarrinho.classList.toggle('ativo', ativo);
     };
 
     const salvarCarrinhoLocalStorage = () => localStorage.setItem('carrinhoZapEsfirras', JSON.stringify(carrinho));
     const carregarCarrinhoLocalStorage = () => {
-        const carrinhoSalvo = localStorage.getItem('carrinhoZapEsfirras');
-        carrinho = carrinhoSalvo ? JSON.parse(carrinhoSalvo) : [];
+        carrinho = JSON.parse(localStorage.getItem('carrinhoZapEsfirras')) || [];
         renderizarItensCarrinho();
     };
 
@@ -398,20 +346,18 @@ document.addEventListener('DOMContentLoaded', () => {
         notificacao.classList.add('mostrar');
         timeoutNotificacao = setTimeout(() => notificacao.classList.remove('mostrar'), 2500);
     }
-    
+
+    // EVENT LISTENERS GERAIS
     document.querySelector('.container-principal').addEventListener('click', (e) => {
         const cartao = e.target.closest('.cartao-produto');
         if (!cartao) return;
-
         if (e.target.closest('.botao-adicionar')) {
-            const produto = {
+            adicionarAoCarrinho({
                 nome: cartao.dataset.nome,
                 preco: parseFloat(cartao.dataset.preco),
                 imagem: cartao.querySelector('img').src,
-            };
-            adicionarAoCarrinho(produto);
-        }
-        else {
+            });
+        } else {
             precoProdutoAtualModal = parseFloat(cartao.dataset.preco);
             document.getElementById('imagem-produto-modal').src = cartao.querySelector('img').src;
             document.getElementById('nome-produto-modal').textContent = cartao.dataset.nome;
@@ -425,9 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelector('.botao-adicionar-carrinho-modal').addEventListener('click', () => {
-        const nomeProduto = document.getElementById('nome-produto-modal').textContent;
         const produto = {
-            nome: nomeProduto,
+            nome: document.getElementById('nome-produto-modal').textContent,
             preco: precoProdutoAtualModal,
             imagem: document.getElementById('imagem-produto-modal').src
         };
@@ -441,60 +386,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemEl = e.target.closest('.item-carrinho-novo');
         if (!itemEl) return;
         const idUnico = itemEl.dataset.idUnico;
-        const item = carrinho.find(i => i.idUnico === idUnico);
         if (e.target.closest('.aumentar-item')) {
-            atualizarQuantidade(idUnico, item.quantidade + 1);
+            atualizarQuantidade(idUnico, carrinho.find(i => i.idUnico === idUnico).quantidade + 1);
         } else if (e.target.closest('.diminuir-item')) {
-            atualizarQuantidade(idUnico, item.quantidade - 1);
+            atualizarQuantidade(idUnico, carrinho.find(i => i.idUnico === idUnico).quantidade - 1);
         } else if (e.target.closest('.botao-remover-item')) {
             removerItemDoCarrinho(idUnico);
         }
     });
     
     secaoPecaTambem.addEventListener('click', (e) => {
-        const botaoAdicionar = e.target.closest('.botao-add-sugestao');
-        if (botaoAdicionar) {
-            const itemSugestao = botaoAdicionar.closest('.item-sugestao');
-            const produto = {
+        if (e.target.closest('.botao-add-sugestao')) {
+            const itemSugestao = e.target.closest('.item-sugestao');
+            adicionarAoCarrinho({
                 nome: itemSugestao.dataset.nome,
                 preco: parseFloat(itemSugestao.dataset.preco),
                 imagem: itemSugestao.querySelector('img').src
-            };
-            adicionarAoCarrinho(produto);
+            });
         }
     });
     
-    document.getElementById('botao-carrinho-header').addEventListener('click', () => togglePainelCarrinho(true));
-    document.getElementById('adicionar-mais-itens').addEventListener('click', (e) => {
-        e.preventDefault();
-        togglePainelCarrinho(false);
-    });
+    if (btnCarrinhoMobile) {
+        btnCarrinhoMobile.addEventListener('click', () => togglePainelCarrinho(true));
+    }
+    document.getElementById('botao-fechar-painel-novo').addEventListener('click', () => togglePainelCarrinho(false));
+    document.getElementById('adicionar-mais-itens').addEventListener('click', (e) => { e.preventDefault(); togglePainelCarrinho(false); });
     sobreposicaoCarrinho.addEventListener('click', () => togglePainelCarrinho(false));
     
     btnContinuarCarrinho.addEventListener('click', () => {
-        if (etapaAtualCarrinho === 'escolher-pagamento') {
-            const metodoPrincipal = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
-            pedido.pagamento.metodo = metodoPrincipal === 'pix' ? 'Pix' : 'Cartão';
-            if (metodoPrincipal === 'pix') {
-                pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
-            } else {
-                pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
-            }
-            atualizarDisplayPagamento();
-            navegarCarrinho('pagamento');
-            return;
-        }
-        
         if (carrinho.length === 0) {
             mostrarNotificacao("Sua sacola está vazia!");
             return;
         }
-
         if (etapaAtualCarrinho === 'itens') {
             navegarCarrinho('entrega');
         } else if (etapaAtualCarrinho === 'entrega') {
-            const isEntrega = document.querySelector('input[name="tipo-entrega"]:checked').value === 'padrao';
-            if (isEntrega && !formEndereco.checkValidity()) {
+            if (document.querySelector('input[name="tipo-entrega"]:checked').value === 'padrao' && !formEndereco.checkValidity()) {
                 formEndereco.reportValidity();
                 return;
             }
@@ -505,6 +432,16 @@ document.addEventListener('DOMContentLoaded', () => {
             salvarCarrinhoLocalStorage();
             renderizarItensCarrinho();
             togglePainelCarrinho(false);
+        } else if (etapaAtualCarrinho === 'escolher-pagamento') {
+             const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+             pedido.pagamento.metodo = metodo === 'pix' ? 'Pix' : 'Cartão';
+             if (metodo === 'pix') {
+                pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
+             } else {
+                pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
+             }
+             atualizarDisplayPagamento();
+             navegarCarrinho('pagamento');
         }
     });
 
@@ -519,9 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isEntrega = e.target.value === 'padrao';
             formEnderecoContainer.classList.toggle('escondido', !isEntrega);
             inputsEndereco.forEach(input => {
-                if (input.id !== 'endereco-complemento') {
-                    input.required = isEntrega;
-                }
+                if (input.id !== 'endereco-complemento') input.required = isEntrega;
             });
             atualizarTodosResumos();
         });
@@ -546,9 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.input-cpf-container').classList.toggle('visivel', this.checked);
     });
 
-    // =================================================================
     // INICIALIZAÇÃO DO SCRIPT
-    // =================================================================
     ajustarPaddingCorpo();
     carregarCarrinhoLocalStorage();
     atualizarDisplayPagamento();

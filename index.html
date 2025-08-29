@@ -47,10 +47,6 @@
                          <ion-icon name="search-outline"></ion-icon>
                      </a>
                  </div>
-                <button class="botao-carrinho" id="botao-carrinho-header">
-                    <ion-icon name="cart-outline"></ion-icon>
-                    <span class="contador-carrinho" id="contador-carrinho">0</span>
-                </button>
                 <a href="login.html" class="botao-conta apenas-desktop">CONTA</a>
             </div>
         </header>
@@ -738,6 +734,26 @@
             </button>
         </footer>
     </div>
+    
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active" data-view="home">
+            <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Início</span>
+        </button>
+        <button class="bottom-nav-item" data-view="orders">
+            <ion-icon name="receipt-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Pedidos</span>
+        </button>
+        <button class="bottom-nav-item" data-view="profile">
+            <ion-icon name="person-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Perfil</span>
+        </button>
+        <button class="bottom-nav-item" id="botao-carrinho-mobile">
+            <span class="contador-carrinho" id="contador-carrinho-mobile">0</span>
+            <ion-icon name="cart-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Sacola</span>
+        </button>
+    </nav>
     
     <script src="static/js/script.js"></script>
 </body>

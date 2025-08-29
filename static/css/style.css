@@ -329,6 +329,7 @@ body {
     right: 5px;
 }
 
+
 .botao-filtro {
     padding: 10px 25px;
     font-family: 'Poppins', sans-serif;
@@ -781,38 +782,80 @@ body {
 .contador-carrinho.ativo { opacity: 1; transform: scale(1); }
 .mensagem-carrinho-vazio { text-align: center; padding: 40px 20px; color: var(--grey-dark); }
 
+
+/* ======================================================= */
+/* --- 5. NAVEGAÇÃO INFERIOR (MOBILE) --- */
+/* ======================================================= */
+.bottom-nav {
+    display: none; /* Escondido por padrão, aparece em telas menores */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 65px; /* Altura da barra */
+    background-color: var(--navbar-bg);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+    justify-content: space-around;
+    align-items: center;
+    z-index: 995;
+}
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    background: none;
+    border: none;
+    color: var(--grey-dark);
+    padding: 5px 0;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    position: relative;
+}
+.bottom-nav-item.active {
+    color: var(--primary-color);
+}
+.bottom-nav-icon {
+    font-size: 24px;
+    margin-bottom: 2px;
+}
+.bottom-nav-text {
+    font-size: 12px;
+    font-weight: 500;
+}
+#botao-carrinho-mobile .contador-carrinho {
+    top: 0px;
+    right: calc(50% - 25px); /* Centraliza o contador sobre o ícone */
+}
+
 /* ================================================= */
 /* --- 6. RESPONSIVIDADE (MEDIA QUERIES) --- */
 /* ================================================= */
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 768px) {
+    body {
+        /* Adiciona espaço no final da página para não ser coberto pela barra de navegação */
+        padding-bottom: 65px; 
+    }
+
     .apenas-desktop { display: none; }
     .apenas-mobile { display: block; }
 
     .barra-navegacao { padding: 10px 15px; }
-    .menu-hamburguer { display: flex; flex-direction: column; }
-    .acoes-navegacao { justify-content: flex-end; }
-    .marca-navegacao { text-align: center; }
-    .marca-navegacao img { height: 45px; }
+    
+    /* Esconde o menu hamburguer e o menu de navegação superior em mobile */
+    .menu-hamburguer { display: none; }
+    .menu-navegacao { display: none !important; }
 
-    .menu-navegacao {
-        display: none;
-        width: 100%;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background-color: var(--navbar-bg);
-        flex-direction: column;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        padding: 15px 0;
+    /* Mostra a barra de navegação inferior */
+    .bottom-nav {
+        display: flex;
     }
-    .menu-navegacao.ativo { display: flex; }
-    .menu-navegacao ul { flex-direction: column; gap: 0; }
-    .menu-navegacao ul li a { display: block; padding: 15px 0; }
 
     .container-pesquisa-mobile { display: block; padding: 0 15px 15px 15px; }
     .container-pesquisa-mobile .caixa-pesquisa { width: 100%; }
 
-    .grade-produtos { grid-template-columns: repeat(3, 1fr); }
+    .grade-produtos { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
     .botao-scroll {
         display: none !important;
@@ -822,12 +865,9 @@ body {
         margin: 0;
         padding: 0;
     }
-}
 
-@media screen and (max-width: 768px) {
     .container-principal { padding: 15px; }
     .container-secao h2 { font-size: 1.3rem; }
-    .grade-produtos { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
     .container-detalhes-produto img { height: 120px; }
     .texto-info-produto h3 { font-size: 1rem; }
@@ -869,7 +909,6 @@ body {
 
     .container-secao h2 { font-size: 1.2rem; }
     
-    /* MODIFICADO: Grid de 2 colunas mantido, conforme solicitado */
     .grade-produtos { 
         gap: 8px;
     }
