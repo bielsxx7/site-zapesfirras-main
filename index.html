@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zap Esfirras - Delivery</title>
     <link rel="stylesheet" href="static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
     <div id="tela-carregamento">
@@ -12,6 +17,7 @@
     </div>
 
     <div id="conteudo-principal" style="display: none;">
+        
         <header class="barra-navegacao">
             <div class="menu-hamburguer">
                 <span class="barra"></span>
@@ -36,12 +42,12 @@
 
             <div class="acoes-navegacao">
                  <div class="caixa-pesquisa apenas-desktop">
-                    <input type="text" class="texto-pesquisa" placeholder="Buscar...">
-                    <a href="#" class="botao-pesquisa">
-                        <ion-icon name="search-outline"></ion-icon>
-                    </a>
-                </div>
-                <button class="botao-carrinho" id="botao-carrinho">
+                     <input type="text" class="texto-pesquisa" placeholder="Buscar...">
+                     <a href="#" class="botao-pesquisa">
+                         <ion-icon name="search-outline"></ion-icon>
+                     </a>
+                 </div>
+                <button class="botao-carrinho" id="botao-carrinho-header">
                     <ion-icon name="cart-outline"></ion-icon>
                     <span class="contador-carrinho" id="contador-carrinho">0</span>
                 </button>
@@ -57,6 +63,26 @@
                 </div>
             </section>
 
+            <section class="container-secao">
+                 <div class="container-filtros-scroll">
+                    <button class="botao-scroll" id="scroll-left"><ion-icon name="chevron-back-outline"></ion-icon></button>
+                    <div class="barra-filtros">
+                        <button class="botao-filtro ativo" data-categoria="Todos">Todos</button>
+                        <button class="botao-filtro" data-categoria="Salgadas">Esfirras Salgadas</button>
+                        <button class="botao-filtro" data-categoria="Beirutes">Beirutes</button>
+                        <button class="botao-filtro" data-categoria="Lanches">Lanches</button>
+                        <button class="botao-filtro" data-categoria="Pastéis">Pastéis Salgados</button>
+                        <button class="botao-filtro" data-categoria="Porções">Porções</button>
+                        <button class="botao-filtro" data-categoria="Combos">Combos</button>
+                        <button class="botao-filtro" data-categoria="Esfirras Doces">Esfirras Doces</button>
+                        <button class="botao-filtro" data-categoria="Pastéis Doces">Pastéis Doces</button>
+                        <button class="botao-filtro" data-categoria="Refrigerantes">Refrigerantes</button>
+                        <button class="botao-filtro" data-categoria="Sucos">Sucos</button>
+                    </div>
+                    <button class="botao-scroll" id="scroll-right"><ion-icon name="chevron-forward-outline"></ion-icon></button>
+                 </div>
+            </section>
+
             <div id="sem-resultados" style="display: none; text-align: center; margin-top: 50px;">
                 <p>Poxa, não encontramos esse produto.</p>
             </div>
@@ -65,59 +91,7 @@
                 <p id="texto-notificacao"></p>
             </div>
 
-            <section class="container-secao">
-                <h2>Categorias</h2>
-                <div class="carrossel carrossel-categorias">
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/salgadas.png" alt="Esfirras Abertas">
-                        <span>Salgadas</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/beirutes.png" alt="Beirutes">
-                        <span>Beirutes</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/lanches.png" alt="Lanches">
-                        <span>Lanches</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/pasteis.png" alt="Pastéis">
-                        <span>Pastéis</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/combos.png" alt="Combos">
-                        <span>Combos</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/esfirradoce.png" alt="Esfirras Doces">
-                        <span>Esfirras Doces</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/pasteisdoces.png" alt="Pastéis Doces">
-                        <span>Pastéis Doces</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/porcoes.png" alt="Porções">
-                        <span>Porções</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/refrigerante.png" alt="Bebidas">
-                        <span>Refrigerantes</span>
-                    </a>
-                    <a href="#" class="item-carrossel">
-                        <img src="assets/sucos.png" alt="Sucos">
-                        <span>Sucos</span>
-                    </a>
-                </div>
-                <button class="botao-carrossel botao-anterior">
-                    <ion-icon name="chevron-back-outline"></ion-icon>
-                </button>
-                <button class="botao-carrossel botao-proximo">
-                    <ion-icon name="chevron-forward-outline"></ion-icon>
-                </button>
-            </section>
-
-            <section class="container-secao">
+            <section class="container-secao" data-category="Destaques">
                 <h2>Mais Vendidas</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Esfirra de Carne" data-desc="A clássica da casa." data-detalhes="Carne moída, tomate, cebola, temperos especiais." data-preco="5.50">
@@ -132,7 +106,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,50</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -149,7 +122,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,00</span>
                              <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -166,7 +138,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 6,00</span>
                              <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -174,7 +145,7 @@
                 </div>
             </section>
             
-            <section class="container-secao">
+            <section class="container-secao" data-category="Salgadas">
                 <h2>Salgadas</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Esfirra de Carne Tradicional" data-desc="A clássica da casa." data-detalhes="Carne moída, tomate, cebola, temperos especiais." data-preco="5.50" >
@@ -189,7 +160,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,50</span>
                              <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -206,7 +176,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,00</span>
                              <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -214,7 +183,7 @@
                 </div>
             </section>
             
-            <section class="container-secao">
+            <section class="container-secao" data-category="Beirutes">
                 <h2>Beirutes</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Beirute de Frango" data-desc="Perfeito para a fome grande." data-detalhes="Pão sírio, frango desfiado, mussarela e salada." data-preco="25.00" >
@@ -229,7 +198,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 25,00</span>
                              <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -237,7 +205,7 @@
                 </div>
             </section>
 
-            <section class="container-secao">
+            <section class="container-secao" data-category="Lanches">
                 <h2>Lanches</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Bauru de Costela" data-desc="Uma explosão de sabor." data-detalhes="O melhor da casa!." data-preco="18.00" >
@@ -252,7 +220,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 18,00</span>
                              <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -269,7 +236,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 16,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -277,7 +243,7 @@
                 </div>
             </section>
 
-            <section class="container-secao">
+            <section class="container-secao" data-category="Pastéis">
                 <h2>Pastéis</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Pastel de Carne" data-desc="Pastel grande de massa crocante." data-detalhes="Pastel grande de massa crocante recheado com carne." data-preco="8.00" >
@@ -292,7 +258,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 8,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -309,118 +274,14 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 7,50</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
-            <section class="container-secao">
-                <h2>Combos</h2>
-                <div class="grade-produtos">
-                    <div class="cartao-produto" data-nome="Combo Zap burguer" data-desc="2 zap burguers + Fritas + Guaraná 1L." data-detalhes="A melhor opção!." data-preco="24.90" >
-                        <div class="container-detalhes-produto">
-                            <img src="assets/combo.png" alt="Combo 5 Salgadas">
-                            <div class="texto-info-produto">
-                                <h3>Combo Zap burguer</h3>
-                                <h4>2 zap burguers + Fritas + Guaraná 1L.</h4>
-                                <p>A melhor opção!.</p>
-                            </div>
-                        </div>
-                        <div class="acoes-produto">
-                            <span class="preco">R$ 24,90</span>
-                            <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
-                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="cartao-produto" data-nome="Combo I" data-desc="Combo com 5 esfirras + 1 Guaraná Lata" data-detalhes="A melhor opção!." data-preco="35.50" >
-                        <div class="container-detalhes-produto">
-                            <img src="assets/combo1.png" alt="Combo Família">
-                            <div class="texto-info-produto">
-                                <h3>Combo I</h3>
-                                <h4>Combo com 5 esfirras + 1 Guaraná Lata</h4>
-                                <p>A melhor opção!.</p>
-                            </div>
-                        </div>
-                        <div class="acoes-produto">
-                            <span class="preco">R$ 35,50</span>
-                            <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
-                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="container-secao">
-                <h2>Esfirras Doces</h2>
-                <div class="grade-produtos">
-                    <div class="cartao-produto" data-nome="Esfirra de Chocolate" data-desc="A melhor sobremesa." data-detalhes="Massa macia recheada com chocolate ao leite." data-preco="6.50" >
-                        <div class="container-detalhes-produto">
-                            <img src="assets/ebrigadeiro.jpg" alt="Esfirra de Chocolate">
-                            <div class="texto-info-produto">
-                                <h3>Esfirra de Chocolate</h3>
-                                <h4>A melhor sobremesa.</h4>
-                                <p>Massa macia recheada com chocolate ao leite.</p>
-                            </div>
-                        </div>
-                        <div class="acoes-produto">
-                            <span class="preco">R$ 6,50</span>
-                            <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
-                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="cartao-produto" data-nome="Esfirra de Brigadeiro" data-desc="Recheio cremoso." data-detalhes="Recheio cremoso de brigadeiro gourmet." data-preco="7.00" >
-                        <div class="container-detalhes-produto">
-                            <img src="assets/echocolate.png" alt="Esfirra de Brigadeiro">
-                            <div class="texto-info-produto">
-                                <h3>Esfirra de Brigadeiro</h3>
-                                <h4>Recheio cremoso.</h4>
-                                <p>Recheio cremoso de brigadeiro gourmet.</p>
-                            </div>
-                        </div>
-                        <div class="acoes-produto">
-                            <span class="preco">R$ 7,00</span>
-                            <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
-                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="container-secao">
-                <h2>Pastéis Doces</h2>
-                <div class="grade-produtos">
-                    <div class="cartao-produto" data-nome="Pastel de Chocolate" data-desc="Ideal para a sobremesa." data-detalhes="Pastel frito recheado com chocolate." data-preco="7.50" >
-                        <div class="container-detalhes-produto">
-                            <img src="assets/pchocolate.png" alt="Pastel de Chocolate">
-                            <div class="texto-info-produto">
-                                <h3>Pastel de Chocolate</h3>
-                                <h4>Ideal para a sobremesa.</h4>
-                                <p>Pastel frito recheado com chocolate.</p>
-                            </div>
-                        </div>
-                        <div class="acoes-produto">
-                            <span class="preco">R$ 7,50</span>
-                            <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
-                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="container-secao">
+            
+            <section class="container-secao" data-category="Porções">
                 <h2>Porções</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Kibe Frito" data-desc="Porção de mini kibes." data-detalhes="Porção de mini kibes fritos. 10 unidades." data-preco="20.00" >
@@ -435,7 +296,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 20,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -452,7 +312,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 15,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -460,7 +319,105 @@
                 </div>
             </section>
 
-            <section class="container-secao">
+            <section class="container-secao" data-category="Combos">
+                <h2>Combos</h2>
+                <div class="grade-produtos">
+                    <div class="cartao-produto" data-nome="Combo Zap burguer" data-desc="2 zap burguers + Fritas + Guaraná 1L." data-detalhes="A melhor opção!." data-preco="24.90" >
+                        <div class="container-detalhes-produto">
+                            <img src="assets/combo.png" alt="Combo 5 Salgadas">
+                            <div class="texto-info-produto">
+                                <h3>Combo Zap burguer</h3>
+                                <h4>2 zap burguers + Fritas + Guaraná 1L.</h4>
+                                <p>A melhor opção!.</p>
+                            </div>
+                        </div>
+                        <div class="acoes-produto">
+                            <span class="preco">R$ 24,90</span>
+                            <div class="botoes-container">
+                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cartao-produto" data-nome="Combo I" data-desc="Combo com 5 esfirras + 1 Guaraná Lata" data-detalhes="A melhor opção!." data-preco="35.50" >
+                        <div class="container-detalhes-produto">
+                            <img src="assets/combo1.png" alt="Combo Família">
+                            <div class="texto-info-produto">
+                                <h3>Combo I</h3>
+                                <h4>Combo com 5 esfirras + 1 Guaraná Lata</h4>
+                                <p>A melhor opção!.</p>
+                            </div>
+                        </div>
+                        <div class="acoes-produto">
+                            <span class="preco">R$ 35,50</span>
+                            <div class="botoes-container">
+                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="container-secao" data-category="Esfirras Doces">
+                <h2>Esfirras Doces</h2>
+                <div class="grade-produtos">
+                    <div class="cartao-produto" data-nome="Esfirra de Chocolate" data-desc="A melhor sobremesa." data-detalhes="Massa macia recheada com chocolate ao leite." data-preco="6.50" >
+                        <div class="container-detalhes-produto">
+                            <img src="assets/ebrigadeiro.jpg" alt="Esfirra de Chocolate">
+                            <div class="texto-info-produto">
+                                <h3>Esfirra de Chocolate</h3>
+                                <h4>A melhor sobremesa.</h4>
+                                <p>Massa macia recheada com chocolate ao leite.</p>
+                            </div>
+                        </div>
+                        <div class="acoes-produto">
+                            <span class="preco">R$ 6,50</span>
+                            <div class="botoes-container">
+                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cartao-produto" data-nome="Esfirra de Brigadeiro" data-desc="Recheio cremoso." data-detalhes="Recheio cremoso de brigadeiro gourmet." data-preco="7.00" >
+                        <div class="container-detalhes-produto">
+                            <img src="assets/echocolate.png" alt="Esfirra de Brigadeiro">
+                            <div class="texto-info-produto">
+                                <h3>Esfirra de Brigadeiro</h3>
+                                <h4>Recheio cremoso.</h4>
+                                <p>Recheio cremoso de brigadeiro gourmet.</p>
+                            </div>
+                        </div>
+                        <div class="acoes-produto">
+                            <span class="preco">R$ 7,00</span>
+                            <div class="botoes-container">
+                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="container-secao" data-category="Pastéis Doces">
+                <h2>Pastéis Doces</h2>
+                <div class="grade-produtos">
+                    <div class="cartao-produto" data-nome="Pastel de Chocolate" data-desc="Ideal para a sobremesa." data-detalhes="Pastel frito recheado com chocolate." data-preco="7.50" >
+                        <div class="container-detalhes-produto">
+                            <img src="assets/pchocolate.png" alt="Pastel de Chocolate">
+                            <div class="texto-info-produto">
+                                <h3>Pastel de Chocolate</h3>
+                                <h4>Ideal para a sobremesa.</h4>
+                                <p>Pastel frito recheado com chocolate.</p>
+                            </div>
+                        </div>
+                        <div class="acoes-produto">
+                            <span class="preco">R$ 7,50</span>
+                            <div class="botoes-container">
+                                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="container-secao" data-category="Refrigerantes">
                 <h2>Refrigerantes</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Coca-Cola Lata" data-desc="Acompanhamento perfeito." data-detalhes="Lata de Coca-Cola de 350ml." data-preco="6.00" >
@@ -475,7 +432,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 6,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -492,7 +448,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,50</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -500,7 +455,7 @@
                 </div>
             </section>
 
-            <section class="container-secao">
+            <section class="container-secao" data-category="Sucos">
                 <h2>Sucos</h2>
                 <div class="grade-produtos">
                     <div class="cartao-produto" data-nome="Suco de Laranja Natural" data-desc="Sabor puro e fresco." data-detalhes="Suco de laranja natural e fresco." data-preco="8.00" >
@@ -515,7 +470,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 8,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -532,7 +486,6 @@
                         <div class="acoes-produto">
                             <span class="preco">R$ 9,00</span>
                             <div class="botoes-container">
-                                <button class="botao-detalhes">Ver detalhes</button>
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -682,13 +635,13 @@
             <div id="tela-pagamento" class="tela-carrinho">
                 <div class="secao-pagamento">
                     <h4>Forma de Pagamento</h4>
-                    <div class="card-info">
+                    <div class="card-info" id="card-info-pagamento">
                         <ion-icon name="card-outline"></ion-icon>
                         <div class="card-info-texto">
                             <p>Cartão de Crédito</p>
-                            <span>**** 1234</span>
+                            <span>Pagamento na entrega</span>
                         </div>
-                        <a href="#">Trocar</a>
+                        <a href="#" id="btn-trocar-pagamento">Trocar</a>
                     </div>
                 </div>
     
@@ -722,6 +675,59 @@
     
                 <div class="resumo-valores" id="resumo-tela-pagamento"></div>
             </div>
+
+            <div id="tela-escolher-pagamento" class="tela-carrinho">
+                <div class="secao-opcoes-pagamento">
+                    <label class="opcao-radio">
+                        <input type="radio" name="forma-pagamento-principal" value="pix">
+                        <div class="radio-customizado"></div>
+                        <div class="opcao-radio-info">
+                            <p>Pix</p>
+                        </div>
+                    </label>
+                    <div class="sub-opcoes" id="sub-opcoes-pix">
+                        <label class="opcao-radio-sub">
+                            <input type="radio" name="sub-opcao-pix" value="online">
+                            <div class="radio-customizado"></div>
+                            <span>Pagar online agora</span>
+                        </label>
+                        <label class="opcao-radio-sub">
+                            <input type="radio" name="sub-opcao-pix" value="entrega" checked>
+                            <div class="radio-customizado"></div>
+                            <span>Pagar na entrega</span>
+                        </label>
+                        <div id="detalhes-pix-online">
+                            <img src="assets/pix-qrcode.png" alt="QR Code Pix" id="pix-qrcode-img" onerror="this.style.display='none'">
+                            <p>Mande o comprovante pelo WhatsApp</p>
+                            <a href="https://wa.me/5519991432597?text=Olá!%20Estou%20enviando%20o%20comprovante%20do%20meu%20pedido." target="_blank" class="botao-whatsapp">
+                                <ion-icon name="logo-whatsapp"></ion-icon>
+                                Enviar Comprovante
+                            </a>
+                        </div>
+                    </div>
+
+                    <label class="opcao-radio">
+                        <input type="radio" name="forma-pagamento-principal" value="cartao" checked>
+                        <div class="radio-customizado"></div>
+                        <div class="opcao-radio-info">
+                            <p>Cartão</p>
+                        </div>
+                    </label>
+                    <div class="sub-opcoes" id="sub-opcoes-cartao">
+                        <label class="opcao-radio-sub">
+                            <input type="radio" name="sub-opcao-cartao" value="credito" checked>
+                            <div class="radio-customizado"></div>
+                            <span>Crédito</span>
+                        </label>
+                        <label class="opcao-radio-sub">
+                            <input type="radio" name="sub-opcao-cartao" value="debito">
+                            <div class="radio-customizado"></div>
+                            <span>Débito</span>
+                        </label>
+                        <p class="aviso-pagamento">Pagamentos no cartão somente na entrega.</p>
+                    </div>
+                </div>
+            </div>
     
         </div>
     
@@ -733,17 +739,6 @@
         </footer>
     </div>
     
-    <div id="modal-confirmacao-pedido" class="modal-confirmacao-overlay">
-        <div class="modal-confirmacao-box">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-            <h2>Pedido Enviado!</h2>
-            <p>Seu pedido foi enviado com sucesso. Em breve você receberá uma confirmação no WhatsApp.</p>
-            <button id="botao-fechar-confirmacao">Ok</button>
-        </div>
-    </div>
-
     <script src="static/js/script.js"></script>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>

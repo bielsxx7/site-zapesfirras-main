@@ -5,10 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
     let carrinho = [];
     const TAXA_ENTREGA = 5.00;
-    // TAXA_SERVICO removida
     let precoProdutoAtualModal = 0;
     let timeoutNotificacao;
     let etapaAtualCarrinho = 'itens';
+    let pedido = {
+        pagamento: { metodo: 'Cartão', tipo: 'Crédito' }
+    };
 
     // =================================================================
     // SELETORES DE ELEMENTOS
@@ -24,11 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const painelCarrinho = document.getElementById('painel-carrinho');
     const sobreposicaoCarrinho = document.getElementById('sobreposicao-carrinho');
     const contadorCarrinhoEl = document.getElementById('contador-carrinho');
-    const modalConfirmacao = document.getElementById('modal-confirmacao-pedido');
     const tituloCarrinho = document.getElementById('titulo-carrinho');
     const btnVoltarCarrinho = document.getElementById('btn-voltar-carrinho');
     const btnContinuarCarrinho = document.getElementById('btn-continuar-carrinho');
     const telasCarrinho = document.querySelectorAll('.tela-carrinho');
+    const btnTrocarPagamento = document.getElementById('btn-trocar-pagamento');
+    const opcoesPagamentoPrincipal = document.querySelectorAll('input[name="forma-pagamento-principal"]');
+    const subOpcoesPix = document.getElementById('sub-opcoes-pix');
+    const subOpcoesCartao = document.getElementById('sub-opcoes-cartao');
+    const radiosSubOpcoesPix = document.querySelectorAll('input[name="sub-opcao-pix"]');
+    const detalhesPixOnline = document.getElementById('detalhes-pix-online');
     const radiosTipoEntrega = document.querySelectorAll('input[name="tipo-entrega"]');
     const formEnderecoContainer = document.getElementById('container-form-endereco');
     const formEndereco = document.getElementById('form-endereco');
@@ -37,6 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const mensagemSemResultados = document.getElementById('sem-resultados');
     const todosCartoesProduto = document.querySelectorAll('.cartao-produto');
     const secaoPecaTambem = document.querySelector('.secao-peca-tambem');
+    const secoesProdutos = document.querySelectorAll('.container-secao[data-category]');
+
+    // SELETORES PARA O SCROLL DOS FILTROS
+    const barraFiltros = document.querySelector('.barra-filtros');
+    const btnScrollLeft = document.getElementById('scroll-left');
+    const btnScrollRight = document.getElementById('scroll-right');
+
 
     // =================================================================
     // INICIALIZAÇÃO E LÓGICAS DE LAYOUT
@@ -61,20 +75,57 @@ document.addEventListener('DOMContentLoaded', () => {
         if (conteudoPrincipal) {
             conteudoPrincipal.style.display = 'block';
             ajustarPaddingCorpo();
+            gerenciarSetasScroll();
         }
     }, 2000);
 
-    window.addEventListener('resize', ajustarPaddingCorpo);
+    window.addEventListener('resize', () => {
+        ajustarPaddingCorpo();
+        gerenciarSetasScroll();
+    });
+
     if (menuHamburguer) menuHamburguer.addEventListener('click', () => menuNavegacao.classList.toggle('ativo'));
     
+
     // =================================================================
-    // LÓGICA DE BUSCA APRIMORADA
+    // LÓGICA DO SCROLL DA BARRA DE FILTROS
+    // =================================================================
+    function gerenciarSetasScroll() {
+        if (!barraFiltros || !btnScrollLeft || !btnScrollRight) return;
+
+        const temScroll = barraFiltros.scrollWidth > barraFiltros.clientWidth;
+
+        if (!temScroll) {
+            btnScrollLeft.classList.remove('visivel');
+            btnScrollRight.classList.remove('visivel');
+            return;
+        }
+
+        btnScrollLeft.classList.toggle('visivel', barraFiltros.scrollLeft > 0);
+
+        const maxScrollLeft = barraFiltros.scrollWidth - barraFiltros.clientWidth;
+        btnScrollRight.classList.toggle('visivel', barraFiltros.scrollLeft < maxScrollLeft - 1);
+    }
+
+    if(barraFiltros) {
+        btnScrollLeft.addEventListener('click', () => {
+            barraFiltros.scrollBy({ left: -250, behavior: 'smooth' });
+        });
+
+        btnScrollRight.addEventListener('click', () => {
+            barraFiltros.scrollBy({ left: 250, behavior: 'smooth' });
+        });
+
+        barraFiltros.addEventListener('scroll', gerenciarSetasScroll);
+    }
+
+    // =================================================================
+    // LÓGICA DE BUSCA E FILTRO DE CATEGORIAS
     // =================================================================
     function filtrarEBuscarProdutos(termo) {
         let produtoEncontrado = false;
         let primeiroProdutoEncontradoEl = null;
 
-        // Filtra a visibilidade dos produtos
         todosCartoesProduto.forEach(cartao => {
             const nomeProduto = cartao.dataset.nome.toLowerCase();
             const deveMostrar = nomeProduto.includes(termo);
@@ -87,20 +138,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Mostra ou esconde seções inteiras
-        document.querySelectorAll('.container-secao:not(:has(.carrossel-categorias))').forEach(secao => {
+        document.querySelectorAll('.container-secao[data-category]').forEach(secao => {
             const produtosVisiveis = secao.querySelectorAll('.cartao-produto[style*="display: flex"]').length;
             secao.style.display = produtosVisiveis > 0 || termo === '' ? 'block' : 'none';
         });
 
-        // Mostra mensagem de "não encontrado"
         if (mensagemSemResultados) {
             mensagemSemResultados.style.display = !produtoEncontrado && termo !== '' ? 'block' : 'none';
         }
 
-        // Rola até o primeiro produto encontrado
-        if (primeiroProdutoEncontradoEl) {
+        if (primeiroProdutoEncontradoEl && termo) {
             primeiroProdutoEncontradoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        if (termo) {
+            document.querySelector('.botao-filtro.ativo')?.classList.remove('ativo');
+            document.querySelector('.botao-filtro[data-categoria="Todos"]')?.classList.add('ativo');
         }
     }
 
@@ -112,14 +165,60 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // =================================================================
-    // LÓGICA DO MODAL DE PRODUTOS
-    // =================================================================
-    // ... (código do modal permanece o mesmo)
+    function filtrarPorCategoria(categoriaAlvo) {
+        secoesProdutos.forEach(secao => {
+            const categoriaDaSecao = secao.dataset.category;
+            if (categoriaDaSecao === 'Destaques') {
+                secao.style.display = (categoriaAlvo === 'Todos') ? 'block' : 'none';
+            } 
+            else {
+                secao.style.display = (categoriaAlvo === 'Todos' || categoriaDaSecao === categoriaAlvo) ? 'block' : 'none';
+            }
+        });
+        
+        todasEntradasPesquisa.forEach(input => input.value = '');
+        todosCartoesProduto.forEach(cartao => cartao.style.display = 'flex');
+        if (mensagemSemResultados) mensagemSemResultados.style.display = 'none';
+    }
+
+    if (barraFiltros) {
+        barraFiltros.addEventListener('click', (e) => {
+            if (e.target.classList.contains('botao-filtro')) {
+                const botaoAtivoAtual = barraFiltros.querySelector('.ativo');
+                if (botaoAtivoAtual) {
+                    botaoAtivoAtual.classList.remove('ativo');
+                }
+                
+                e.target.classList.add('ativo');
+                const categoriaSelecionada = e.target.dataset.categoria;
+                filtrarPorCategoria(categoriaSelecionada);
+            }
+        });
+    }
 
     // =================================================================
-    // LÓGICA DO NOVO CARRINHO
+    // LÓGICA DO MODAL, CARRINHO E DEMAIS FUNÇÕES
     // =================================================================
+    function atualizarPrecoTotalModal() {
+        const quantidade = parseInt(document.querySelector('.modal-produto .entrada-quantidade').value);
+        const precoTotal = precoProdutoAtualModal * quantidade;
+        document.querySelector('.botao-adicionar-carrinho-modal').textContent = `Adicionar R$ ${precoTotal.toFixed(2).replace('.', ',')}`;
+    }
+    
+    document.getElementById('botao-fechar-modal').addEventListener('click', () => sobreposicaoModal.classList.remove('ativo'));
+    document.querySelector('.modal-produto .botao-mais').addEventListener('click', () => {
+        const input = document.querySelector('.modal-produto .entrada-quantidade');
+        input.value = parseInt(input.value) + 1;
+        atualizarPrecoTotalModal();
+    });
+    document.querySelector('.modal-produto .botao-menos').addEventListener('click', () => {
+        const input = document.querySelector('.modal-produto .entrada-quantidade');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+            atualizarPrecoTotalModal();
+        }
+    });
+
     const navegarCarrinho = (novaEtapa) => {
         etapaAtualCarrinho = novaEtapa;
         telasCarrinho.forEach(tela => {
@@ -142,6 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 tituloCarrinho.textContent = 'Pagamento';
                 btnVoltarCarrinho.style.display = 'block';
                 textoBotao.textContent = 'Finalizar Pedido';
+                break;
+             case 'escolher-pagamento':
+                tituloCarrinho.textContent = 'Forma de Pagamento';
+                btnVoltarCarrinho.style.display = 'block';
+                textoBotao.textContent = 'Confirmar Seleção';
                 break;
         }
         atualizarTodosResumos();
@@ -241,6 +345,36 @@ document.addEventListener('DOMContentLoaded', () => {
         contadorCarrinhoEl.classList.toggle('ativo', totalItens > 0);
     };
 
+    const atualizarDisplayPagamento = () => {
+        const container = document.getElementById('card-info-pagamento');
+        let iconName = 'card-outline';
+        let titulo = '';
+        let subtitulo = '';
+
+        if (pedido.pagamento.metodo === 'Pix') {
+            iconName = 'cash-outline';
+            titulo = 'Pix';
+            subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via QR Code' : 'Pagar na entrega';
+        } else { 
+            iconName = 'card-outline';
+            titulo = `Cartão de ${pedido.pagamento.tipo}`;
+            subtitulo = 'Pagamento na entrega';
+        }
+
+        container.innerHTML = `
+            <ion-icon name="${iconName}"></ion-icon>
+            <div class="card-info-texto">
+                <p>${titulo}</p>
+                <span>${subtitulo}</span>
+            </div>
+            <a href="#" id="btn-trocar-pagamento">Trocar</a>
+        `;
+        document.getElementById('btn-trocar-pagamento').addEventListener('click', (e) => {
+            e.preventDefault();
+            navegarCarrinho('escolher-pagamento');
+        });
+    };
+
     const togglePainelCarrinho = (abrir = null) => {
         const ativo = abrir === null ? !painelCarrinho.classList.contains('ativo') : abrir;
         if (ativo) {
@@ -265,16 +399,19 @@ document.addEventListener('DOMContentLoaded', () => {
         timeoutNotificacao = setTimeout(() => notificacao.classList.remove('mostrar'), 2500);
     }
     
-    // =================================================================
-    // EVENT LISTENERS GERAIS E INTEGRAÇÕES
-    // =================================================================
-
     document.querySelector('.container-principal').addEventListener('click', (e) => {
-        const botaoDetalhes = e.target.closest('.botao-detalhes');
-        if (botaoDetalhes) {
-            const cartao = botaoDetalhes.closest('.cartao-produto');
-            if (!cartao) return;
+        const cartao = e.target.closest('.cartao-produto');
+        if (!cartao) return;
 
+        if (e.target.closest('.botao-adicionar')) {
+            const produto = {
+                nome: cartao.dataset.nome,
+                preco: parseFloat(cartao.dataset.preco),
+                imagem: cartao.querySelector('img').src,
+            };
+            adicionarAoCarrinho(produto);
+        }
+        else {
             precoProdutoAtualModal = parseFloat(cartao.dataset.preco);
             document.getElementById('imagem-produto-modal').src = cartao.querySelector('img').src;
             document.getElementById('nome-produto-modal').textContent = cartao.dataset.nome;
@@ -284,18 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('observacao-produto').value = '';
             atualizarPrecoTotalModal();
             sobreposicaoModal.classList.add('ativo');
-        }
-
-        const botaoAdicionar = e.target.closest('.botao-adicionar');
-        if (botaoAdicionar) {
-            const cartaoProduto = botaoAdicionar.closest('.cartao-produto');
-            if (!cartaoProduto) return;
-            const produto = {
-                nome: cartaoProduto.dataset.nome,
-                preco: parseFloat(cartaoProduto.dataset.preco),
-                imagem: cartaoProduto.querySelector('img').src,
-            };
-            adicionarAoCarrinho(produto);
         }
     });
 
@@ -326,7 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Listener para o "Peça também"
     secaoPecaTambem.addEventListener('click', (e) => {
         const botaoAdicionar = e.target.closest('.botao-add-sugestao');
         if (botaoAdicionar) {
@@ -340,18 +464,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    document.getElementById('botao-carrinho').addEventListener('click', () => togglePainelCarrinho(true));
-    document.getElementById('botao-fechar-painel-novo').addEventListener('click', () => togglePainelCarrinho(false));
+    document.getElementById('botao-carrinho-header').addEventListener('click', () => togglePainelCarrinho(true));
     document.getElementById('adicionar-mais-itens').addEventListener('click', (e) => {
         e.preventDefault();
         togglePainelCarrinho(false);
     });
     sobreposicaoCarrinho.addEventListener('click', () => togglePainelCarrinho(false));
-    document.getElementById('botao-fechar-confirmacao').addEventListener('click', () => modalConfirmacao.classList.remove('visivel'));
     
     btnContinuarCarrinho.addEventListener('click', () => {
+        if (etapaAtualCarrinho === 'escolher-pagamento') {
+            const metodoPrincipal = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+            pedido.pagamento.metodo = metodoPrincipal === 'pix' ? 'Pix' : 'Cartão';
+            if (metodoPrincipal === 'pix') {
+                pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
+            } else {
+                pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
+            }
+            atualizarDisplayPagamento();
+            navegarCarrinho('pagamento');
+            return;
+        }
+        
         if (carrinho.length === 0) {
-            mostrarNotificacao("Seu carrinho está vazio!");
+            mostrarNotificacao("Sua sacola está vazia!");
             return;
         }
 
@@ -365,8 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             navegarCarrinho('pagamento');
         } else if (etapaAtualCarrinho === 'pagamento') {
-            console.log("Pedido Finalizado:", { carrinho });
-            modalConfirmacao.classList.add('visivel');
+            alert('Pedido Enviado com sucesso! Em breve você receberá uma confirmação no WhatsApp.');
             carrinho = [];
             salvarCarrinhoLocalStorage();
             renderizarItensCarrinho();
@@ -377,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnVoltarCarrinho.addEventListener('click', () => {
         if (etapaAtualCarrinho === 'pagamento') navegarCarrinho('entrega');
         else if (etapaAtualCarrinho === 'entrega') navegarCarrinho('itens');
+        else if (etapaAtualCarrinho === 'escolher-pagamento') navegarCarrinho('pagamento');
     });
 
     radiosTipoEntrega.forEach(radio => {
@@ -392,6 +527,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    opcoesPagamentoPrincipal.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const selecionado = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+            subOpcoesPix.classList.toggle('visivel', selecionado === 'pix');
+            subOpcoesCartao.classList.toggle('visivel', selecionado === 'cartao');
+        });
+    });
+
+    radiosSubOpcoesPix.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const selecionado = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
+            detalhesPixOnline.classList.toggle('visivel', selecionado === 'online');
+        });
+    });
+
     document.getElementById('add-cpf').addEventListener('change', function() {
         document.querySelector('.input-cpf-container').classList.toggle('visivel', this.checked);
     });
@@ -401,4 +551,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
     ajustarPaddingCorpo();
     carregarCarrinhoLocalStorage();
+    atualizarDisplayPagamento();
 });
