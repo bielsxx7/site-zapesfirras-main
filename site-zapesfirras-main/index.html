@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,10 +12,12 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
+
 <body>
     <div id="tela-carregamento">
         <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="logo-pulso">
     </div>
+
 
     <div id="conteudo-principal" style="display: none;">
         
@@ -46,18 +49,19 @@
                     <ion-icon name="search-outline"></ion-icon>
                 </a>
             </div>
+            <button class="botao-carrinho-desktop" id="botao-carrinho-desktop">
+                <ion-icon name="cart-outline"></ion-icon>
+                <span class="contador-carrinho" id="contador-carrinho-desktop">0</span>
+            </button>
             <a href="login.html" class="botao-conta">CONTA</a>
         </div>
 
-        <div class="header-content apenas-mobile">
-             <div class="marca-navegacao apenas-desktop">
-                <a href="#"><img src="assets/zapesfiiras.png" alt="Zap Esfirras"></a>
+        <div class="header-greeting apenas-mobile">
             </div>
-            <div class="header-greeting">
-                </div>
-        </div>
+
     </div>
 </header>
+
 
         <main class="container-principal">
             <section class="container-pesquisa-mobile apenas-mobile">
@@ -67,33 +71,37 @@
                 </div>
             </section>
 
+
             <section class="container-secao">
-                 <div class="container-filtros-scroll">
-                    <button class="botao-scroll" id="scroll-left"><ion-icon name="chevron-back-outline"></ion-icon></button>
-                    <div class="barra-filtros">
-                        <button class="botao-filtro ativo" data-categoria="Todos">Todos</button>
-                        <button class="botao-filtro" data-categoria="Salgadas">Esfirras Salgadas</button>
-                        <button class="botao-filtro" data-categoria="Beirutes">Beirutes</button>
-                        <button class="botao-filtro" data-categoria="Lanches">Lanches</button>
-                        <button class="botao-filtro" data-categoria="Pastéis">Pastéis Salgados</button>
-                        <button class="botao-filtro" data-categoria="Porções">Porções</button>
-                        <button class="botao-filtro" data-categoria="Combos">Combos</button>
-                        <button class="botao-filtro" data-categoria="Esfirras Doces">Esfirras Doces</button>
-                        <button class="botao-filtro" data-categoria="Pastéis Doces">Pastéis Doces</button>
-                        <button class="botao-filtro" data-categoria="Refrigerantes">Refrigerantes</button>
-                        <button class="botao-filtro" data-categoria="Sucos">Sucos</button>
+                    <div class="container-filtros-scroll">
+                        <button class="botao-scroll" id="scroll-left"><ion-icon name="chevron-back-outline"></ion-icon></button>
+                        <div class="barra-filtros">
+                            <button class="botao-filtro ativo" data-categoria="Todos">Todos</button>
+                            <button class="botao-filtro" data-categoria="Salgadas">Esfirras Salgadas</button>
+                            <button class="botao-filtro" data-categoria="Beirutes">Beirutes</button>
+                            <button class="botao-filtro" data-categoria="Lanches">Lanches</button>
+                            <button class="botao-filtro" data-categoria="Pastéis">Pastéis Salgados</button>
+                            <button class="botao-filtro" data-categoria="Porções">Porções</button>
+                            <button class="botao-filtro" data-categoria="Combos">Combos</button>
+                            <button class="botao-filtro" data-categoria="Esfirras Doces">Esfirras Doces</button>
+                            <button class="botao-filtro" data-categoria="Pastéis Doces">Pastéis Doces</button>
+                            <button class="botao-filtro" data-categoria="Refrigerantes">Refrigerantes</button>
+                            <button class="botao-filtro" data-categoria="Sucos">Sucos</button>
+                        </div>
+                        <button class="botao-scroll" id="scroll-right"><ion-icon name="chevron-forward-outline"></ion-icon></button>
                     </div>
-                    <button class="botao-scroll" id="scroll-right"><ion-icon name="chevron-forward-outline"></ion-icon></button>
-                 </div>
             </section>
+
 
             <div id="sem-resultados" style="display: none; text-align: center; margin-top: 50px;">
                 <p>Poxa, não encontramos esse produto.</p>
             </div>
 
+
             <div id="notificacao" class="notificacao">
                 <p id="texto-notificacao"></p>
             </div>
+
 
             <section class="container-secao" data-category="Destaques">
                 <h2>Mais Vendidas</h2>
@@ -125,12 +133,12 @@
                         </div>
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,00</span>
-                             <div class="botoes-container">
+                            <div class="botoes-container">
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
                     </div>
-                     <div class="cartao-produto" data-nome="Esfirra de Calabresa I" data-desc="Catupiry derretido por cima." data-detalhes="Esfirra de calabresa com catupiry." data-preco="6.00">
+                        <div class="cartao-produto" data-nome="Esfirra de Calabresa I" data-desc="Catupiry derretido por cima." data-detalhes="Esfirra de calabresa com catupiry." data-preco="6.00">
                         <div class="container-detalhes-produto">
                             <img src="assets/calabresa.png" alt="Esfirra de Calabresa">
                             <div class="texto-info-produto">
@@ -141,7 +149,7 @@
                         </div>
                         <div class="acoes-produto">
                             <span class="preco">R$ 6,00</span>
-                             <div class="botoes-container">
+                            <div class="botoes-container">
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -163,7 +171,7 @@
                         </div>
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,50</span>
-                             <div class="botoes-container">
+                            <div class="botoes-container">
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -179,7 +187,7 @@
                         </div>
                         <div class="acoes-produto">
                             <span class="preco">R$ 5,00</span>
-                             <div class="botoes-container">
+                            <div class="botoes-container">
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -201,13 +209,14 @@
                         </div>
                         <div class="acoes-produto">
                             <span class="preco">R$ 25,00</span>
-                             <div class="botoes-container">
+                            <div class="botoes-container">
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
+
 
             <section class="container-secao" data-category="Lanches">
                 <h2>Lanches</h2>
@@ -223,7 +232,7 @@
                         </div>
                         <div class="acoes-produto">
                             <span class="preco">R$ 18,00</span>
-                             <div class="botoes-container">
+                            <div class="botoes-container">
                                 <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
                             </div>
                         </div>
@@ -246,6 +255,7 @@
                     </div>
                 </div>
             </section>
+
 
             <section class="container-secao" data-category="Pastéis">
                 <h2>Pastéis</h2>
@@ -323,6 +333,7 @@
                 </div>
             </section>
 
+
             <section class="container-secao" data-category="Combos">
                 <h2>Combos</h2>
                 <div class="grade-produtos">
@@ -360,6 +371,7 @@
                     </div>
                 </div>
             </section>
+
 
             <section class="container-secao" data-category="Esfirras Doces">
                 <h2>Esfirras Doces</h2>
@@ -399,6 +411,7 @@
                 </div>
             </section>
 
+
             <section class="container-secao" data-category="Pastéis Doces">
                 <h2>Pastéis Doces</h2>
                 <div class="grade-produtos">
@@ -420,6 +433,7 @@
                     </div>
                 </div>
             </section>
+
 
             <section class="container-secao" data-category="Refrigerantes">
                 <h2>Refrigerantes</h2>
@@ -458,6 +472,7 @@
                     </div>
                 </div>
             </section>
+
 
             <section class="container-secao" data-category="Sucos">
                 <h2>Sucos</h2>
@@ -499,6 +514,7 @@
             
         </main>
 
+
         <div id="modal-sobreposicao" class="modal-sobreposicao">
             <div class="modal-produto">
                 <button class="botao-fechar" id="botao-fechar-modal">&times;</button>
@@ -511,7 +527,7 @@
                         <h3 id="desc-produto-modal">Breve descrição.</h3>
                         <p id="detalhes-produto-modal">Descrição completa do produto aqui.</p>
                         <div class="info-preco-modal">
-                             <span id="preco-produto-modal">R$ 0,00</span>
+                            <span id="preco-produto-modal">R$ 0,00</span>
                         </div>
                         <div class="area-observacao">
                             <h3>Alguma observação?</h3>
@@ -532,6 +548,7 @@
     </div>
     
     <div id="sobreposicao-carrinho" class="sobreposicao-carrinho"></div>
+
 
     <div id="painel-carrinho" class="painel-carrinho">
         <header class="carrinho-cabecalho">
@@ -613,6 +630,7 @@
                     </label>
                 </div>
 
+
                 <div id="container-form-endereco">
                     <h4>Endereço de Entrega</h4>
                     <form id="form-endereco" class="form-endereco">
@@ -680,28 +698,31 @@
                 <div class="resumo-valores" id="resumo-tela-pagamento"></div>
             </div>
 
+
             <div id="tela-escolher-pagamento" class="tela-carrinho">
                 <div class="secao-opcoes-pagamento">
-                    <label class="opcao-radio">
+
+                    <label class="metodo-pagamento-card">
                         <input type="radio" name="forma-pagamento-principal" value="pix">
-                        <div class="radio-customizado"></div>
-                        <div class="opcao-radio-info">
-                            <p>Pix</p>
+                        <div class="card-content">
+                            <ion-icon name="logo-paypal"></ion-icon> <span class="card-text">Pix</span>
                         </div>
+                        <div class="card-check"><ion-icon name="checkmark-circle"></ion-icon></div>
                     </label>
                     <div class="sub-opcoes" id="sub-opcoes-pix">
-                        <label class="opcao-radio-sub">
-                            <input type="radio" name="sub-opcao-pix" value="online">
-                            <div class="radio-customizado"></div>
-                            <span>Pagar online agora</span>
-                        </label>
-                        <label class="opcao-radio-sub">
+                        <label class="metodo-pagamento-card-sub">
                             <input type="radio" name="sub-opcao-pix" value="entrega" checked>
-                            <div class="radio-customizado"></div>
-                            <span>Pagar na entrega</span>
+                            <div class="card-content-sub">Pagar na entrega</div>
+                        </label>
+                         <label class="metodo-pagamento-card-sub">
+                            <input type="radio" name="sub-opcao-pix" value="online">
+                            <div class="card-content-sub">Pagar online agora</div>
                         </label>
                         <div id="detalhes-pix-online">
-                            <img src="assets/pix-qrcode.png" alt="QR Code Pix" id="pix-qrcode-img" onerror="this.style.display='none'">
+                            <p>Faça o Pix para a chave abaixo:</p>
+                            <div class="chave-pix-container">
+                                <span>19 99168-6522</span>
+                            </div>
                             <p>Mande o comprovante pelo WhatsApp</p>
                             <a href="https://wa.me/5519991432597?text=Olá!%20Estou%20enviando%20o%20comprovante%20do%20meu%20pedido." target="_blank" class="botao-whatsapp">
                                 <ion-icon name="logo-whatsapp"></ion-icon>
@@ -710,23 +731,22 @@
                         </div>
                     </div>
 
-                    <label class="opcao-radio">
+                    <label class="metodo-pagamento-card">
                         <input type="radio" name="forma-pagamento-principal" value="cartao" checked>
-                        <div class="radio-customizado"></div>
-                        <div class="opcao-radio-info">
-                            <p>Cartão</p>
+                         <div class="card-content">
+                            <ion-icon name="card-outline"></ion-icon>
+                            <span class="card-text">Cartão</span>
                         </div>
+                        <div class="card-check"><ion-icon name="checkmark-circle"></ion-icon></div>
                     </label>
                     <div class="sub-opcoes" id="sub-opcoes-cartao">
-                        <label class="opcao-radio-sub">
+                        <label class="metodo-pagamento-card-sub">
                             <input type="radio" name="sub-opcao-cartao" value="credito" checked>
-                            <div class="radio-customizado"></div>
-                            <span>Crédito</span>
+                             <div class="card-content-sub">Crédito</div>
                         </label>
-                        <label class="opcao-radio-sub">
+                        <label class="metodo-pagamento-card-sub">
                             <input type="radio" name="sub-opcao-cartao" value="debito">
-                            <div class="radio-customizado"></div>
-                            <span>Débito</span>
+                            <div class="card-content-sub">Débito</div>
                         </label>
                         <p class="aviso-pagamento">Pagamentos no cartão somente na entrega.</p>
                     </div>

@@ -45,6 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnScrollRight = document.getElementById('scroll-right');
     const btnCarrinhoMobile = document.getElementById('botao-carrinho-mobile');
     const contadorCarrinhoMobileEl = document.getElementById('contador-carrinho-mobile');
+    // --- Seletores do carrinho desktop adicionados ---
+    const btnCarrinhoDesktop = document.getElementById('botao-carrinho-desktop');
+    const contadorCarrinhoDesktopEl = document.getElementById('contador-carrinho-desktop');
+
 
     // =======================================================
     // --- FUNÇÕES PRINCIPAIS DA APLICAÇÃO ---
@@ -257,11 +261,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('resumo-tela-entrega').innerHTML = resumoHTML;
         document.getElementById('resumo-tela-pagamento').innerHTML = resumoHTML;
         document.getElementById('total-botao-carrinho').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        
         const totalItens = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
 
+        // --- ATUALIZAÇÃO DO CONTADOR (MOBILE E DESKTOP) ---
         if (contadorCarrinhoMobileEl) {
             contadorCarrinhoMobileEl.textContent = totalItens;
             contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0);
+        }
+        // --- CÓDIGO ADICIONADO PARA O CONTADOR DO DESKTOP ---
+        if (contadorCarrinhoDesktopEl) {
+            contadorCarrinhoDesktopEl.textContent = totalItens;
+            contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0);
         }
     };
     
@@ -274,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pedido.pagamento.metodo === 'Pix') {
             iconName = 'cash-outline';
             titulo = 'Pix';
-            subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via QR Code' : 'Pagar na entrega';
+            subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via PIX' : 'Pagar na entrega';
         } else {
             iconName = 'card-outline';
             titulo = `Cartão de ${pedido.pagamento.tipo}`;
@@ -474,10 +485,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // --- EVENT LISTENERS PARA OS DOIS BOTÕES DO CARRINHO ---
     if (btnCarrinhoMobile) btnCarrinhoMobile.addEventListener('click', () => togglePainelCarrinho(true));
+    // --- CÓDIGO ADICIONADO PARA O BOTÃO DO DESKTOP ---
+    if (btnCarrinhoDesktop) btnCarrinhoDesktop.addEventListener('click', () => togglePainelCarrinho(true));
+
+
     document.getElementById('botao-fechar-painel-novo').addEventListener('click', () => togglePainelCarrinho(false));
     document.getElementById('adicionar-mais-itens').addEventListener('click', (e) => { e.preventDefault(); togglePainelCarrinho(false); });
     sobreposicaoCarrinho.addEventListener('click', () => togglePainelCarrinho(false));
+    
     btnContinuarCarrinho.addEventListener('click', () => {
         if (carrinho.length === 0) {
             mostrarNotificacao("Sua sacola está vazia!");
@@ -499,14 +517,14 @@ document.addEventListener('DOMContentLoaded', () => {
             togglePainelCarrinho(false);
         } else if (etapaAtualCarrinho === 'escolher-pagamento') {
              const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
-             pedido.pagamento.metodo = metodo === 'pix' ? 'Pix' : 'Cartão';
-             if (metodo === 'pix') {
-                 pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
-             } else {
-                 pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
-             }
-             atualizarDisplayPagamento();
-             navegarCarrinho('pagamento');
+              pedido.pagamento.metodo = metodo === 'pix' ? 'Pix' : 'Cartão';
+              if (metodo === 'pix') {
+                  pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
+              } else {
+                  pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
+              }
+              atualizarDisplayPagamento();
+              navegarCarrinho('pagamento');
         }
     });
     btnVoltarCarrinho.addEventListener('click', () => {
