@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Zap Esfirras</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+    <main class="auth-container">
+        <section class="auth-visual-side">
+            <div class="auth-visual-content">
+                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="auth-logo">
+                <h1>O sabor que conecta você.</h1>
+                <p>Acesse sua conta para ter acesso a um universo de sabores e promoções exclusivas.</p>
+            </div>
+        </section>
+
+        <section class="auth-form-side">
+            <div class="auth-form-wrapper">
+                <a href="index.html" class="auth-back-link">
+                    <ion-icon name="arrow-back-outline"></ion-icon>
+                    <span>Voltar para o site</span>
+                </a>
+
+                <div class="auth-form-header">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Insira suas credenciais para continuar.</p>
+                </div>
+
+                <form id="form-login" class="auth-form">
+                    <div class="input-group">
+                        <ion-icon name="mail-outline"></ion-icon>
+                        <input type="email" id="email" name="email" placeholder=" " required>
+                        <label for="email">E-mail</label>
+                    </div>
+                    <div class="input-group">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" id="password" name="password" placeholder=" " required>
+                        <label for="password">Senha</label>
+                    </div>
+
+                    <button type="submit" class="auth-button">
+                        <span>Entrar</span>
+                        <ion-icon name="arrow-forward-outline"></ion-icon>
+                    </button>
+                </form>
+
+                <div class="auth-form-footer">
+                    <p>Não tem uma conta? <a href="cadastro.html">Crie agora</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>

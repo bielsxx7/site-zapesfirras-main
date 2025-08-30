@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Zap Esfirras</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+    <main class="auth-container">
+        <section class="auth-visual-side">
+            <div class="auth-visual-content">
+                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="auth-logo">
+                <h1>Um novo mundo de sabores.</h1>
+                <p>Crie sua conta e comece a explorar nosso cardápio e ofertas exclusivas hoje mesmo.</p>
+            </div>
+        </section>
+
+        <section class="auth-form-side">
+            <div class="auth-form-wrapper">
+                <a href="index.html" class="auth-back-link">
+                    <ion-icon name="arrow-back-outline"></ion-icon>
+                    <span>Voltar para o site</span>
+                </a>
+
+                <div class="auth-form-header">
+                    <h2>Crie sua Conta</h2>
+                    <p>É rápido, fácil e delicioso.</p>
+                </div>
+
+                <form id="form-cadastro" class="auth-form">
+                    <div class="input-group">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input type="text" id="name" name="name" placeholder=" " required>
+                        <label for="name">Nome Completo</label>
+                    </div>
+                    <div class="input-group">
+                        <ion-icon name="mail-outline"></ion-icon>
+                        <input type="email" id="email" name="email" placeholder=" " required>
+                        <label for="email">E-mail</label>
+                    </div>
+                    <div class="input-group">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" id="password" name="password" placeholder=" " required>
+                        <label for="password">Crie uma Senha</label>
+                    </div>
+
+                    <button type="submit" class="auth-button">
+                        <span>Criar Conta</span>
+                        <ion-icon name="arrow-forward-outline"></ion-icon>
+                    </button>
+                </form>
+
+                <div class="auth-form-footer">
+                    <p>Já possui uma conta? <a href="login.html">Faça login</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
