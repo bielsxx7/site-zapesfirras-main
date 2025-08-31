@@ -14,10 +14,11 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="admin-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="/assets/zapesfiiras.png" alt="Zap Esfirras Logo" class="logo">
+                <img src="assets/zapesfiiras.png" alt="Zap Esfirras Logo" class="logo">
                 <h2>Painel Admin</h2>
             </div>
             <nav class="sidebar-nav">
@@ -30,7 +31,7 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../index.html" class="nav-link"><ion-icon name="log-out-outline"></ion-icon> <span>Sair</span></a>
+                <a href="#" class="nav-link" id="logout-button"><ion-icon name="log-out-outline"></ion-icon> <span>Sair</span></a>
             </div>
         </aside>
 
@@ -41,7 +42,7 @@
                 </button>
                 <h1 id="page-title">Dashboard</h1>
                 <div class="admin-profile">
-                    <span>Olá, Admin</span>
+                    <span id="admin-user-name"></span>
                     <ion-icon name="person-circle-outline"></ion-icon>
                 </div>
             </header>

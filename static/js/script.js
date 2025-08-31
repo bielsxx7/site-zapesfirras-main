@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const contadorCarrinhoDesktopEl = document.getElementById('contador-carrinho-desktop');
     const toggleAdicionaisBtn = document.getElementById('toggle-adicionais');
     const listaAdicionaisContainer = document.getElementById('lista-adicionais');
+    const formContatoRodape = document.getElementById('form-contato-rodape');
 
 
     // =======================================================
@@ -90,9 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function atualizarInfoCabecalho() {
         const greetingEl = document.getElementById('greeting');
         const dateEl = document.getElementById('current-date');
-        // ================= ALTERAÇÃO AQUI =================
         const mobileGreetingContainer = document.getElementById('header-greeting-mobile');
-        // ================= FIM DA ALTERAÇÃO =================
 
         if (!greetingEl || !dateEl) return;
 
@@ -417,25 +416,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 
     window.addEventListener('resize', ajustarPaddingCorpo);
-window.addEventListener('scroll', () => {
-    const nav = document.querySelector('.barra-navegacao');
-    const topBar = document.querySelector('.barra-superior-info');
-    const espacador = document.querySelector('.espacador-header');
-    if (!nav || !topBar || !espacador) return;
-    
-    // Altura combinada das duas barras
-    const alturaTotal = topBar.offsetHeight + nav.offsetHeight; 
-    
-    if (window.scrollY > topBar.offsetHeight) {
-        nav.style.top = '0';
-        nav.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
-        topBar.style.display = 'none';
-    } else {
-        nav.style.top = '35px';
-        nav.style.boxShadow = 'none';
-        topBar.style.display = 'block';
-    }
-});
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('.barra-navegacao');
+        const topBar = document.querySelector('.barra-superior-info');
+        const espacador = document.querySelector('.espacador-header');
+        if (!nav || !topBar || !espacador) return;
+        
+        // Altura combinada das duas barras
+        const alturaTotal = topBar.offsetHeight + nav.offsetHeight; 
+        
+        if (window.scrollY > topBar.offsetHeight) {
+            nav.style.top = '0';
+            nav.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
+            topBar.style.display = 'none';
+        } else {
+            nav.style.top = '35px';
+            nav.style.boxShadow = 'none';
+            topBar.style.display = 'block';
+        }
+    });
     todasEntradasPesquisa.forEach(input => {
         input.addEventListener('input', () => {
             const termo = input.value.toLowerCase().trim();
@@ -605,15 +604,15 @@ window.addEventListener('scroll', () => {
             renderizarItensCarrinho();
             togglePainelCarrinho(false);
         } else if (etapaAtualCarrinho === 'escolher-pagamento') {
-             const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
-               pedido.pagamento.metodo = metodo === 'pix' ? 'Pix' : 'Cartão';
-               if (metodo === 'pix') {
-                     pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
-               } else {
-                     pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
-               }
-               atualizarDisplayPagamento();
-               navegarCarrinho('pagamento');
+            const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+                pedido.pagamento.metodo = metodo === 'pix' ? 'Pix' : 'Cartão';
+                if (metodo === 'pix') {
+                    pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
+                } else {
+                    pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
+                }
+                atualizarDisplayPagamento();
+                navegarCarrinho('pagamento');
         }
     });
     btnVoltarCarrinho.addEventListener('click', () => {
@@ -647,6 +646,7 @@ window.addEventListener('scroll', () => {
     document.getElementById('add-cpf').addEventListener('change', function() {
         document.querySelector('.input-cpf-container').classList.toggle('visivel', this.checked);
     });
+    
 
     // CHAMADAS DE FUNÇÕES INICIAIS
     atualizarInfoCabecalho();
@@ -654,3 +654,29 @@ window.addEventListener('scroll', () => {
     carregarCarrinhoLocalStorage();
     atualizarDisplayPagamento();
 });
+
+
+// --- Função para o formulário de contato do rodapé ---
+const formContatoRodape = document.getElementById('form-contato-rodape');
+if (formContatoRodape) {
+    formContatoRodape.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const nome = document.getElementById('contato-nome').value;
+        const telefone = document.getElementById('contato-telefone').value;
+        const mensagem = document.getElementById('contato-mensagem').value;
+        const whatsappNumber = '5519971073157';
+
+        const mensagemWhatsapp = `Olá! Meu nome é ${nome} e meu contato é ${telefone}. Desejo discutir sobre o desenvolvimento de um site.
+        
+Mensagem:
+${mensagem}`;
+        
+        const linkWhatsapp = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mensagemWhatsapp)}`;
+
+        window.open(linkWhatsapp, '_blank');
+        
+        formContatoRodape.reset();
+    });
+}
+

@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- PROTEÇÃO DE TELA E BOAS-VINDAS ---
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    if (!loggedInUser) {
+        window.location.href = 'login.html';
+        return; 
+    }
+    const capitalizedUser = loggedInUser.charAt(0).toUpperCase() + loggedInUser.slice(1);
+    document.getElementById('admin-user-name').textContent = `Olá, ${capitalizedUser}`;
+
     // --- STATE MANAGEMENT ---
     let state = {
         orders: [],
@@ -13,10 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ELEMENT SELECTORS ---
     const pageTitle = document.getElementById('page-title');
     const notificationSound = document.getElementById('notification-sound');
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const logoutButton = document.getElementById('logout-button');
 
     // --- MOCK DATA (COM PEDIDOS NOVOS PARA TESTE) ---
     const initialMockOrders = [
-        { id: 10002, date: new Date().toISOString().split('T')[0], cliente: { nome: "MARIA PARA TESTE", telefone: "19 00000-2222" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 35.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua de Teste", numero: "99", bairro: "Bairro Demo", complemento: "Casa" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 7, total: 38.50 }] },
         { id: 10001, date: new Date().toISOString().split('T')[0], cliente: { nome: "CLIENTE TESTE NOVO", telefone: "19 00000-1111" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 16.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Nova", numero: "1", bairro: "Bairro Novo", complemento: "" }, pagamento: { metodo: "Dinheiro", detalhes: "Troco para R$ 20,00" }, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, {name: "Coca-Cola Lata", quantity: 1, total: 6.00}] },
         { id: 4860, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Antigo", telefone: "19 12345-6789" }, horario: "13:20", valor: 30.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua da Simulação", numero: "100", bairro: "Vila Teste", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 4, total: 22.00 }, {name: "Guaraná Lata", quantity: 1, total: 8.00}] },
         { id: 4859, date: new Date().toISOString().split('T')[0], cliente: { nome: "Fernanda Lima", telefone: "19 99111-2222" }, horario: "11:30", valor: 45.00, tipo: "Entrega", status: "Em Preparo", entrega: { rua: "Rua das Palmeiras", numero: "789", bairro: "Jardim das Rosas", complemento: "Casa" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 5, total: 27.50 }, {name: "Esfirra de Queijo", quantity: 2, total: 10.00}, {name: "Coca-Cola Lata", quantity: 1, total: 7.50 }] },
@@ -70,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const revenueThisMonth = 0;
         const revenueLastMonth = 0;
         viewElement.innerHTML = `
-            <div class="view-header"><h2>Dashboard</h2><p>Resumo do desempenho da sua loja.</p></div>
             <div class="dashboard-grid">
                 <div class="stat-card faturamento-hoje"><div class="stat-card-header"><div class="icon"><ion-icon name="cash-outline"></ion-icon></div><h3>Faturamento Hoje</h3></div><div class="stat-card-main-value">${formatCurrency(revenueToday)}</div><div class="stat-card-footer">Atualizado em tempo real</div></div>
                 <div class="stat-card pedidos-hoje"><div class="stat-card-header"><div class="icon"><ion-icon name="receipt-outline"></ion-icon></div><h3>Pedidos Hoje</h3></div><div class="stat-card-main-value">${ordersToday.length}</div><div class="stat-card-footer">Total de pedidos recebidos</div></div>
@@ -285,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
             order.status = newStatus;
             saveData();
             renderPedidosView();
-
             if (oldStatus === 'Novo' && newStatus === 'Em Preparo') {
                 directPrint(orderId);
             }
@@ -299,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.orders.unshift(newOrder);
         saveData();
         showNotification(`Novo pedido #${newId} recebido!`, 'success');
-        notificationSound.play().catch(e => console.log("Autoplay de áudio bloqueado pelo navegador."));
+        notificationSound.play().catch(e => console.log("Autoplay de áudio bloqueado."));
         if(state.currentView === 'pedidos' || state.currentView === 'dashboard') {
              renderView(state.currentView);
         }
@@ -307,11 +317,34 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(simulateNewOrder, 30000);
 
     // --- EVENT LISTENERS ---
+    function toggleSidebar() {
+        sidebar.classList.toggle('visible');
+        sidebarOverlay.classList.toggle('active');
+    }
+    menuToggle.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+    logoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        sessionStorage.removeItem('loggedInUser');
+        window.location.href = 'login.html';
+    });
+    
     document.addEventListener('click', (e) => {
         if (e.target.closest('.print-button')) { directPrint(state.selectedOrderId); }
         if (e.target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); }
         const navLink = e.target.closest('.nav-link');
-        if (navLink && !navLink.classList.contains('active')) { e.preventDefault(); document.querySelector('.nav-link.active')?.classList.remove('active'); navLink.classList.add('active'); renderView(navLink.dataset.view); return; }
+        if (navLink && !navLink.id.includes('logout')) { 
+            if (window.innerWidth <= 992 && sidebar.classList.contains('visible')) {
+                toggleSidebar();
+            }
+            if(!navLink.classList.contains('active')) {
+                e.preventDefault(); 
+                document.querySelector('.nav-link.active')?.classList.remove('active'); 
+                navLink.classList.add('active'); 
+                renderView(navLink.dataset.view); 
+            }
+            return; 
+        }
         if (state.currentView === 'pedidos') { const card = e.target.closest('.order-card'); const button = e.target.closest('.action-button'); const sectionHeader = e.target.closest('.section-header'); if (button) { e.stopPropagation(); updateOrderStatus(button.dataset.orderId, button.dataset.nextStatus); } else if (card) { state.selectedOrderId = card.dataset.orderId; renderPedidosView(); } else if (sectionHeader) { const status = sectionHeader.parentElement.dataset.status; if (state.collapsedSections.has(status)) { state.collapsedSections.delete(status); } else { state.collapsedSections.add(status); } renderPedidosView(); } }
         if (state.currentView === 'cardapio') { const optionsButton = e.target.closest('.options-button'); if (optionsButton) { const menu = optionsButton.nextElementSibling; const isVisible = menu.style.display === 'block'; document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); menu.style.display = isVisible ? 'none' : 'block'; return; } if (!e.target.closest('.product-options')) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); if (e.target.closest('#add-new-product-btn')) openProductModal(); if (e.target.classList.contains('edit-product-btn')) { const product = Object.values(state.menu).flat().find(p => p.id == e.target.dataset.productId); if (product) openProductModal(product); } if (e.target.classList.contains('delete-product-btn')) openConfirmModal(e.target.dataset.productId); }
         if (e.target.closest('#cancel-modal-button') || e.target.closest('#close-modal-button')) closeProductModal();

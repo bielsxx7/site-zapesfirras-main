@@ -29,6 +29,73 @@ body.dark-mode {
     --shadow-md: 0 5px 15px rgba(0,0,0,0.2);
 }
 
+/* --- ESTILOS DA PÁGINA DE LOGIN --- */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--background-color);
+}
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+.login-box {
+    background-color: var(--surface-color);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+.login-box .logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+.login-box h2 {
+    font-family: var(--font-header);
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+.login-box p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+.login-box .form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+.login-box .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.login-box .form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+}
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+}
+.error-message {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    height: 20px;
+    margin-bottom: 10px !important;
+}
+
+/* --- ESTILOS GERAIS DO PAINEL --- */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: var(--font-body); background-color: var(--background-color); color: var(--text-primary); transition: background-color var(--transition-speed), color var(--transition-speed); overflow-x: hidden; }
 .admin-container { display: flex; min-height: 100vh; }
@@ -43,7 +110,7 @@ body.dark-mode .btn-secondary { background-color: #333; color: var(--text-primar
 body.dark-mode .btn-secondary:hover { background-color: #444; }
 
 /* --- SIDEBAR --- */
-.sidebar { width: 250px; background-color: var(--surface-color); backdrop-filter: blur(12px); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100vh; position: fixed; top: 0; left: 0; z-index: 100; transition: background-color var(--transition-speed), border-color var(--transition-speed), transform var(--transition-speed); }
+.sidebar { width: 250px; background-color: var(--surface-color); backdrop-filter: blur(12px); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1001; transition: background-color var(--transition-speed), border-color var(--transition-speed), transform var(--transition-speed); }
 body.light-mode .sidebar { background-color: rgba(255, 255, 255, 0.8); }
 .sidebar-header { padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
 .sidebar-header .logo { width: 40px; height: 40px; }
@@ -57,9 +124,14 @@ body.dark-mode .sidebar-nav .nav-link:hover:not(.active) { background-color: rgb
 .sidebar-nav .nav-link.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4); transform: translateY(-2px); }
 .sidebar-footer { padding: 16px; border-top: 1px solid var(--border-color); }
 
+/* --- OVERLAY DO MENU MOBILE --- */
+.sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+.sidebar-overlay.active { opacity: 1; visibility: visible; }
+
 /* --- CONTEÚDO PRINCIPAL --- */
 .main-content { flex-grow: 1; margin-left: 250px; padding: 24px; transition: margin-left var(--transition-speed); }
 .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.admin-header .menu-toggle { display: none; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-primary); }
 .admin-header h1 { font-family: var(--font-header); font-size: 2.2rem; font-weight: 800; }
 .admin-view { display: none; }
 .admin-view.active { display: block; animation: fadeIn 0.5s ease; }
@@ -97,23 +169,8 @@ body.dark-mode .stat-card.mes-anterior .icon { background-color: #5a5a5a30; }
 .section-header .count { background-color: var(--border-color); color: var(--text-secondary); font-size: 0.8rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
 .section-header .toggle-arrow { margin-left: auto; font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.3s ease; }
 .status-section.collapsed .toggle-arrow { transform: rotate(-90deg); }
-
-/* --- [MODIFICADO] Scroll interno para a lista de pedidos --- */
-.section-body {
-    padding: 0 16px 16px 16px;
-    display: grid;
-    gap: 16px;
-    overflow-y: auto; /* Permite a rolagem vertical */
-    max-height: 450px; /* Define uma altura máxima para a lista */
-    transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
-}
-.status-section.collapsed .section-body {
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    overflow: hidden; /* Esconde a rolagem quando fechado */
-}
-
+.section-body { padding: 0 16px 16px 16px; display: grid; gap: 16px; overflow-y: auto; max-height: 450px; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; }
+.status-section.collapsed .section-body { max-height: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; }
 .order-card { background-color: var(--background-color); border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; padding: 16px; border-radius: 12px; gap: 10px; }
 .order-card.active, .order-card:hover { border-color: var(--primary-color); box-shadow: 0 0 0 2px var(--primary-color); }
 .order-card.new-order {
@@ -192,7 +249,7 @@ body.dark-mode .product-options { background-color: rgba(30,30,30,0.8); }
 .setting-item + .setting-item { border-top: 1px solid var(--border-color); }
 
 /* --- MODAIS E NOTIFICAÇÕES --- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1010; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .modal-overlay.visible { display: flex; animation: fadeIn 0.3s ease; }
 .modal-content { background-color: var(--surface-color); padding: 32px; border-radius: 16px; box-shadow: var(--shadow-lg); width: 90%; max-width: 550px; position: relative; animation: zoomIn 0.3s ease; }
 .modal-content h2 { font-family: var(--font-header); font-size: 1.8rem; margin-bottom: 24px; }
@@ -214,5 +271,10 @@ body.dark-mode .product-options { background-color: rgba(30,30,30,0.8); }
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 1300px) { .pedidos-layout { grid-template-columns: 1fr 380px; } }
 @media (max-width: 1200px) { .pedidos-layout { grid-template-columns: 1fr; } .pedidos-detalhes-coluna { display: none; } }
-@media (max-width: 992px) { .sidebar { transform: translateX(-100%); } .sidebar.visible { transform: translateX(0); } .main-content { margin-left: 0; padding: 16px; } .menu-toggle { display: block; } .dashboard-grid, .settings-grid { grid-template-columns: 1fr; } }
+@media (max-width: 992px) { 
+    .sidebar { transform: translateX(-100%); } 
+    .sidebar.visible { transform: translateX(0); box-shadow: 5px 0 25px rgba(0,0,0,0.15); } 
+    .main-content { margin-left: 0; } 
+    .admin-header .menu-toggle { display: block; }
+}
 @media (max-width: 576px) { .image-upload-container { flex-direction: column; align-items: center; } }
