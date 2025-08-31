@@ -95,6 +95,12 @@ body {
     height: 70px;
 }
 
+/* NOVO BLOCO: Estilo para o espaçador */
+.espacador-header {
+    height: 105px; /* Altura da barra superior (35px) + altura da barra de navegação (70px) */
+    width: 100%;
+}
+
 
 .marca-navegacao img {
     height: 50px;
@@ -266,7 +272,7 @@ body {
 
 .notificacao {
     position: fixed;
-    top: 115px;
+    top: 120px; /* Altere este valor para que a notificação fique abaixo do cabeçalho fixo */
     left: 50%;
     transform: translate(-50%, -150%);
     z-index: 10001;
@@ -1177,18 +1183,18 @@ label.metodo-pagamento-card-sub:has(input:checked) {
 /* ================================================= */
 @media screen and (max-width: 768px) {
     body {
+        /* Remove o padding-bottom pois a nav de baixo já tem um height fixo */
         padding-bottom: 65px;
     }
 
-
     .notificacao {
-        top: 80px;
+        top: 100px;
     }
 
     .apenas-desktop { display: none !important; }
     .apenas-mobile { display: block; }
 
-
+    /* Mantém a barra de navegação no topo, fixa. */
     .barra-navegacao {
         padding: 10px 15px;
         flex-direction: column;
@@ -1196,8 +1202,11 @@ label.metodo-pagamento-card-sub:has(input:checked) {
         height: auto;
         top: 0;
     }
-
-
+    
+    /* Adicione este novo bloco para garantir que o conteúdo principal não fique por baixo do cabeçalho fixo. */
+    .container-principal {
+        padding-top: 140px; /* Adiciona espaço no topo para acomodar o cabeçalho. O valor 140px é um ajuste para a maioria das telas. */
+    }
     .header-content {
         display: flex;
         flex-direction: column;

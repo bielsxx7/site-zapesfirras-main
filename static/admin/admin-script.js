@@ -1,377 +1,353 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const produtosIniciais = [
-        { id: 1, nome: 'Esfirra de Carne', categoria: 'Salgadas', preco: 5.50, desc: 'A clássica da casa.', detalhes: 'Carne moída, tomate, cebola, temperos especiais.', imagem: '/assets/carne.png', disponivel: true },
-        { id: 2, nome: 'Esfirra de Queijo', categoria: 'Salgadas', preco: 5.00, desc: 'Queijo derretido por cima.', detalhes: 'Massa macia recheada com queijo mussarela.', imagem: '/assets/queijo.png', disponivel: true },
-        { id: 3, nome: 'Marmita P', categoria: 'Marmitas', preco: 15.00, desc: 'Ideal para uma pessoa.', detalhes: 'Arroz, feijão, uma mistura do dia e salada.', imagem: '/assets/marmita.png', disponivel: true },
-        { id: 4, nome: 'Marmita M', categoria: 'Marmitas', preco: 18.00, desc: 'Na medida certa para a sua fome.', detalhes: 'Arroz, feijão, duas misturas do dia e salada.', imagem: '/assets/marmita.png', disponivel: true },
-        { id: 5, nome: 'Esfirra de Chocolate', categoria: 'Doces', preco: 6.50, desc: 'A melhor sobremesa.', detalhes: 'Massa macia recheada com chocolate ao leite.', imagem: '/assets/ebrigadeiro.jpg', disponivel: false },
-        { id: 6, nome: 'Coca-Cola Lata', categoria: 'Bebidas', preco: 6.00, desc: 'Acompanhamento perfeito.', detalhes: 'Lata de Coca-Cola de 350ml.', imagem: '/assets/coca.png', disponivel: true },
-    ];
-    
-    const salvarProdutosNoLocalStorage = (produtos) => {
-        localStorage.setItem('zapEsfirrasProdutos', JSON.stringify(produtos));
+    // --- STATE MANAGEMENT ---
+    let state = {
+        orders: [],
+        menu: {},
+        currentView: 'dashboard',
+        selectedOrderId: null,
+        collapsedSections: new Set(['Finalizado']),
+        theme: 'light'
     };
 
-    const carregarProdutosDoLocalStorage = () => {
-        const produtosJSON = localStorage.getItem('zapEsfirrasProdutos');
-        return produtosJSON ? JSON.parse(produtosJSON) : null;
+    // --- ELEMENT SELECTORS ---
+    const pageTitle = document.getElementById('page-title');
+    const notificationSound = document.getElementById('notification-sound');
+
+    // --- MOCK DATA (COM PEDIDOS NOVOS PARA TESTE) ---
+    const initialMockOrders = [
+        { id: 10002, date: new Date().toISOString().split('T')[0], cliente: { nome: "MARIA PARA TESTE", telefone: "19 00000-2222" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 35.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua de Teste", numero: "99", bairro: "Bairro Demo", complemento: "Casa" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 7, total: 38.50 }] },
+        { id: 10001, date: new Date().toISOString().split('T')[0], cliente: { nome: "CLIENTE TESTE NOVO", telefone: "19 00000-1111" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 16.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Nova", numero: "1", bairro: "Bairro Novo", complemento: "" }, pagamento: { metodo: "Dinheiro", detalhes: "Troco para R$ 20,00" }, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, {name: "Coca-Cola Lata", quantity: 1, total: 6.00}] },
+        { id: 4860, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Antigo", telefone: "19 12345-6789" }, horario: "13:20", valor: 30.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua da Simulação", numero: "100", bairro: "Vila Teste", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 4, total: 22.00 }, {name: "Guaraná Lata", quantity: 1, total: 8.00}] },
+        { id: 4859, date: new Date().toISOString().split('T')[0], cliente: { nome: "Fernanda Lima", telefone: "19 99111-2222" }, horario: "11:30", valor: 45.00, tipo: "Entrega", status: "Em Preparo", entrega: { rua: "Rua das Palmeiras", numero: "789", bairro: "Jardim das Rosas", complemento: "Casa" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 5, total: 27.50 }, {name: "Esfirra de Queijo", quantity: 2, total: 10.00}, {name: "Coca-Cola Lata", quantity: 1, total: 7.50 }] },
+        { id: 4858, date: new Date().toISOString().split('T')[0], cliente: { nome: "Roberto Carlos", telefone: "19 99333-4444" }, horario: "11:25", valor: 18.50, tipo: "Retirada", status: "Em Preparo", entrega: { rua: "Retirar no local" }, pagamento: { metodo: "Cartão de Débito", detalhes: "Pagamento na entrega"}, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, { name: "Guaraná Lata", quantity: 1, total: 8.50 }] },
+        { id: 4857, date: "2025-08-30", cliente: { nome: "Carlos Alberto", telefone: "19 99876-5432" }, horario: "11:15", valor: 35.00, tipo: "Entrega", status: "Finalizado", entrega: { rua: "Rua das Flores", numero: "123", bairro: "Centro", complemento: "Apto 10" }, pagamento: { metodo: "Cartão de Crédito", detalhes: "Pagamento na entrega" }, itens: [{ name: "Esfirra de Carne", quantity: 5, total: 27.50 }, { name: "Guaraná Lata", quantity: 1, total: 7.50 }] },
+    ];
+    const initialMockMenu = {
+        "Esfirras Salgadas": [
+            { id: 1, name: "Esfirra de Carne", price: 5.50, description: "Carne bovina moída, temperada com cebola, tomate e especiarias.", image: "assets/carne.png", available: true },
+            { id: 2, name: "Esfirra de Queijo", price: 5.00, description: "Queijo mussarela fresco e cremoso.", image: "assets/queijo.png", available: true },
+        ],
+        "Refrigerantes": [ 
+            { id: 3, name: "Coca-Cola Lata", price: 7.50, description: "Lata de 350ml.", image: "assets/coca.png", available: true },
+            { id: 4, name: "Guaraná Lata", price: 8.50, description: "Lata de 350ml.", image: "assets/guarana.png", available: false }
+        ]
     };
+
+    // --- DATA & THEME PERSISTENCE ---
+    function saveData() { localStorage.setItem('zapEsfirrasAdminState', JSON.stringify({ orders: state.orders, menu: state.menu })); }
+    function loadData() { const savedState = JSON.parse(localStorage.getItem('zapEsfirrasAdminState')); if (savedState) { state.orders = savedState.orders || initialMockOrders; state.menu = savedState.menu || initialMockMenu; } else { state.orders = initialMockOrders; state.menu = initialMockMenu; } }
+    function saveTheme() { localStorage.setItem('zapEsfirrasTheme', state.theme); }
+    function loadTheme() { const savedTheme = localStorage.getItem('zapEsfirrasTheme') || 'light'; applyTheme(savedTheme); }
     
-    let mockProdutos = carregarProdutosDoLocalStorage();
-    if (!mockProdutos) {
-        mockProdutos = produtosIniciais;
-        salvarProdutosNoLocalStorage(mockProdutos);
+    function applyTheme(theme) {
+        state.theme = theme;
+        document.body.classList.remove('light-mode', 'dark-mode');
+        document.body.classList.add(`${theme}-mode`);
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) { themeToggle.checked = theme === 'dark'; }
+        saveTheme();
+    }
+
+    // --- CORE RENDERING LOGIC ---
+    function renderView(viewName) {
+        document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
+        const viewElement = document.getElementById(`view-${viewName}`);
+        viewElement.classList.add('active');
+        pageTitle.textContent = document.querySelector(`.nav-link[data-view="${viewName}"] span`).textContent;
+        state.currentView = viewName;
+        viewElement.innerHTML = '';
+        const renderMap = { dashboard: renderDashboard, pedidos: renderPedidosView, cardapio: renderCardapioView, relatorios: renderRelatoriosView, configuracoes: renderConfiguracoesView };
+        renderMap[viewName]();
     }
     
-    let mockPedidos = [
-        { id: 5089, cliente: 'Edson V.', tipo: 'Entrega', itens: ['2x Esfirra de Carne', '1x Queijo'], valor: 28.50, status: 'Em preparo', timestamp: new Date(new Date().setHours(12, 15)).toISOString() },
-        { id: 5088, cliente: 'Maria S.', tipo: 'Retirada', itens: ['1x Combo Família'], valor: 75.00, status: 'Novo', timestamp: new Date(new Date().setHours(12, 5)).toISOString() },
-        { id: 5087, cliente: 'João P.', tipo: 'Entrega', itens: ['3x Frango c/ Catupiry'], valor: 36.00, status: 'A caminho', timestamp: new Date(new Date().setHours(11, 45)).toISOString() },
-        { id: 5086, cliente: 'Carla L.', tipo: 'Retirada', itens: ['5x Esfirra de Chocolate'], valor: 40.00, status: 'Pronto', timestamp: new Date(new Date().setHours(11, 30)).toISOString() },
-        { id: 5085, cliente: 'Pedro M.', tipo: 'Entrega', itens: ['1x Beirute de Calabresa'], valor: 38.00, status: 'Novo', timestamp: new Date(new Date().setHours(11, 20)).toISOString() },
-        { id: 5084, cliente: 'Beatriz R.', tipo: 'Retirada', itens: ['2x Kibe Frito'], valor: 18.00, status: 'Entregue', timestamp: new Date(new Date().setHours(10, 50)).toISOString() },
-        { id: 5083, cliente: 'Lucas G.', tipo: 'Entrega', itens: ['4x Esfirra de Queijo'], valor: 42.00, status: 'Em preparo', timestamp: new Date(new Date().setHours(10, 30)).toISOString() },
-    ];
+    // --- DASHBOARD ---
+    function renderDashboard() {
+        const viewElement = document.getElementById('view-dashboard');
+        const today = new Date().toISOString().split('T')[0];
+        const ordersToday = state.orders.filter(o => o.date === today);
+        const revenueToday = ordersToday.reduce((sum, order) => sum + order.valor, 0);
+        const revenueThisMonth = 0;
+        const revenueLastMonth = 0;
+        viewElement.innerHTML = `
+            <div class="view-header"><h2>Dashboard</h2><p>Resumo do desempenho da sua loja.</p></div>
+            <div class="dashboard-grid">
+                <div class="stat-card faturamento-hoje"><div class="stat-card-header"><div class="icon"><ion-icon name="cash-outline"></ion-icon></div><h3>Faturamento Hoje</h3></div><div class="stat-card-main-value">${formatCurrency(revenueToday)}</div><div class="stat-card-footer">Atualizado em tempo real</div></div>
+                <div class="stat-card pedidos-hoje"><div class="stat-card-header"><div class="icon"><ion-icon name="receipt-outline"></ion-icon></div><h3>Pedidos Hoje</h3></div><div class="stat-card-main-value">${ordersToday.length}</div><div class="stat-card-footer">Total de pedidos recebidos</div></div>
+                <div class="stat-card mes-atual"><div class="stat-card-header"><div class="icon"><ion-icon name="calendar-outline"></ion-icon></div><h3>Vendas Mês Atual</h3></div><div class="stat-card-main-value">${formatCurrency(revenueThisMonth)}</div><div class="stat-card-footer">Aguardando novos pedidos</div></div>
+                <div class="stat-card mes-anterior"><div class="stat-card-header"><div class="icon"><ion-icon name="archive-outline"></ion-icon></div><h3>Vendas Mês Anterior</h3></div><div class="stat-card-main-value">${formatCurrency(revenueLastMonth)}</div><div class="stat-card-footer">Dados do mês anterior</div></div>
+            </div>`;
+    }
 
-    const navLinks = document.querySelectorAll('.nav-link');
-    const adminViews = document.querySelectorAll('.admin-view');
-    const pageTitle = document.getElementById('page-title');
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    // --- PEDIDOS ---
+    function renderPedidosView() { 
+        const viewElement = document.getElementById('view-pedidos'); 
+        const statuses = ['Novo', 'Em Preparo', 'Prontos', 'Em Entrega', 'Finalizado']; 
+        const statusConfig = { 
+            'Novo': { icon: 'sparkles-outline', title: 'Novos Pedidos' },
+            'Em Preparo': { icon: 'flame-outline', title: 'Em Preparo' }, 
+            'Prontos': { icon: 'checkmark-done-outline', title: 'Prontos (Retirada)' }, 
+            'Em Entrega': { icon: 'bicycle-outline', title: 'Em Entrega' }, 
+            'Finalizado': { icon: 'archive-outline', title: 'Finalizados' } 
+        }; 
+        viewElement.innerHTML = `<div class="pedidos-layout"><div class="pedidos-lista-vertical">${statuses.map(status => renderOrderStatusSection(status, statusConfig[status])).join('')}</div><div class="pedidos-detalhes-coluna" id="pedidos-detalhes-coluna"></div></div>`; 
+        renderOrderDetails(state.selectedOrderId); 
+    }
+
+    function renderOrderStatusSection(status, config) { 
+        const ordersInSection = state.orders.filter(order => order.status === status); 
+        const isCollapsed = state.collapsedSections.has(status); 
+        return `<div class="status-section ${isCollapsed ? 'collapsed' : ''}" data-status="${status}"><div class="section-header"><ion-icon name="${config.icon}"></ion-icon><h3>${config.title}</h3><span class="count">${ordersInSection.length}</span><ion-icon name="chevron-down-outline" class="toggle-arrow"></ion-icon></div><div class="section-body">${ordersInSection.length > 0 ? ordersInSection.map(renderOrderCard).join('') : '<p style="color: var(--text-secondary); text-align: center; padding: 16px 0;">Nenhum pedido nesta etapa.</p>'}</div></div>`; 
+    }
+
+    function renderOrderCard(order) { 
+        let actionButtonHTML = ''; 
+        if (order.status === 'Novo') {
+             actionButtonHTML = `<button class="btn btn-primary action-button" data-order-id="${order.id}" data-next-status="Em Preparo"><ion-icon name="checkmark-outline"></ion-icon>Aceitar Pedido</button>`;
+        } else if (order.status === 'Em Preparo') { 
+            actionButtonHTML = order.tipo === 'Entrega' ? `<button class="btn action-button dispatch" data-order-id="${order.id}" data-next-status="Em Entrega"><ion-icon name="bicycle-outline"></ion-icon>Despachar Pedido</button>` : `<button class="btn action-button ready" data-order-id="${order.id}" data-next-status="Prontos"><ion-icon name="checkmark-outline"></ion-icon>Pedido Pronto</button>`; 
+        } else if (order.status === 'Prontos' || order.status === 'Em Entrega') { 
+            actionButtonHTML = `<button class="btn action-button complete" data-order-id="${order.id}" data-next-status="Finalizado"><ion-icon name="archive-outline"></ion-icon>Finalizar</button>`; 
+        } 
+        let addressHTML = ''; 
+        if (order.tipo === 'Entrega') { 
+            const { rua, numero, bairro, complemento } = order.entrega; 
+            addressHTML = `<div class="order-card-address"><p><ion-icon name="location-outline"></ion-icon> <b>Rua:</b> ${rua}, ${numero}</p><p><b>Bairro:</b> ${bairro}</p>${complemento ? `<p><b>Comp:</b> ${complemento}</p>` : ''}</div>`; 
+        } 
+        const isNew = order.status === 'Novo';
+        return `<div class="order-card ${state.selectedOrderId == order.id ? 'active' : ''} ${isNew ? 'new-order' : ''}" data-order-id="${order.id}"><div class="order-card-header"><b>#${order.id}</b><span>${formatCurrency(order.valor)}</span></div><p class="order-card-customer">${order.cliente.nome}</p><div class="order-card-info"><span><ion-icon name="time-outline"></ion-icon>${order.horario}</span><span><ion-icon name="${order.tipo === 'Entrega' ? 'bicycle-outline' : 'walk-outline'}"></ion-icon>${order.tipo}</span></div>${addressHTML}<div class="order-card-footer">${actionButtonHTML}</div></div>`; 
+    }
     
-    const dashboardDate = document.getElementById('dashboard-date');
-    const statNovosPedidos = document.getElementById('stat-novos-pedidos');
-    const statFaturamento = document.getElementById('stat-faturamento');
-    const statPedidosPendentes = document.getElementById('stat-pedidos-pendentes');
-    const chartContainer = document.getElementById('chart-container');
-    const activityFeed = document.getElementById('activity-feed');
-    
-    const kanbanBoard = document.querySelector('.kanban-board');
-    const columnNovo = document.getElementById('column-novo');
-    const columnPreparo = document.getElementById('column-preparo');
-    const columnCaminho = document.getElementById('column-caminho');
-    const columnPronto = document.getElementById('column-pronto');
-    const countNovo = document.getElementById('count-novo');
-    const countPreparo = document.getElementById('count-preparo');
-    const countCaminho = document.getElementById('count-caminho');
-    const countPronto = document.getElementById('count-pronto');
-    
-    const cardapioGrid = document.getElementById('cardapio-grid');
-    const cardapioFilterBar = document.getElementById('cardapio-filter-bar');
-    const btnAddProduto = document.getElementById('btn-add-produto');
-    const produtoModalOverlay = document.getElementById('produto-modal-overlay');
-    const produtoForm = document.getElementById('produto-form');
-    const modalTitle = document.getElementById('modal-title');
-    const btnCloseModal = document.getElementById('btn-close-modal');
-    const btnCancelarModal = document.getElementById('btn-cancelar-modal');
-
-    const switchView = (viewName) => {
-        pageTitle.textContent = viewName.charAt(0).toUpperCase() + viewName.slice(1);
-        navLinks.forEach(link => link.classList.toggle('active', link.dataset.view === viewName));
-        adminViews.forEach(view => view.classList.toggle('active', view.id === `view-${viewName}`));
-        sidebar.classList.remove('active');
-        sidebarOverlay.classList.remove('active');
-    };
-
-    const createPedidoCardHTML = (pedido) => {
-        let actionsHtml = '';
-        const { status, tipo, id } = pedido;
-
-        if (status === 'Novo') {
-            actionsHtml = `<button class="action-button" data-id="${id}" data-action="preparar"><ion-icon name="restaurant-outline"></ion-icon> Iniciar Preparo</button>`;
-        } else if (status === 'Em preparo') {
-            if (tipo === 'Entrega') {
-                actionsHtml = `<button class="action-button" data-id="${id}" data-action="despachar"><ion-icon name="bicycle-outline"></ion-icon> Despachar Pedido</button>`;
-            } else {
-                actionsHtml = `<button class="action-button" data-id="${id}" data-action="pronto-retirada"><ion-icon name="checkmark-done-outline"></ion-icon> Pronto p/ Retirada</button>`;
-            }
-        } else if (status === 'A caminho' || status === 'Pronto') {
-             actionsHtml = `<button class="action-button secondary" data-id="${id}" data-action="concluir"><ion-icon name="checkmark-outline"></ion-icon> Concluir</button>`;
-        } else if (status === 'Entregue') {
-            actionsHtml = `<button class="action-button" disabled>Concluído</button>`;
-        }
-
-        return `
-            <div class="pedido-card">
-                <div class="pedido-header">
-                    <span class="pedido-cliente">${pedido.cliente}</span>
-                    <span class="status status-${status.toLowerCase().replace(/ /g, '-')}">${status}</span>
-                </div>
-                <div class="pedido-body">
-                    <p><strong>ID:</strong> #${id} | <strong>Tipo:</strong> ${tipo}</p>
-                    <p><strong>Itens:</strong> ${pedido.itens.join(', ')}</p>
-                </div>
-                <div class="pedido-actions">
-                    ${actionsHtml || ''}
-                </div>
-            </div>
-        `;
-    };
-
-    const renderPedidos = () => {
-        const pedidosNovos = mockPedidos.filter(p => p.status === 'Novo');
-        const pedidosEmPreparo = mockPedidos.filter(p => p.status === 'Em preparo');
-        const pedidosACaminho = mockPedidos.filter(p => p.status === 'A caminho');
-        const pedidosProntos = mockPedidos.filter(p => p.status === 'Pronto');
-
-        columnNovo.innerHTML = '';
-        columnPreparo.innerHTML = '';
-        columnCaminho.innerHTML = '';
-        columnPronto.innerHTML = '';
-
-        countNovo.textContent = pedidosNovos.length;
-        countPreparo.textContent = pedidosEmPreparo.length;
-        countCaminho.textContent = pedidosACaminho.length;
-        countPronto.textContent = pedidosProntos.length;
-
-        pedidosNovos.forEach(p => columnNovo.innerHTML += createPedidoCardHTML(p));
-        pedidosEmPreparo.forEach(p => columnPreparo.innerHTML += createPedidoCardHTML(p));
-        pedidosACaminho.forEach(p => columnCaminho.innerHTML += createPedidoCardHTML(p));
-        pedidosProntos.forEach(p => columnPronto.innerHTML += createPedidoCardHTML(p));
-    };
-    
-    const renderCardapio = (filtroCategoria = 'Todos') => {
-        cardapioGrid.innerHTML = '';
-        const produtosFiltrados = (filtroCategoria === 'Todos') 
-            ? mockProdutos 
-            : mockProdutos.filter(p => p.categoria === filtroCategoria);
-
-        produtosFiltrados.forEach(p => {
-            const card = `
-                <div class="product-card-admin">
-                    <img src="${p.imagem}" alt="${p.nome}">
-                    <div class="product-info">
-                        <h4>${p.nome}</h4>
-                        <p class="categoria">${p.categoria}</p>
-                        <p class="preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</p>
-                    </div>
-                    <div class="product-controls">
-                        <div class="stock-toggle">
-                            <span>Indisponível</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="stock-checkbox" data-id="${p.id}" ${p.disponivel ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                            <span>Disponível</span>
-                        </div>
-                        <div class="product-actions-admin">
-                            <button class="btn-icon btn-edit" data-id="${p.id}"><ion-icon name="pencil-outline"></ion-icon></button>
-                            <button class="btn-icon btn-delete delete" data-id="${p.id}"><ion-icon name="trash-outline"></ion-icon></button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            cardapioGrid.innerHTML += card;
-        });
-    };
-
-    const popularFiltrosECategorias = () => {
-        const categorias = ['Todos', ...new Set(mockProdutos.map(p => p.categoria))];
-        cardapioFilterBar.innerHTML = '';
-        categorias.forEach(cat => {
-            const button = document.createElement('button');
-            button.className = 'botao-filtro';
-            button.textContent = cat;
-            button.dataset.categoria = cat;
-            if (cat === 'Todos') button.classList.add('active');
-            cardapioFilterBar.appendChild(button);
-        });
-
-        const categoriaSelect = document.getElementById('produto-categoria');
-        categoriaSelect.innerHTML = '';
-        categorias.slice(1).forEach(cat => {
-            categoriaSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
-        });
-    };
-
-    const abrirModalProduto = (produto = null) => {
-        produtoForm.reset();
-        if (produto) {
-            modalTitle.textContent = 'Editar Produto';
-            document.getElementById('produto-id').value = produto.id;
-            document.getElementById('produto-nome').value = produto.nome;
-            document.getElementById('produto-categoria').value = produto.categoria;
-            document.getElementById('produto-preco').value = produto.preco;
-            document.getElementById('produto-descricao-curta').value = produto.desc;
-            document.getElementById('produto-detalhes').value = produto.detalhes;
-            document.getElementById('produto-imagem').value = produto.imagem;
-        } else {
-            modalTitle.textContent = 'Adicionar Novo Produto';
-            document.getElementById('produto-id').value = '';
-        }
-        produtoModalOverlay.classList.add('active');
-    };
-
-    const fecharModalProduto = () => {
-        produtoModalOverlay.classList.remove('active');
-    };
-
-    const salvarProduto = (e) => {
-        e.preventDefault();
-        const id = document.getElementById('produto-id').value;
-        const produtoData = {
-            nome: document.getElementById('produto-nome').value,
-            categoria: document.getElementById('produto-categoria').value,
-            preco: parseFloat(document.getElementById('produto-preco').value),
-            desc: document.getElementById('produto-descricao-curta').value,
-            detalhes: document.getElementById('produto-detalhes').value,
-            imagem: document.getElementById('produto-imagem').value || '/assets/placeholder.png',
-        };
-
-        if (id) {
-            const index = mockProdutos.findIndex(p => p.id === parseInt(id));
-            mockProdutos[index] = { ...mockProdutos[index], ...produtoData };
-        } else {
-            const novoProduto = { id: Date.now(), disponivel: true, ...produtoData };
-            mockProdutos.push(novoProduto);
-        }
+    function renderOrderDetails(orderId) { 
+        const detailsColumn = document.getElementById('pedidos-detalhes-coluna'); 
+        const order = state.orders.find(o => o.id == orderId); 
+        if (!order) { 
+            detailsColumn.innerHTML = `<div class="placeholder-detalhes"><ion-icon name="receipt-outline"></ion-icon><h3>Selecione um Pedido</h3><p>Clique em um card para ver os detalhes.</p></div>`; 
+            return; 
+        } 
+        const address = order.entrega.rua === 'Retirar no local' ? '<p><b>Endereço:</b> Retirar no local</p>' : `<p><b>Endereço:</b> ${order.entrega.rua}, ${order.entrega.numero}</p><p><b>Bairro:</b> ${order.entrega.bairro}</p>${order.entrega.complemento ? `<p><b>Comp:</b> ${order.entrega.complemento}</p>` : ''}`; 
         
-        salvarProdutosNoLocalStorage(mockProdutos);
-        fecharModalProduto();
-        renderCardapio();
-        popularFiltrosECategorias();
-    };
+        detailsColumn.innerHTML = `
+            <div class="details-content">
+                <div class="details-header"><h3>Pedido #${order.id}</h3><span class="status-tag ${getStatusClass(order.status)}">${order.status}</span></div>
+                <div class="details-card-header"><ion-icon name="person-outline"></ion-icon>Cliente</div>
+                <div class="details-card-body"><p><b>Nome:</b> ${order.cliente.nome}</p></div>
+                <div class="details-card-header"><ion-icon name="location-outline"></ion-icon>Entrega</div>
+                <div class="details-card-body"><p><b>Tipo:</b> ${order.tipo}</p>${address}</div>
+                <div class="details-card-header"><ion-icon name="fast-food-outline"></ion-icon>Itens</div>
+                <div class="details-card-body">
+                    ${(order.itens || []).map(item => `<div class="order-item-row"><span>${item.quantity || 1}x ${item.name || 'Item não encontrado'}</span><span>${formatCurrency(item.total || 0)}</span></div>`).join('')}
+                    <div class="details-total-row"><span>Total</span><span>${formatCurrency(order.valor)}</span></div>
+                </div>
+                <div class="details-card-header"><ion-icon name="wallet-outline"></ion-icon>Pagamento</div>
+                <div class="details-card-body"><p><b>Método:</b> ${order.pagamento.metodo || 'Não informado'}</p>${order.pagamento.detalhes ? `<p><b>Detalhes:</b> ${order.pagamento.detalhes}</p>` : ''}</div>
+            </div>
+            <div class="details-footer"><button class="btn btn-primary print-button"><ion-icon name="print-outline"></ion-icon>Imprimir</button></div>`; 
+    }
 
-    const renderDashboard = () => {
-        const hoje = new Date();
-        dashboardDate.textContent = hoje.toLocaleDateString('pt-BR', { dateStyle: 'full' });
-        const hora = hoje.getHours();
-        document.querySelector('.dashboard-header h2').textContent = 
-            hora < 12 ? 'Bom dia, Admin!' : hora < 18 ? 'Boa tarde, Admin!' : 'Boa noite, Admin!';
+    // --- CARDÁPIO ---
+    function renderCardapioView() {
+        const viewElement = document.getElementById('view-cardapio');
+        const categories = Object.keys(state.menu);
+        viewElement.innerHTML = `<div class="view-header"><div><h2>Cardápio</h2><p>Gerencie os produtos e categorias.</p></div><button class="btn btn-primary" id="add-new-product-btn"><ion-icon name="add-outline"></ion-icon>Adicionar Produto</button></div><div class="cardapio-grid">${categories.length > 0 ? categories.map(category => `<div class="category-section"><h3 class="category-header">${category}</h3><div class="product-grid">${state.menu[category].map(createProductCardHTML).join('')}</div></div>`).join('') : '<p>Nenhum item no cardápio.</p>'}</div>`;
+    }
+    
+    function createProductCardHTML(product) {
+        return `<div class="product-card" data-product-id="${product.id}"><div class="product-options"><button class="options-button"><ion-icon name="ellipsis-vertical"></ion-icon></button><div class="options-menu"><button class="edit-product-btn" data-product-id="${product.id}">Editar</button><button class="delete-product-btn delete-btn" data-product-id="${product.id}">Excluir</button></div></div><img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/300x160.png?text=Sem+Imagem';"><div class="product-info"><h4>${product.name}</h4><p class="price">${formatCurrency(product.price)}</p><p class="description">${product.description || 'Sem descrição.'}</p></div><div class="product-actions"><div class="product-availability-switch"><span>Disponível</span><label class="switch"><input type="checkbox" class="availability-toggle" data-product-id="${product.id}" ${product.available ? 'checked' : ''}><span class="slider"></span></label></div></div></div>`;
+    }
 
-        statNovosPedidos.textContent = mockPedidos.filter(p => p.status === 'Novo').length;
-        statPedidosPendentes.textContent = mockPedidos.filter(p => ['Em preparo', 'Pronto', 'A caminho'].includes(p.status)).length;
-        const faturamento = mockPedidos.filter(p => p.status === 'Entregue').reduce((acc, p) => acc + p.valor, 0);
-        statFaturamento.textContent = `R$ ${faturamento.toFixed(2).replace('.', ',')}`;
-
-        const pedidosPorHora = mockPedidos.reduce((acc, p) => {
-            const horaPedido = new Date(p.timestamp).getHours();
-            acc[horaPedido] = (acc[horaPedido] || 0) + 1;
+    // --- RELATÓRIOS ---
+    function renderRelatoriosView() {
+        const viewElement = document.getElementById('view-relatorios');
+        const salesByProduct = state.orders.flatMap(o => o.itens).reduce((acc, item) => {
+            const itemName = item.name || item.nome || 'Item desconhecido';
+            if (!acc[itemName]) { acc[itemName] = { quantity: 0, total: 0 }; }
+            acc[itemName].quantity += (item.quantity || 1);
+            acc[itemName].total += (item.total || item.valor || 0);
             return acc;
         }, {});
+        viewElement.innerHTML = `<div class="view-header"><h2>Relatórios</h2><p>Analise o desempenho de suas vendas.</p></div><div class="report-container"><div class="report-filters"><div class="form-group"><label for="report-type">Tipo de Relatório</label><select id="report-type"><option>Vendas por Produto</option></select></div><div class="form-group"><label for="date-range">Período</label><input type="text" id="date-range" value="Últimos 30 dias"></div><button class="btn btn-primary">Gerar</button></div><div class="report-table-container"><table class="report-table"><thead><tr><th>Produto</th><th>Itens Vendidos</th><th>Receita Bruta</th></tr></thead><tbody>${Object.entries(salesByProduct).map(([name, data]) => `<tr><td>${name}</td><td>${data.quantity}</td><td>${formatCurrency(data.total)}</td></tr>`).join('')}</tbody></table></div></div>`;
+    }
+    
+    // --- CONFIGURAÇÕES ---
+    function renderConfiguracoesView() {
+        const viewElement = document.getElementById('view-configuracoes');
+        viewElement.innerHTML = `<div class="view-header"><h2>Configurações</h2><p>Ajustes gerais do painel e da loja.</p></div><div class="settings-grid"><div class="settings-card"><h3>Aparência</h3><div class="setting-item"><label for="theme-toggle">Modo Escuro</label><label class="switch"><input type="checkbox" id="theme-toggle" ${state.theme === 'dark' ? 'checked' : ''}><span class="slider"></span></label></div></div><div class="settings-card"><h3>Loja (Em breve)</h3><p>Aqui você poderá editar informações como nome, endereço e horário de funcionamento.</p></div></div>`;
+    }
 
-        chartContainer.innerHTML = '';
-        const maxPedidos = Math.max(...Object.values(pedidosPorHora), 1);
-        for (let i = 8; i <= 22; i++) {
-            const count = pedidosPorHora[i] || 0;
-            const height = (count / maxPedidos) * 100;
-            const barHTML = `
-                <div class="chart-bar">
-                    <div class="bar" style="--bar-height: ${height}%;"></div>
-                    <span class="label">${i}h</span>
-                </div>
-            `;
-            chartContainer.innerHTML += barHTML;
+    // --- MODAL LOGIC ---
+    function openProductModal(productData = null) {
+        const modal = document.getElementById('product-modal-overlay');
+        const title = document.getElementById('modal-title');
+        const form = document.getElementById('product-form');
+        const imagePreview = document.getElementById('image-preview');
+        form.reset();
+        document.getElementById('product-id').value = '';
+        document.getElementById('product-image-base64').value = '';
+        imagePreview.src = 'https://via.placeholder.com/150x150.png?text=Sem+Imagem';
+        if (productData) {
+            title.textContent = "Editar Produto";
+            document.getElementById('product-id').value = productData.id;
+            document.getElementById('product-name').value = productData.name;
+            document.getElementById('product-category').value = findCategoryByProductId(productData.id);
+            document.getElementById('product-price').value = productData.price;
+            document.getElementById('product-description').value = productData.description;
+            if (productData.image) {
+                imagePreview.src = productData.image;
+                if (!productData.image.startsWith('data:image')) {
+                    document.getElementById('product-image-url').value = productData.image;
+                }
+            }
+        } else {
+            title.textContent = "Adicionar Novo Produto";
         }
+        modal.classList.add('visible');
+    }
 
-        activityFeed.innerHTML = '';
-        mockPedidos.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5).forEach(p => {
-            const icon = p.tipo === 'Entrega' ? 'bicycle-outline' : 'walk-outline';
-            const itemHTML = `
-                <div class="activity-item">
-                    <ion-icon name="${icon}" class="icon"></ion-icon>
-                    <div class="details">
-                        <p><strong>${p.cliente}</strong> fez um pedido (#${p.id}).</p>
-                        <p class="time">${new Date(p.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit'})}</p>
-                    </div>
-                </div>
-            `;
-            activityFeed.innerHTML += itemHTML;
-        });
-    };
-
-    const atualizarStatusPedido = (id, acao) => {
-        const pedido = mockPedidos.find(p => p.id === parseInt(id));
-        if (!pedido) return;
-        switch (acao) {
-            case 'preparar': pedido.status = 'Em preparo'; break;
-            case 'despachar': pedido.status = 'A caminho'; break;
-            case 'pronto-retirada': pedido.status = 'Pronto'; break;
-            case 'concluir': pedido.status = 'Entregue'; break;
+    function saveProduct(e) {
+        e.preventDefault();
+        const id = document.getElementById('product-id').value;
+        const imageBase64 = document.getElementById('product-image-base64').value;
+        const imageUrl = document.getElementById('product-image-url').value;
+        let finalImage = imageUrl;
+        if (imageBase64) {
+            finalImage = imageBase64;
         }
-        renderPedidos();
-        renderDashboard();
-    };
-
-    // Event Listeners
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchView(link.dataset.view);
-        });
-    });
-
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.add('active');
-        sidebarOverlay.classList.add('active');
-    });
-
-    sidebarOverlay.addEventListener('click', () => {
-        sidebar.classList.remove('active');
-        sidebarOverlay.classList.remove('active');
-    });
-
-    kanbanBoard.addEventListener('click', (e) => {
-        const button = e.target.closest('.action-button');
-        if (button) {
-            const { id, action } = button.dataset;
-            atualizarStatusPedido(id, action);
+        const productData = { name: document.getElementById('product-name').value, price: parseFloat(document.getElementById('product-price').value), description: document.getElementById('product-description').value, image: finalImage, available: true };
+        const category = document.getElementById('product-category').value;
+        if (id) {
+            productData.id = parseInt(id);
+            if (!finalImage && !imageUrl) { const oldProduct = Object.values(state.menu).flat().find(p => p.id == id); productData.image = oldProduct.image; }
+            const oldCategory = findCategoryByProductId(id);
+            if(oldCategory) { state.menu[oldCategory] = state.menu[oldCategory].filter(p => p.id != id); if (state.menu[oldCategory].length === 0) delete state.menu[oldCategory]; }
+            if (!state.menu[category]) state.menu[category] = [];
+            state.menu[category].push(productData);
+            showNotification('Produto atualizado!', 'success');
+        } else {
+            productData.id = Date.now();
+            if (!state.menu[category]) state.menu[category] = [];
+            state.menu[category].push(productData);
+            showNotification('Produto adicionado!', 'success');
         }
-        const header = e.target.closest('.kanban-header');
-        if (header) {
-            header.parentElement.classList.toggle('collapsed');
-        }
-    });
+        saveData();
+        closeProductModal();
+        renderCardapioView();
+    }
+    
+    function closeProductModal() { document.getElementById('product-modal-overlay').classList.remove('visible'); }
+    function openConfirmModal(productId) { const modal = document.getElementById('confirm-modal-overlay'); modal.dataset.productIdToDelete = productId; modal.classList.add('visible'); }
+    function closeConfirmModal() { document.getElementById('confirm-modal-overlay').classList.remove('visible'); }
+    function deleteProduct(productId) { const category = findCategoryByProductId(productId); if(category) { state.menu[category] = state.menu[category].filter(p => p.id != productId); if(state.menu[category].length === 0) delete state.menu[category]; saveData(); showNotification('Produto excluído!', 'success'); renderCardapioView(); } closeConfirmModal(); }
 
-    cardapioFilterBar.addEventListener('click', (e) => {
-        if (e.target.classList.contains('botao-filtro')) {
-            cardapioFilterBar.querySelector('.active').classList.remove('active');
-            e.target.classList.add('active');
-            renderCardapio(e.target.dataset.categoria);
+    // --- LÓGICA DE IMPRESSÃO ---
+    function directPrint(orderId) {
+        const order = state.orders.find(o => o.id == orderId);
+        if (!order) {
+            showNotification("Pedido não encontrado para impressão.", "error");
+            return;
         }
-    });
+        showNotification("Preparando para imprimir...", "success");
+        const now = new Date();
+        const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
+        
+        const itemsHTML = (order.itens || []).map(item => {
+            const itemName = item.name || item.nome || 'Item desconhecido';
+            const itemQty = item.quantity || 1;
+            const itemTotal = item.total || item.valor || 0;
+            return `<tr><td>${itemQty}x</td><td>${itemName}</td><td>${formatCurrency(itemTotal)}</td></tr>`;
+        }).join('');
+        
+        const receiptStyle = `<style>body{font-family:'Courier New',monospace;font-size:12px;line-height:1.6;color:#000;margin:0;padding:0}.receipt-container{width:302px;padding:15px}.receipt-header{text-align:center;margin-bottom:15px}.receipt-header img{max-width:80px;margin-bottom:10px}.receipt-header h3{font-size:16px;margin:0}.receipt-section{border-top:1px dashed #000;padding-top:10px;margin-top:10px}.receipt-section h4{text-align:center;font-size:14px;margin:0 0 10px 0}.receipt-section p{margin:0 0 3px 0}.receipt-items-table{width:100%;margin-top:10px}.receipt-items-table th,.receipt-items-table td{text-align:left;padding:3px 0}.receipt-items-table th:last-child,.receipt-items-table td:last-child{text-align:right}.receipt-items-table thead{border-bottom:1px dashed #000}.receipt-total{text-align:right;margin-top:15px}.receipt-total p{font-size:14px;font-weight:bold;margin:0}.receipt-footer{text-align:center;margin-top:20px;font-size:11px}@page{margin:5mm}</style>`;
+        const receiptHTML = `<div class="receipt-container"><div class="receipt-header"><img src="assets/zapesfiiras.png" alt="Logo"><h3>Zap Esfirras</h3><p>Rua Exemplo, 123 - Centro</p><p>Tel: (19) 99999-8888</p><p>--------------------------------</p><p><strong>PEDIDO #${order.id}</strong></p><p>${formattedDate}</p></div><div class="receipt-section"><h4>Cliente</h4><p><strong>Nome:</strong> ${order.cliente.nome}</p>${order.cliente.telefone ? `<p><strong>Tel:</strong> ${order.cliente.telefone}</p>` : ''}</div><div class="receipt-section"><h4>Entrega / Retirada</h4><p><strong>Tipo:</strong> ${order.tipo}</p>${order.tipo === 'Entrega' ? `<p><strong>End:</strong> ${order.entrega.rua}, ${order.entrega.numero}</p><p><strong>Bairro:</strong> ${order.entrega.bairro}</p>${order.entrega.complemento ? `<p><strong>Comp:</strong> ${order.entrega.complemento}</p>` : ''}` : ''}</div><div class="receipt-section"><h4>Itens do Pedido</h4><table class="receipt-items-table"><thead><tr><th>Qtd</th><th>Item</th><th>Total</th></tr></thead><tbody>${itemsHTML}</tbody></table></div><div class="receipt-section receipt-total"><p>SUBTOTAL: ${formatCurrency(order.valor)}</p><p><strong>TOTAL: ${formatCurrency(order.valor)}</strong></p></div><div class="receipt-section"><h4>Pagamento</h4><p><strong>Método:</strong> ${order.pagamento.metodo}</p>${order.pagamento.detalhes ? `<p><strong>Obs:</strong> ${order.pagamento.detalhes}</p>` : ''}</div><div class="receipt-footer"><p>Obrigado pela preferência!</p></div></div>`;
 
-    btnAddProduto.addEventListener('click', () => abrirModalProduto());
+        const printFrame = document.createElement('iframe');
+        printFrame.style.display = 'none';
+        document.body.appendChild(printFrame);
+        printFrame.contentDocument.write(`<html><head>${receiptStyle}</head><body>${receiptHTML}</body></html>`);
+        printFrame.contentDocument.close();
+        printFrame.onload = function() {
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+            document.body.removeChild(printFrame);
+        };
+    }
+    
+    // --- FUNÇÕES UTILITÁRIAS ---
+    const formatCurrency = (value) => value != null ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+    const findCategoryByProductId = (productId) => Object.keys(state.menu).find(cat => state.menu[cat].some(p => p.id == productId));
+    function toggleProductAvailability(productId, isAvailable) { const product = Object.values(state.menu).flat().find(p => p.id == productId); if(product) { product.available = isAvailable; saveData(); showNotification(`Disponibilidade atualizada.`, 'success'); } }
+    function showNotification(message, type = "success") { const area = document.getElementById('notification-area'), notification = document.createElement('div'); notification.className = `notification-message ${type}`; notification.textContent = message; area.appendChild(notification); setTimeout(() => notification.classList.add('show'), 10); setTimeout(() => { notification.classList.remove('show'); notification.addEventListener('transitionend', () => notification.remove()); }, 3000); }
+    const getStatusClass = (status) => status.toLowerCase().replace(/\s+/g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    function updateOrderStatus(orderId, newStatus) {
+        const order = state.orders.find(o => o.id == orderId);
+        if (order) {
+            const oldStatus = order.status;
+            order.status = newStatus;
+            saveData();
+            renderPedidosView();
 
-    cardapioGrid.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.closest('.btn-edit')) {
-            const id = parseInt(target.closest('.btn-edit').dataset.id);
-            const produto = mockProdutos.find(p => p.id === id);
-            abrirModalProduto(produto);
-        }
-        if (target.closest('.btn-delete')) {
-            const id = parseInt(target.closest('.btn-delete').dataset.id);
-            if (confirm('Tem certeza que deseja excluir este produto?')) {
-                mockProdutos = mockProdutos.filter(p => p.id !== id);
-                salvarProdutosNoLocalStorage(mockProdutos);
-                renderCardapio();
+            if (oldStatus === 'Novo' && newStatus === 'Em Preparo') {
+                directPrint(orderId);
             }
         }
-        if (target.classList.contains('stock-checkbox')) {
-            const id = parseInt(target.dataset.id);
-            const produto = mockProdutos.find(p => p.id === id);
-            produto.disponivel = target.checked;
-            salvarProdutosNoLocalStorage(mockProdutos);
+    }
+    
+    // --- SIMULADOR DE NOVOS PEDIDOS ---
+    function simulateNewOrder() {
+        const newId = (state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) : 4860) + 1;
+        const newOrder = { id: newId, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Simulado", telefone: "19 00000-0000" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 42.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Fictícia", numero: "S/N", bairro: "Bairro Demo", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Queijo", quantity: 5, total: 25.00 }, {name: "Guaraná Lata", quantity: 2, total: 17.50}] };
+        state.orders.unshift(newOrder);
+        saveData();
+        showNotification(`Novo pedido #${newId} recebido!`, 'success');
+        notificationSound.play().catch(e => console.log("Autoplay de áudio bloqueado pelo navegador."));
+        if(state.currentView === 'pedidos' || state.currentView === 'dashboard') {
+             renderView(state.currentView);
+        }
+    }
+    setInterval(simulateNewOrder, 30000);
+
+    // --- EVENT LISTENERS ---
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.print-button')) { directPrint(state.selectedOrderId); }
+        if (e.target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); }
+        const navLink = e.target.closest('.nav-link');
+        if (navLink && !navLink.classList.contains('active')) { e.preventDefault(); document.querySelector('.nav-link.active')?.classList.remove('active'); navLink.classList.add('active'); renderView(navLink.dataset.view); return; }
+        if (state.currentView === 'pedidos') { const card = e.target.closest('.order-card'); const button = e.target.closest('.action-button'); const sectionHeader = e.target.closest('.section-header'); if (button) { e.stopPropagation(); updateOrderStatus(button.dataset.orderId, button.dataset.nextStatus); } else if (card) { state.selectedOrderId = card.dataset.orderId; renderPedidosView(); } else if (sectionHeader) { const status = sectionHeader.parentElement.dataset.status; if (state.collapsedSections.has(status)) { state.collapsedSections.delete(status); } else { state.collapsedSections.add(status); } renderPedidosView(); } }
+        if (state.currentView === 'cardapio') { const optionsButton = e.target.closest('.options-button'); if (optionsButton) { const menu = optionsButton.nextElementSibling; const isVisible = menu.style.display === 'block'; document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); menu.style.display = isVisible ? 'none' : 'block'; return; } if (!e.target.closest('.product-options')) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); if (e.target.closest('#add-new-product-btn')) openProductModal(); if (e.target.classList.contains('edit-product-btn')) { const product = Object.values(state.menu).flat().find(p => p.id == e.target.dataset.productId); if (product) openProductModal(product); } if (e.target.classList.contains('delete-product-btn')) openConfirmModal(e.target.dataset.productId); }
+        if (e.target.closest('#cancel-modal-button') || e.target.closest('#close-modal-button')) closeProductModal();
+        if (e.target.closest('#cancel-confirm-button')) closeConfirmModal();
+        if (e.target.closest('#confirm-delete-button')) deleteProduct(document.getElementById('confirm-modal-overlay').dataset.productIdToDelete);
+    });
+    
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('availability-toggle')) { toggleProductAvailability(e.target.dataset.productId, e.target.checked); }
+        if (e.target.id === 'theme-toggle') { applyTheme(e.target.checked ? 'dark' : 'light'); }
+        if (e.target.id === 'product-image-file' && e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('image-preview').src = event.target.result;
+                document.getElementById('product-image-base64').value = event.target.result;
+                document.getElementById('product-image-url').value = '';
+            }
+            reader.readAsDataURL(e.target.files[0]);
         }
     });
 
-    produtoForm.addEventListener('submit', salvarProduto);
-    btnCancelarModal.addEventListener('click', fecharModalProduto);
-    btnCloseModal.addEventListener('click', fecharModalProduto);
-    produtoModalOverlay.addEventListener('click', (e) => {
-        if (e.target === produtoModalOverlay) fecharModalProduto();
+    document.addEventListener('input', (e) => {
+        if (e.target.id === 'product-image-url') {
+            document.getElementById('image-preview').src = e.target.value || 'https://via.placeholder.com/150x150.png?text=...';
+            document.getElementById('product-image-base64').value = '';
+        }
     });
+    
+    document.addEventListener('submit', (e) => { if(e.target.id === 'product-form') saveProduct(e); });
 
-    const init = () => {
-        renderDashboard();
-        renderPedidos();
-        renderCardapio();
-        popularFiltrosECategorias();
-        switchView('dashboard');
-    };
+    // --- INITIALIZATION ---
+    function init() {
+        loadData();
+        loadTheme();
+        renderView('dashboard');
+    }
 
     init();
 });

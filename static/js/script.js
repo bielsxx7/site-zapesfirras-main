@@ -417,20 +417,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 
     window.addEventListener('resize', ajustarPaddingCorpo);
-    window.addEventListener('scroll', () => {
-        const nav = document.querySelector('.barra-navegacao');
-        const topBar = document.querySelector('.barra-superior-info');
-        if (!nav || !topBar) return;
-        
-        if (window.scrollY > 10) {
-            nav.style.top = '0';
-            topBar.style.display = 'none';
-        } else {
-            nav.style.top = '35px';
-            topBar.style.display = 'block';
-        }
-    });
-
+window.addEventListener('scroll', () => {
+    const nav = document.querySelector('.barra-navegacao');
+    const topBar = document.querySelector('.barra-superior-info');
+    const espacador = document.querySelector('.espacador-header');
+    if (!nav || !topBar || !espacador) return;
+    
+    // Altura combinada das duas barras
+    const alturaTotal = topBar.offsetHeight + nav.offsetHeight; 
+    
+    if (window.scrollY > topBar.offsetHeight) {
+        nav.style.top = '0';
+        nav.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
+        topBar.style.display = 'none';
+    } else {
+        nav.style.top = '35px';
+        nav.style.boxShadow = 'none';
+        topBar.style.display = 'block';
+    }
+});
     todasEntradasPesquisa.forEach(input => {
         input.addEventListener('input', () => {
             const termo = input.value.toLowerCase().trim();
