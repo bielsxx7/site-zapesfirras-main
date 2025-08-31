@@ -5,56 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Zap Esfirras</title>
     <link rel="stylesheet" href="static/css/style.css">
-</head>
-<body>
-
-    <main class="auth-container">
-        <section class="auth-visual-side">
-            <div class="auth-visual-content">
-                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="auth-logo">
-                <h1>O sabor que conecta você.</h1>
-                <p>Acesse sua conta para ter acesso a um universo de sabores e promoções exclusivas.</p>
-            </div>
-        </section>
-
-        <section class="auth-form-side">
-            <div class="auth-form-wrapper">
-                <a href="index.html" class="auth-back-link">
-                    <ion-icon name="arrow-back-outline"></ion-icon>
-                    <span>Voltar para o site</span>
-                </a>
-
-                <div class="auth-form-header">
-                    <h2>Bem-vindo de volta</h2>
-                    <p>Insira suas credenciais para continuar.</p>
-                </div>
-
-                <form id="form-login" class="auth-form">
-                    <div class="input-group">
-                        <ion-icon name="mail-outline"></ion-icon>
-                        <input type="email" id="email" name="email" placeholder=" " required>
-                        <label for="email">E-mail</label>
-                    </div>
-                    <div class="input-group">
-                        <ion-icon name="lock-closed-outline"></ion-icon>
-                        <input type="password" id="password" name="password" placeholder=" " required>
-                        <label for="password">Senha</label>
-                    </div>
-
-                    <button type="submit" class="auth-button">
-                        <span>Entrar</span>
-                        <ion-icon name="arrow-forward-outline"></ion-icon>
-                    </button>
-                </form>
-
-                <div class="auth-form-footer">
-                    <p>Não tem uma conta? <a href="cadastro.html">Crie agora</a></p>
-                </div>
-            </div>
-        </section>
-    </main>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body class="auth-page">
+
+    <div class="auth-container">
+        <a href="index.html" class="btn-back-desktop">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+            Voltar ao site
+        </a>
+
+        <div class="auth-form-card">
+            <a href="index.html" style="text-decoration: none; display: block; text-align: center;">
+                <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="auth-logo">
+            </a>
+            
+            <h2>Bem-vindo de volta!</h2>
+            <p class="auth-subtitle">Acesse sua conta para continuar.</p>
+
+            <form>
+                <div class="input-group">
+                    <ion-icon name="mail-outline"></ion-icon>
+                    <input type="email" placeholder="Seu e-mail" required>
+                </div>
+
+                <div class="input-group">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                    <input type="password" placeholder="Sua senha" required>
+                </div>
+                
+                <button type="submit" class="btn-auth">Entrar</button>
+            </form>
+
+            <p class="auth-switch-link">
+                Não tem uma conta? <a href="cadastro.html">Cadastre-se</a>
+            </p>
+        </div>
+    </div>    
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active" data-view="home">
+<a href="index.html">
+  <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>
+</a>  <a href="index.html" class="bottom-nav-text">Inicio</a>
+        </button>
+        <button class="bottom-nav-item" data-view="orders">
+            <ion-icon name="receipt-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Pedidos</span>
+        </button>
+        <button class="bottom-nav-item" data-view="profile">
+<a href="login.html">
+  <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>
+</a>        <a href="login.html" class="bottom-nav-text">Perfil</a>
+        </button>
+        <button class="bottom-nav-item" id="botao-carrinho-mobile">
+            <span class="contador-carrinho" id="contador-carrinho-mobile">0</span>
+            <ion-icon name="cart-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Sacola</span>
+        </button>
+    </nav>
+    
+
 </body>
 </html>
