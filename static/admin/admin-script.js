@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentView: 'dashboard',
         selectedOrderId: null,
         collapsedSections: new Set(['Finalizado']),
-        theme: 'light'
+        theme: 'light',
+        deliveryCounter: 0,
+        lastCounterResetDate: null
     };
 
     // --- ELEMENT SELECTORS ---
@@ -27,13 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     const logoutButton = document.getElementById('logout-button');
 
-    // --- MOCK DATA (COM PEDIDOS NOVOS PARA TESTE) ---
+    // --- MOCK DATA ---
     const initialMockOrders = [
-        { id: 10001, date: new Date().toISOString().split('T')[0], cliente: { nome: "CLIENTE TESTE NOVO", telefone: "19 00000-1111" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 16.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Nova", numero: "1", bairro: "Bairro Novo", complemento: "" }, pagamento: { metodo: "Dinheiro", detalhes: "Troco para R$ 20,00" }, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, {name: "Coca-Cola Lata", quantity: 1, total: 6.00}] },
-        { id: 4860, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Antigo", telefone: "19 12345-6789" }, horario: "13:20", valor: 30.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua da Simulação", numero: "100", bairro: "Vila Teste", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 4, total: 22.00 }, {name: "Guaraná Lata", quantity: 1, total: 8.00}] },
-        { id: 4859, date: new Date().toISOString().split('T')[0], cliente: { nome: "Fernanda Lima", telefone: "19 99111-2222" }, horario: "11:30", valor: 45.00, tipo: "Entrega", status: "Em Preparo", entrega: { rua: "Rua das Palmeiras", numero: "789", bairro: "Jardim das Rosas", complemento: "Casa" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Carne", quantity: 5, total: 27.50 }, {name: "Esfirra de Queijo", quantity: 2, total: 10.00}, {name: "Coca-Cola Lata", quantity: 1, total: 7.50 }] },
-        { id: 4858, date: new Date().toISOString().split('T')[0], cliente: { nome: "Roberto Carlos", telefone: "19 99333-4444" }, horario: "11:25", valor: 18.50, tipo: "Retirada", status: "Em Preparo", entrega: { rua: "Retirar no local" }, pagamento: { metodo: "Cartão de Débito", detalhes: "Pagamento na entrega"}, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, { name: "Guaraná Lata", quantity: 1, total: 8.50 }] },
-        { id: 4857, date: "2025-08-30", cliente: { nome: "Carlos Alberto", telefone: "19 99876-5432" }, horario: "11:15", valor: 35.00, tipo: "Entrega", status: "Finalizado", entrega: { rua: "Rua das Flores", numero: "123", bairro: "Centro", complemento: "Apto 10" }, pagamento: { metodo: "Cartão de Crédito", detalhes: "Pagamento na entrega" }, itens: [{ name: "Esfirra de Carne", quantity: 5, total: 27.50 }, { name: "Guaraná Lata", quantity: 1, total: 7.50 }] },
+        { id: 10001, date: new Date().toISOString().split('T')[0], cliente: { nome: "CLIENTE PARA ENTREGA", telefone: "19 00000-1111" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 16.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Nova", numero: "1", bairro: "Bairro Novo", complemento: "" }, pagamento: { metodo: "Dinheiro", detalhes: "Troco para R$ 20,00" }, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, {name: "Coca-Cola Lata", quantity: 1, total: 6.00}] },
     ];
     const initialMockMenu = {
         "Esfirras Salgadas": [
@@ -47,8 +45,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- DATA & THEME PERSISTENCE ---
-    function saveData() { localStorage.setItem('zapEsfirrasAdminState', JSON.stringify({ orders: state.orders, menu: state.menu })); }
-    function loadData() { const savedState = JSON.parse(localStorage.getItem('zapEsfirrasAdminState')); if (savedState) { state.orders = savedState.orders || initialMockOrders; state.menu = savedState.menu || initialMockMenu; } else { state.orders = initialMockOrders; state.menu = initialMockMenu; } }
+    function saveData() { 
+        localStorage.setItem('zapEsfirrasAdminState', JSON.stringify({ 
+            orders: state.orders, 
+            menu: state.menu,
+            deliveryCounter: state.deliveryCounter,
+            lastCounterResetDate: state.lastCounterResetDate
+        })); 
+    }
+    function loadData() { 
+        const savedState = JSON.parse(localStorage.getItem('zapEsfirrasAdminState')); 
+        if (savedState) { 
+            state.orders = savedState.orders || initialMockOrders; 
+            state.menu = savedState.menu || initialMockMenu; 
+            state.deliveryCounter = savedState.deliveryCounter || 0;
+            state.lastCounterResetDate = savedState.lastCounterResetDate || null;
+        } else { 
+            state.orders = initialMockOrders; 
+            state.menu = initialMockMenu; 
+        } 
+    }
     function saveTheme() { localStorage.setItem('zapEsfirrasTheme', state.theme); }
     function loadTheme() { const savedTheme = localStorage.getItem('zapEsfirrasTheme') || 'light'; applyTheme(savedTheme); }
     
@@ -251,9 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function deleteProduct(productId) { const category = findCategoryByProductId(productId); if(category) { state.menu[category] = state.menu[category].filter(p => p.id != productId); if(state.menu[category].length === 0) delete state.menu[category]; saveData(); showNotification('Produto excluído!', 'success'); renderCardapioView(); } closeConfirmModal(); }
 
     // --- LÓGICA DE IMPRESSÃO ---
-    function directPrint(orderId) {
-        const order = state.orders.find(o => o.id == orderId);
-        if (!order) {
+    function directPrint(orderToPrint) {
+        if (!orderToPrint) {
             showNotification("Pedido não encontrado para impressão.", "error");
             return;
         }
@@ -261,15 +276,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
         
-        const itemsHTML = (order.itens || []).map(item => {
+        const itemsHTML = (orderToPrint.itens || []).map(item => {
             const itemName = item.name || item.nome || 'Item desconhecido';
             const itemQty = item.quantity || 1;
             const itemTotal = item.total || item.valor || 0;
             return `<tr><td>${itemQty}x</td><td>${itemName}</td><td>${formatCurrency(itemTotal)}</td></tr>`;
         }).join('');
         
-        const receiptStyle = `<style>body{font-family:'Courier New',monospace;font-size:12px;line-height:1.6;color:#000;margin:0;padding:0}.receipt-container{width:302px;padding:15px}.receipt-header{text-align:center;margin-bottom:15px}.receipt-header img{max-width:80px;margin-bottom:10px}.receipt-header h3{font-size:16px;margin:0}.receipt-section{border-top:1px dashed #000;padding-top:10px;margin-top:10px}.receipt-section h4{text-align:center;font-size:14px;margin:0 0 10px 0}.receipt-section p{margin:0 0 3px 0}.receipt-items-table{width:100%;margin-top:10px}.receipt-items-table th,.receipt-items-table td{text-align:left;padding:3px 0}.receipt-items-table th:last-child,.receipt-items-table td:last-child{text-align:right}.receipt-items-table thead{border-bottom:1px dashed #000}.receipt-total{text-align:right;margin-top:15px}.receipt-total p{font-size:14px;font-weight:bold;margin:0}.receipt-footer{text-align:center;margin-top:20px;font-size:11px}@page{margin:5mm}</style>`;
-        const receiptHTML = `<div class="receipt-container"><div class="receipt-header"><img src="assets/zapesfiiras.png" alt="Logo"><h3>Zap Esfirras</h3><p>Rua Exemplo, 123 - Centro</p><p>Tel: (19) 99999-8888</p><p>--------------------------------</p><p><strong>PEDIDO #${order.id}</strong></p><p>${formattedDate}</p></div><div class="receipt-section"><h4>Cliente</h4><p><strong>Nome:</strong> ${order.cliente.nome}</p>${order.cliente.telefone ? `<p><strong>Tel:</strong> ${order.cliente.telefone}</p>` : ''}</div><div class="receipt-section"><h4>Entrega / Retirada</h4><p><strong>Tipo:</strong> ${order.tipo}</p>${order.tipo === 'Entrega' ? `<p><strong>End:</strong> ${order.entrega.rua}, ${order.entrega.numero}</p><p><strong>Bairro:</strong> ${order.entrega.bairro}</p>${order.entrega.complemento ? `<p><strong>Comp:</strong> ${order.entrega.complemento}</p>` : ''}` : ''}</div><div class="receipt-section"><h4>Itens do Pedido</h4><table class="receipt-items-table"><thead><tr><th>Qtd</th><th>Item</th><th>Total</th></tr></thead><tbody>${itemsHTML}</tbody></table></div><div class="receipt-section receipt-total"><p>SUBTOTAL: ${formatCurrency(order.valor)}</p><p><strong>TOTAL: ${formatCurrency(order.valor)}</strong></p></div><div class="receipt-section"><h4>Pagamento</h4><p><strong>Método:</strong> ${order.pagamento.metodo}</p>${order.pagamento.detalhes ? `<p><strong>Obs:</strong> ${order.pagamento.detalhes}</p>` : ''}</div><div class="receipt-footer"><p>Obrigado pela preferência!</p></div></div>`;
+        const receiptStyle = `<style>body{font-family:'Courier New',monospace;font-size:12px;line-height:1.6;color:#000;margin:0;padding:0}.receipt-container{width:302px;padding:15px}.receipt-header{text-align:center;margin-bottom:15px}.receipt-header img{max-width:80px;margin-bottom:10px}.receipt-header h3{font-size:16px;margin:0}.receipt-delivery-number{font-size:22px;font-weight:bold;margin:10px 0}.receipt-section{border-top:1px dashed #000;padding-top:10px;margin-top:10px}.receipt-section h4{text-align:center;font-size:14px;margin:0 0 10px 0}.receipt-section p{margin:0 0 3px 0}.receipt-items-table{width:100%;margin-top:10px}.receipt-items-table th,.receipt-items-table td{text-align:left;padding:3px 0}.receipt-items-table th:last-child,.receipt-items-table td:last-child{text-align:right}.receipt-items-table thead{border-bottom:1px dashed #000}.receipt-total{text-align:right;margin-top:15px}.receipt-total p{font-size:14px;font-weight:bold;margin:0}.receipt-footer{text-align:center;margin-top:20px;font-size:11px}@page{margin:5mm}</style>`;
+        const receiptHTML = `<div class="receipt-container"><div class="receipt-header">
+                <img src="assets/zapesfiiras.png" alt="Logo">
+                <h3>Zap Esfirras</h3>
+                ${orderToPrint.deliveryNumber ? `<p class="receipt-delivery-number">${orderToPrint.deliveryNumber}</p>` : ''}
+                <p>Rua Gabriel Pinheiro, 75 - Centro</p>
+                <p>Tel: (19) 99143-2597</p>
+                <p>--------------------------------</p>
+                <p><strong>PEDIDO #${orderToPrint.id}</strong></p>
+                <p>${formattedDate}</p>
+            </div><div class="receipt-section"><h4>Cliente</h4><p><strong>Nome:</strong> ${orderToPrint.cliente.nome}</p>${orderToPrint.cliente.telefone ? `<p><strong>Tel:</strong> ${orderToPrint.cliente.telefone}</p>` : ''}</div><div class="receipt-section"><h4>Entrega / Retirada</h4><p><strong>Tipo:</strong> ${orderToPrint.tipo}</p>${orderToPrint.tipo === 'Entrega' ? `<p><strong>End:</strong> ${orderToPrint.entrega.rua}, ${orderToPrint.entrega.numero}</p><p><strong>Bairro:</strong> ${orderToPrint.entrega.bairro}</p>${orderToPrint.entrega.complemento ? `<p><strong>Comp:</strong> ${orderToPrint.entrega.complemento}</p>` : ''}` : ''}</div><div class="receipt-section"><h4>Itens do Pedido</h4><table class="receipt-items-table"><thead><tr><th>Qtd</th><th>Item</th><th>Total</th></tr></thead><tbody>${itemsHTML}</tbody></table></div><div class="receipt-section receipt-total"><p>SUBTOTAL: ${formatCurrency(orderToPrint.valor)}</p><p><strong>TOTAL: ${formatCurrency(orderToPrint.valor)}</strong></p></div><div class="receipt-section"><h4>Pagamento</h4><p><strong>Método:</strong> ${orderToPrint.pagamento.metodo}</p>${orderToPrint.pagamento.detalhes ? `<p><strong>Obs:</strong> ${orderToPrint.pagamento.detalhes}</p>` : ''}</div><div class="receipt-footer"><p>Obrigado pela preferência!</p></div></div>`;
 
         const printFrame = document.createElement('iframe');
         printFrame.style.display = 'none';
@@ -289,20 +313,41 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleProductAvailability(productId, isAvailable) { const product = Object.values(state.menu).flat().find(p => p.id == productId); if(product) { product.available = isAvailable; saveData(); showNotification(`Disponibilidade atualizada.`, 'success'); } }
     function showNotification(message, type = "success") { const area = document.getElementById('notification-area'), notification = document.createElement('div'); notification.className = `notification-message ${type}`; notification.textContent = message; area.appendChild(notification); setTimeout(() => notification.classList.add('show'), 10); setTimeout(() => { notification.classList.remove('show'); notification.addEventListener('transitionend', () => notification.remove()); }, 3000); }
     const getStatusClass = (status) => status.toLowerCase().replace(/\s+/g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    function incrementAndGetDeliveryNumber() {
+        const today = new Date().toISOString().split('T')[0];
+        if (state.lastCounterResetDate !== today) {
+            state.deliveryCounter = 0;
+            state.lastCounterResetDate = today;
+        }
+        state.deliveryCounter++;
+        const formattedNumber = String(state.deliveryCounter).padStart(2, '0');
+        return `F${formattedNumber}`;
+    }
+
     function updateOrderStatus(orderId, newStatus) {
         const order = state.orders.find(o => o.id == orderId);
         if (order) {
             const oldStatus = order.status;
+            
+            if (order.tipo === 'Entrega' && oldStatus === 'Novo' && newStatus === 'Em Preparo') {
+                if (!order.deliveryNumber) {
+                    order.deliveryNumber = incrementAndGetDeliveryNumber();
+                }
+            }
+            
             order.status = newStatus;
             saveData();
-            renderPedidosView();
+            
             if (oldStatus === 'Novo' && newStatus === 'Em Preparo') {
-                directPrint(orderId);
+                directPrint(order);
             }
+
+            renderPedidosView();
         }
     }
     
-    // --- SIMULADOR DE NOVOS PEDIDOS ---
+    // --- SIMULADOR DE NOVOS PEDIDOS (DESATIVADO) ---
     function simulateNewOrder() {
         const newId = (state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) : 4860) + 1;
         const newOrder = { id: newId, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Simulado", telefone: "19 00000-0000" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 42.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Fictícia", numero: "S/N", bairro: "Bairro Demo", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Queijo", quantity: 5, total: 25.00 }, {name: "Guaraná Lata", quantity: 2, total: 17.50}] };
@@ -314,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
              renderView(state.currentView);
         }
     }
-    setInterval(simulateNewOrder, 30000);
+    // setInterval(simulateNewOrder, 30000);
 
     // --- EVENT LISTENERS ---
     function toggleSidebar() {
@@ -330,7 +375,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.addEventListener('click', (e) => {
-        if (e.target.closest('.print-button')) { directPrint(state.selectedOrderId); }
+        const printButton = e.target.closest('.print-button');
+        if (printButton) {
+            const orderToPrint = state.orders.find(o => o.id == state.selectedOrderId);
+            if(orderToPrint) {
+                directPrint(orderToPrint);
+            }
+        }
         if (e.target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); }
         const navLink = e.target.closest('.nav-link');
         if (navLink && !navLink.id.includes('logout')) { 
