@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const viewElement = document.getElementById('view-dashboard');
         const today = new Date().toISOString().split('T')[0];
         const ordersToday = state.orders.filter(o => o.date === today);
-        const revenueToday = ordersToday.reduce((sum, order) => sum + order.valor, 0);
+        const revenueToday = ordersToday.reduce((sum, order) => sum + (order.valor || 0), 0);
         const revenueThisMonth = 0;
         const revenueLastMonth = 0;
         viewElement.innerHTML = `
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeProductModal() { document.getElementById('product-modal-overlay').classList.remove('visible'); }
     function openConfirmModal(productId) { const modal = document.getElementById('confirm-modal-overlay'); modal.dataset.productIdToDelete = productId; modal.classList.add('visible'); }
     function closeConfirmModal() { document.getElementById('confirm-modal-overlay').classList.remove('visible'); }
-    function deleteProduct(productId) { const category = findCategoryByProductId(productId); if(category) { state.menu[category] = state.menu[category].filter(p => p.id != productId); if(state.menu[category].length === 0) delete state.menu[category]; saveData(); showNotification('Produto excluído!', 'success'); renderCardapioView(); } closeConfirmModal(); }
+    function deleteProduct(productId) { const category = findCategoryByProductId(productId); if(category) { state.menu[category] = state.menu[category].filter(p => p.id != productId); if (state.menu[category].length === 0) delete state.menu[category]; saveData(); showNotification('Produto excluído!', 'success'); renderCardapioView(); } closeConfirmModal(); }
 
     // --- LÓGICA DE IMPRESSÃO ---
     function directPrint(orderToPrint) {
@@ -386,7 +386,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-
+    // --- SIMULADOR DE NOVOS PEDIDOS ---
+    function simulateNewOrder() {
+        const newId = (state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) : 10001) + 1;
+        const newOrder = { id: newId, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Simulado", telefone: "19 00000-0000" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 42.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Fictícia", numero: "S/N", bairro: "Bairro Demo", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Queijo", quantity: 5, total: 25.00 }, {name: "Guaraná Lata", quantity: 2, total: 17.50}] };
+        state.orders.unshift(newOrder);
+        saveData();
+        showNotification(`Novo pedido #${newId} recebido!`, 'success');
+        notificationSound.play().catch(e => console.log("Autoplay de áudio bloqueado."));
+        if(state.currentView === 'pedidos' || state.currentView === 'dashboard') {
+             renderView(state.currentView);
+        }
+    }
+    setInterval(simulateNewOrder, 30000);
 
     // --- EVENT LISTENERS ---
     function unlockAudio() {
@@ -417,8 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if(orderToPrint) {
                 directPrint(orderToPrint);
             }
+            return;
         }
-        if (e.target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); }
+        if (e.target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); return; }
         const navLink = e.target.closest('.nav-link');
         if (navLink && !navLink.id.includes('logout')) { 
             unlockAudio(); // Libera o áudio no primeiro clique de navegação
@@ -458,11 +471,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 } 
                 renderPedidosView(); 
             } 
+            return;
         }
-        if (state.currentView === 'cardapio') { const optionsButton = e.target.closest('.options-button'); if (optionsButton) { const menu = optionsButton.nextElementSibling; const isVisible = menu.style.display === 'block'; document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); menu.style.display = isVisible ? 'none' : 'block'; return; } if (!e.target.closest('.product-options')) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); if (e.target.closest('#add-new-product-btn')) openProductModal(); if (e.target.classList.contains('edit-product-btn')) { const product = Object.values(state.menu).flat().find(p => p.id == e.target.dataset.productId); if (product) openProductModal(product); } if (e.target.classList.contains('delete-product-btn')) openConfirmModal(e.target.dataset.productId); }
-        if (e.target.closest('#cancel-modal-button') || e.target.closest('#close-modal-button')) closeProductModal();
-        if (e.target.closest('#cancel-confirm-button')) closeConfirmModal();
-        if (e.target.closest('#confirm-delete-button')) deleteProduct(document.getElementById('confirm-modal-overlay').dataset.productIdToDelete);
+        if (state.currentView === 'cardapio') { 
+            const optionsButton = e.target.closest('.options-button');
+            if (optionsButton) { 
+                const menu = optionsButton.nextElementSibling; 
+                const isVisible = menu.style.display === 'block'; 
+                document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); 
+                menu.style.display = isVisible ? 'none' : 'block'; 
+                return; 
+            } 
+            if (!e.target.closest('.product-options')) {
+                document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
+            }
+            if (e.target.closest('#add-new-product-btn')) { openProductModal(); return; }
+            if (e.target.classList.contains('edit-product-btn')) { const product = Object.values(state.menu).flat().find(p => p.id == e.target.dataset.productId); if (product) openProductModal(product); return;}
+            if (e.target.classList.contains('delete-product-btn')) { openConfirmModal(e.target.dataset.productId); return;}
+        }
+        if (e.target.closest('#cancel-modal-button') || e.target.closest('#close-modal-button')) { closeProductModal(); return; }
+        if (e.target.closest('#cancel-confirm-button')) { closeConfirmModal(); return; }
+        if (e.target.closest('#confirm-delete-button')) { deleteProduct(document.getElementById('confirm-modal-overlay').dataset.productIdToDelete); return; }
     });
     
     document.addEventListener('change', (e) => {
@@ -489,9 +518,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('submit', (e) => { if(e.target.id === 'product-form') saveProduct(e); });
 
     // --- INITIALIZATION ---
-    function init() {
+    async function init() {
         loadData();
         loadTheme();
+        await fetchProducts(); // Carrega os produtos da API ao iniciar
         renderView('dashboard');
     }
 
