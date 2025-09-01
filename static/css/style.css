@@ -1066,6 +1066,31 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     font-size: 1.4rem;
 }
 
+.input-troco-container {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.4s ease;
+}
+.input-troco-container.visivel {
+    max-height: 100px;
+    opacity: 1;
+    margin-top: 5px;
+}
+.input-troco-container input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    border: 1px solid var(--grey-medium);
+    border-radius: 8px;
+    background-color: var(--navbar-bg);
+}
+.input-troco-container input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
 .resumo-valores {
     background-color: var(--navbar-bg);
     padding: 20px;

@@ -55,7 +55,7 @@
                     </button>
                     <a href="login.html" class="botao-conta">CONTA</a>
                 </div>
-        
+    
                 <div class="header-greeting apenas-mobile" id="header-greeting-mobile">
                 </div>
                 </div>
@@ -233,7 +233,7 @@
                         </div>
                         
                     </div>
-                     <div class="cartao-produto" data-nome="Esfirra de Queijo" data-desc="Queijo derretido por cima." data-detalhes="Massa macia recheada com queijo mussarela." data-preco="5.00" >
+                       <div class="cartao-produto" data-nome="Esfirra de Queijo" data-desc="Queijo derretido por cima." data-detalhes="Massa macia recheada com queijo mussarela." data-preco="5.00" >
                         <div class="container-detalhes-produto">
                             <img src="" alt="Esfirra de Queijo">
                             <div class="texto-info-produto">
@@ -814,7 +814,30 @@
                         </label>
                         <p class="aviso-pagamento">Pagamentos no cartão somente na entrega.</p>
                     </div>
-                </div>
+
+                    <label class="metodo-pagamento-card">
+                        <input type="radio" name="forma-pagamento-principal" value="dinheiro">
+                        <div class="card-content">
+                            <ion-icon name="wallet-outline"></ion-icon>
+                            <span class="card-text">Dinheiro</span>
+                        </div>
+                        <div class="card-check"><ion-icon name="checkmark-circle"></ion-icon></div>
+                    </label>
+                    <div class="sub-opcoes" id="sub-opcoes-dinheiro">
+                        <p class="aviso-pagamento">Precisa de troco?</p>
+                        <label class="metodo-pagamento-card-sub">
+                            <input type="radio" name="precisa-troco" value="nao" checked>
+                            <div class="card-content-sub">Não preciso de troco</div>
+                        </label>
+                        <label class="metodo-pagamento-card-sub">
+                            <input type="radio" name="precisa-troco" value="sim">
+                            <div class="card-content-sub">Sim, preciso de troco</div>
+                        </label>
+                        <div class="input-troco-container" id="container-troco">
+                             <input type="text" id="valor-troco" placeholder="Troco para quanto? Ex: 50,00">
+                        </div>
+                    </div>
+                    </div>
             </div>
     
         </div>
@@ -831,7 +854,7 @@
         <button class="bottom-nav-item active" data-view="home">
 <a href="index.html">
   <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>
-</a>  <a href="index.html" class="bottom-nav-text">Inicio</a>
+</a>   <a href="index.html" class="bottom-nav-text">Inicio</a>
         </button>
         <button class="bottom-nav-item" data-view="orders">
             <ion-icon name="receipt-outline" class="bottom-nav-icon"></ion-icon>
@@ -888,7 +911,7 @@
             <p class="nome-dev">Gabriel Martins</p>
             <div class="redes-sociais-dev">
                 <a href="https://www.instagram.com/souza4mz_/" target="_blank" title="Instagram do Desenvolvedor"><ion-icon name="logo-instagram"></ion-icon></a>
-                <a href="gabriel.martins.desoouza@gmail.com" title="Email do Desenvolvedor"><ion-icon name="mail-outline"></ion-icon></a>
+                <a href="mailto:gabriel.martins.desoouza@gmail.com" title="Email do Desenvolvedor"><ion-icon name="mail-outline"></ion-icon></a>
             </div>
         </div>
     </div>

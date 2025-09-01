@@ -29,9 +29,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     const logoutButton = document.getElementById('logout-button');
 
-    // --- DADOS INICIAIS (ZERADOS) ---
-    const initialMockOrders = [];
-    const initialMockMenu = {};
+    // --- MOCK DATA ---
+    const initialMockOrders = [
+        { id: 10001, date: new Date().toISOString().split('T')[0], cliente: { nome: "CLIENTE PARA ENTREGA", telefone: "19 00000-1111" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 16.00, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Nova", numero: "1", bairro: "Bairro Novo", complemento: "" }, pagamento: { metodo: "Dinheiro", detalhes: "Troco para R$ 20,00" }, itens: [{ name: "Esfirra de Queijo", quantity: 2, total: 10.00 }, {name: "Coca-Cola Lata", quantity: 1, total: 6.00}] },
+    ];
+    const initialMockMenu = {
+        "Esfirras Salgadas": [
+            { id: 1, name: "Esfirra de Carne", price: 5.50, description: "Carne bovina moída, temperada com cebola, tomate e especiarias.", image: "assets/carne.png", available: true },
+            { id: 2, name: "Esfirra de Queijo", price: 5.00, description: "Queijo mussarela fresco e cremoso.", image: "assets/queijo.png", available: true },
+        ],
+        "Refrigerantes": [ 
+            { id: 3, name: "Coca-Cola Lata", price: 7.50, description: "Lata de 350ml.", image: "assets/coca.png", available: true },
+            { id: 4, name: "Guaraná Lata", price: 8.50, description: "Lata de 350ml.", image: "assets/guarana.png", available: false }
+        ]
+    };
 
     // --- DATA & THEME PERSISTENCE ---
     function saveData() { 
@@ -272,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return `<tr><td>${itemQty}x</td><td>${itemName}</td><td>${formatCurrency(itemTotal)}</td></tr>`;
         }).join('');
         
-        const receiptStyle = `<style>body{font-family:'Courier New',monospace;font-size:12px;line-height:1.6;color:#000;margin:0;padding:0}.receipt-container{width:302px;padding:15px}.receipt-header{text-align:center;margin-bottom:15px}.receipt-header img{max-width:80px;margin-bottom:10px}.receipt-header h3{font-size:16px;margin:0}.receipt-delivery-number{font-size:22px;font-weight:bold;margin:10px 0}.receipt-section{border-top:1px dashed #000;padding-top:10px;margin-top:10px}.receipt-section h4{text-align:center;font-size:14px;margin:0 0 10px 0}.receipt-section p{margin:0 0 3px 0}.receipt-items-table{width:100%;margin-top:10px}.receipt-items-table th,.receipt-items-table td{text-align:left;padding:3px 0}.receipt-items-table th:last-child,.receipt-items-table td:last-child{text-align:right}.receipt-items-table thead{border-bottom:1px dashed #000}.receipt-total{text-align:right;margin-top:15px}.receipt-total p{font-size:14px;font-weight:bold;margin:0}.receipt-footer{text-align:center;margin-top:20px;font-size:11px}@page{margin:5mm}</style>`;
+        const receiptStyle = `<style>body{font-family:'Courier New',monospace;font-size:14px;line-height:1.5;color:#000;margin:0;padding:0;font-weight:bold;}.receipt-container{width:302px;padding:15px}.receipt-header{text-align:center;margin-bottom:15px}.receipt-header img{max-width:80px;margin-bottom:10px}.receipt-header h3{font-size:18px;margin:0;font-weight:bold;}.receipt-delivery-number{font-size:24px;font-weight:bold;margin:10px 0}.receipt-section{border-top:1px dashed #000;padding-top:10px;margin-top:10px}.receipt-section h4{text-align:center;font-size:16px;margin:0 0 10px 0;font-weight:bold;}.receipt-section p{margin:0 0 3px 0;}.receipt-items-table{width:100%;margin-top:10px}.receipt-items-table th,.receipt-items-table td{text-align:left;padding:3px 0;font-weight:bold;}.receipt-items-table th:last-child,.receipt-items-table td:last-child{text-align:right}.receipt-items-table thead{border-bottom:1px dashed #000}.receipt-total{text-align:right;margin-top:15px}.receipt-total p{font-size:16px;font-weight:bold;margin:0}.receipt-footer{text-align:center;margin-top:20px;font-size:12px;}@page{margin:5mm}</style>`;
         const receiptHTML = `<div class="receipt-container"><div class="receipt-header">
                 <img src="/assets/zapesfiiras.png" alt="Logo">
                 <h3>Zap Esfirras</h3>
@@ -318,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const order = state.orders.find(o => o.id == orderId);
         if (order) {
             const oldStatus = order.status;
-
+            
             if (order.tipo === 'Entrega' && oldStatus === 'Novo' && newStatus === 'Em Preparo') {
                 if (!order.deliveryNumber) {
                     order.deliveryNumber = incrementAndGetDeliveryNumber();
@@ -329,16 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
             saveData();
             
             if (oldStatus === 'Novo' && newStatus === 'Em Preparo') {
-                directPrint(order);
+                // Adiciona um pequeno delay para garantir que o DOM/estado seja atualizado antes de imprimir
+                setTimeout(() => {
+                    directPrint(order);
+                }, 100);
             }
 
             renderPedidosView();
         }
     }
     
-    // --- SIMULADOR DE NOVOS PEDIDOS (DESATIVADO) ---
+    // --- SIMULADOR DE NOVOS PEDIDOS (ATIVADO PARA TESTE) ---
     function simulateNewOrder() {
-        const newId = (state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) : 4860) + 1;
+        const newId = (state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) : 10001) + 1;
         const newOrder = { id: newId, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Simulado", telefone: "19 00000-0000" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 42.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Fictícia", numero: "S/N", bairro: "Bairro Demo", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Queijo", quantity: 5, total: 25.00 }, {name: "Guaraná Lata", quantity: 2, total: 17.50}] };
         state.orders.unshift(newOrder);
         saveData();
@@ -348,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
              renderView(state.currentView);
         }
     }
-    // setInterval(simulateNewOrder, 30000);
+    setInterval(simulateNewOrder, 30000);
 
     // --- EVENT LISTENERS ---
     function toggleSidebar() {
@@ -385,7 +399,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return; 
         }
-        if (state.currentView === 'pedidos') { const card = e.target.closest('.order-card'); const button = e.target.closest('.action-button'); const sectionHeader = e.target.closest('.section-header'); if (button) { e.stopPropagation(); updateOrderStatus(button.dataset.orderId, button.dataset.nextStatus); } else if (card) { state.selectedOrderId = card.dataset.orderId; renderPedidosView(); } else if (sectionHeader) { const status = sectionHeader.parentElement.dataset.status; if (state.collapsedSections.has(status)) { state.collapsedSections.delete(status); } else { state.collapsedSections.add(status); } renderPedidosView(); } }
+        if (state.currentView === 'pedidos') { 
+            const card = e.target.closest('.order-card');
+            const button = e.target.closest('.action-button');
+            const sectionHeader = e.target.closest('.section-header');
+
+            if (button) { 
+                e.stopPropagation();
+                updateOrderStatus(button.dataset.orderId, button.dataset.nextStatus);
+            } else if (card) {
+                state.selectedOrderId = card.dataset.orderId;
+                const currentActive = document.querySelector('.order-card.active');
+                if (currentActive) {
+                    currentActive.classList.remove('active');
+                }
+                card.classList.add('active');
+                renderOrderDetails(state.selectedOrderId);
+            } else if (sectionHeader) { 
+                const status = sectionHeader.parentElement.dataset.status; 
+                if (state.collapsedSections.has(status)) { 
+                    state.collapsedSections.delete(status); 
+                } else { 
+                    state.collapsedSections.add(status); 
+                } 
+                renderPedidosView(); 
+            } 
+        }
         if (state.currentView === 'cardapio') { const optionsButton = e.target.closest('.options-button'); if (optionsButton) { const menu = optionsButton.nextElementSibling; const isVisible = menu.style.display === 'block'; document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); menu.style.display = isVisible ? 'none' : 'block'; return; } if (!e.target.closest('.product-options')) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); if (e.target.closest('#add-new-product-btn')) openProductModal(); if (e.target.classList.contains('edit-product-btn')) { const product = Object.values(state.menu).flat().find(p => p.id == e.target.dataset.productId); if (product) openProductModal(product); } if (e.target.classList.contains('delete-product-btn')) openConfirmModal(e.target.dataset.productId); }
         if (e.target.closest('#cancel-modal-button') || e.target.closest('#close-modal-button')) closeProductModal();
         if (e.target.closest('#cancel-confirm-button')) closeConfirmModal();

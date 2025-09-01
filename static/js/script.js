@@ -58,8 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const opcoesPagamentoPrincipal = document.querySelectorAll('input[name="forma-pagamento-principal"]');
     const subOpcoesPix = document.getElementById('sub-opcoes-pix');
     const subOpcoesCartao = document.getElementById('sub-opcoes-cartao');
+    const subOpcoesDinheiro = document.getElementById('sub-opcoes-dinheiro');
     const radiosSubOpcoesPix = document.querySelectorAll('input[name="sub-opcao-pix"]');
     const detalhesPixOnline = document.getElementById('detalhes-pix-online');
+    const radiosPrecisaTroco = document.querySelectorAll('input[name="precisa-troco"]');
+    const containerTroco = document.getElementById('container-troco');
+    const inputValorTroco = document.getElementById('valor-troco');
     const radiosTipoEntrega = document.querySelectorAll('input[name="tipo-entrega"]');
     const formEnderecoContainer = document.getElementById('container-form-endereco');
     const formEndereco = document.getElementById('form-endereco');
@@ -340,15 +344,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let iconName = 'card-outline';
         let titulo = '';
         let subtitulo = '';
+
         if (pedido.pagamento.metodo === 'Pix') {
-            iconName = 'cash-outline';
+            iconName = 'logo-paypal'; // Mantendo o ícone que já estava no HTML para Pix
             titulo = 'Pix';
             subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via PIX' : 'Pagar na entrega';
-        } else {
+        } else if (pedido.pagamento.metodo === 'Dinheiro') {
+            iconName = 'wallet-outline';
+            titulo = 'Dinheiro';
+            subtitulo = pedido.pagamento.tipo; // Ex: "Troco para R$ 50,00"
+        } else { // Cartão
             iconName = 'card-outline';
             titulo = `Cartão de ${pedido.pagamento.tipo}`;
             subtitulo = 'Pagamento na entrega';
         }
+
         container.innerHTML = `
             <ion-icon name="${iconName}"></ion-icon>
             <div class="card-info-texto">
@@ -605,11 +615,21 @@ document.addEventListener('DOMContentLoaded', () => {
             togglePainelCarrinho(false);
         } else if (etapaAtualCarrinho === 'escolher-pagamento') {
             const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
-                pedido.pagamento.metodo = metodo === 'pix' ? 'Pix' : 'Cartão';
                 if (metodo === 'pix') {
+                    pedido.pagamento.metodo = 'Pix';
                     pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
-                } else {
+                } else if (metodo === 'cartao') {
+                    pedido.pagamento.metodo = 'Cartão';
                     pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
+                } else if (metodo === 'dinheiro') {
+                    pedido.pagamento.metodo = 'Dinheiro';
+                    const precisaTroco = document.querySelector('input[name="precisa-troco"]:checked').value;
+                    if (precisaTroco === 'sim') {
+                        const valorTroco = inputValorTroco.value.trim();
+                        pedido.pagamento.tipo = valorTroco ? `Troco para R$ ${valorTroco}` : 'Precisa de troco (valor não informado)';
+                    } else {
+                        pedido.pagamento.tipo = 'Não precisa de troco';
+                    }
                 }
                 atualizarDisplayPagamento();
                 navegarCarrinho('pagamento');
@@ -635,12 +655,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const selecionado = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
             subOpcoesPix.classList.toggle('visivel', selecionado === 'pix');
             subOpcoesCartao.classList.toggle('visivel', selecionado === 'cartao');
+            subOpcoesDinheiro.classList.toggle('visivel', selecionado === 'dinheiro');
         });
     });
     radiosSubOpcoesPix.forEach(radio => {
         radio.addEventListener('change', () => {
             const selecionado = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
             detalhesPixOnline.classList.toggle('visivel', selecionado === 'online');
+        });
+    });
+    radiosPrecisaTroco.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const precisaTroco = document.querySelector('input[name="precisa-troco"]:checked').value === 'sim';
+            containerTroco.classList.toggle('visivel', precisaTroco);
         });
     });
     document.getElementById('add-cpf').addEventListener('change', function() {
@@ -679,4 +706,3 @@ ${mensagem}`;
         formContatoRodape.reset();
     });
 }
-
