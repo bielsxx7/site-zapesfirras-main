@@ -706,3 +706,153 @@ ${mensagem}`;
         formContatoRodape.reset();
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ... (todo o seu código JS existente até a função 'navegarCarrinho') ...
+    
+    // ATUALIZE ESTA SEÇÃO: Opções de Pagamento e Troco
+    const subOpcoesDinheiro = document.getElementById('sub-opcoes-dinheiro');
+    const radiosPrecisaTroco = document.querySelectorAll('input[name="precisa-troco"]');
+    const containerTroco = document.getElementById('container-troco');
+    const inputValorTroco = document.getElementById('valor-troco');
+
+    // ... (resto do seu código JS) ...
+
+    const atualizarDisplayPagamento = () => {
+        const container = document.getElementById('card-info-pagamento');
+        if (!container) return;
+        let iconName = 'card-outline';
+        let titulo = '';
+        let subtitulo = '';
+
+        if (pedido.pagamento.metodo === 'Pix') {
+            iconName = 'logo-paypal'; 
+            titulo = 'Pix';
+            subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via PIX' : 'Pagar na entrega';
+        } else if (pedido.pagamento.metodo === 'Dinheiro') {
+            iconName = 'wallet-outline';
+            titulo = 'Dinheiro';
+            subtitulo = pedido.pagamento.tipo; 
+        } else { // Cartão
+            iconName = 'card-outline';
+            titulo = `Cartão de ${pedido.pagamento.tipo}`;
+            subtitulo = 'Pagamento na entrega';
+        }
+
+        container.innerHTML = `
+            <ion-icon name="${iconName}"></ion-icon>
+            <div class="card-info-texto">
+                <p>${titulo}</p>
+                <span>${subtitulo}</span>
+            </div>
+            <a href="#" id="btn-trocar-pagamento">Trocar</a>
+        `;
+        document.getElementById('btn-trocar-pagamento').addEventListener('click', (e) => {
+            e.preventDefault();
+            navegarCarrinho('escolher-pagamento');
+        });
+    };
+
+    const finalizarEEnviarPedido = () => {
+        // 1. Criar o objeto do pedido
+        const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+        const tipoEntrega = document.querySelector('input[name="tipo-entrega"]:checked')?.value;
+        const taxaEntrega = tipoEntrega === 'retirada' || carrinho.length === 0 ? 0 : TAXA_ENTREGA;
+        const total = subtotal + taxaEntrega;
+
+        const novoPedido = {
+            id: Date.now(), // ID único baseado no timestamp
+            data: new Date().toISOString(),
+            itens: carrinho,
+            subtotal: subtotal,
+            taxaEntrega: taxaEntrega,
+            total: total,
+            tipoEntrega: tipoEntrega,
+            pagamento: pedido.pagamento,
+            status: 'recebido' // Status inicial
+        };
+
+        // 2. Salvar no localStorage
+        const pedidosSalvos = JSON.parse(localStorage.getItem('pedidosZapEsfirras')) || [];
+        pedidosSalvos.push(novoPedido);
+        localStorage.setItem('pedidosZapEsfirras', JSON.stringify(pedidosSalvos));
+        
+        // 3. Limpar o carrinho atual
+        carrinho = [];
+        salvarCarrinhoLocalStorage();
+        renderizarItensCarrinho();
+        
+        // 4. Redirecionar para a página de pedidos
+        window.location.href = 'pedidos.html';
+    };
+
+    // ... (Resto da sua função navegarCarrinho)
+
+    // ATUALIZE O EVENT LISTENER DO BOTÃO CONTINUAR
+    btnContinuarCarrinho.addEventListener('click', () => {
+        if (carrinho.length === 0) {
+            mostrarNotificacao("Sua sacola está vazia!");
+            return;
+        }
+        if (etapaAtualCarrinho === 'itens') {
+            navegarCarrinho('entrega');
+        } else if (etapaAtualCarrinho === 'entrega') {
+            if (document.querySelector('input[name="tipo-entrega"]:checked').value === 'padrao' && !formEndereco.checkValidity()) {
+                formEndereco.reportValidity();
+                return;
+            }
+            navegarCarrinho('pagamento');
+        } else if (etapaAtualCarrinho === 'pagamento') {
+            finalizarEEnviarPedido(); // <-- MUDANÇA AQUI
+        } else if (etapaAtualCarrinho === 'escolher-pagamento') {
+            const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+                if (metodo === 'pix') {
+                    pedido.pagamento.metodo = 'Pix';
+                    pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-pix"]:checked').value;
+                } else if (metodo === 'cartao') {
+                    pedido.pagamento.metodo = 'Cartão';
+                    pedido.pagamento.tipo = document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito';
+                } else if (metodo === 'dinheiro') {
+                    pedido.pagamento.metodo = 'Dinheiro';
+                    const precisaTroco = document.querySelector('input[name="precisa-troco"]:checked').value;
+                    if (precisaTroco === 'sim') {
+                        const valorTroco = inputValorTroco.value.trim();
+                        pedido.pagamento.tipo = valorTroco ? `Troco para R$ ${valorTroco}` : 'Precisa de troco';
+                    } else {
+                        pedido.pagamento.tipo = 'Não precisa de troco';
+                    }
+                }
+                atualizarDisplayPagamento();
+                navegarCarrinho('pagamento');
+        }
+    });
+
+    // ... (Resto do seu código) ...
+
+    // ADICIONE ESTES NOVOS EVENT LISTENERS
+    opcoesPagamentoPrincipal.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const selecionado = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+            subOpcoesPix.classList.toggle('visivel', selecionado === 'pix');
+            subOpcoesCartao.classList.toggle('visivel', selecionado === 'cartao');
+            subOpcoesDinheiro.classList.toggle('visivel', selecionado === 'dinheiro');
+        });
+    });
+
+    radiosPrecisaTroco.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const precisaTroco = document.querySelector('input[name="precisa-troco"]:checked').value === 'sim';
+            containerTroco.classList.toggle('visivel', precisaTroco);
+            if (precisaTroco) {
+                inputValorTroco.required = true;
+            } else {
+                inputValorTroco.required = false;
+                inputValorTroco.value = '';
+            }
+        });
+    });
+
+    // ... (Resto do seu código) ...
+
+});

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Pedidos - Zap Esfirras</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/assets/zapesfiiras.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body class="pagina-pedidos">
+
+    <div id="tela-carregamento">
+        <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="logo-pulso">
+    </div>
+
+    <div id="conteudo-principal" style="display: none;">
+        <header>
+            <div class="barra-superior-info apenas-desktop">
+                 <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Sábado, 30 de agosto de 2025</span>
+            </div>
+            <div class="barra-navegacao">
+                <div class="marca-navegacao">
+                    <a href="index.html">
+                        <img src="assets/zapesfiiras.png" alt="Zap Esfirras">
+                    </a>
+                </div>
+                <nav class="menu-navegacao apenas-desktop">
+                    <ul class="nav-links">
+                        <li><a href="index.html">Opções</a></li>
+                        <li><a href="pedidos.html" class="ativo">Pedidos</a></li>
+                        <li><a href="#">Promoções</a></li>
+                    </ul>
+                </nav>
+                <div class="acoes-navegacao apenas-desktop">
+                     <a href="login.html" class="botao-conta">CONTA</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="container-principal">
+            <h2 class="titulo-pagina-pedidos">Meus Pedidos</h2>
+
+            <div id="lista-pedidos" class="container-lista-pedidos">
+                </div>
+        </main>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item" onclick="window.location.href='index.html'">
+            <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Início</span>
+        </button>
+        <button class="bottom-nav-item active" onclick="window.location.href='pedidos.html'">
+            <ion-icon name="receipt-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Pedidos</span>
+        </button>
+        <button class="bottom-nav-item" onclick="window.location.href='login.html'">
+            <ion-icon name="person-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Perfil</span>
+        </button>
+        <button class="bottom-nav-item" id="botao-carrinho-mobile">
+            <span class="contador-carrinho" id="contador-carrinho-mobile">0</span>
+            <ion-icon name="cart-outline" class="bottom-nav-icon"></ion-icon>
+            <span class="bottom-nav-text">Sacola</span>
+        </button>
+    </nav>
+    
+    <script src="static/js/pedidos.js"></script>
+</body>
+</html>

@@ -1723,3 +1723,187 @@ body.auth-page {
         padding: 20px;
     }
 }
+
+
+
+/* ... (todo o seu CSS existente) ... */
+
+/* ======================================================= */
+/* --- 8. PÁGINA DE PEDIDOS --- */
+/* ======================================================= */
+
+body.pagina-pedidos .container-principal {
+    padding-top: 140px; /* Garante espaço para o header fixo */
+}
+
+.titulo-pagina-pedidos {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+.container-lista-pedidos {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.cartao-pedido {
+    background-color: var(--navbar-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 20px;
+}
+
+.cabecalho-cartao-pedido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--grey-light);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.cabecalho-cartao-pedido h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.cabecalho-cartao-pedido span {
+    font-size: 0.9rem;
+    color: var(--grey-dark);
+}
+
+.corpo-cartao-pedido .status-atual {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.corpo-cartao-pedido .status-atual ion-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+.corpo-cartao-pedido .status-atual .texto-status h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.corpo-cartao-pedido .status-atual .texto-status p {
+    font-size: 0.9rem;
+    color: var(--grey-dark);
+}
+
+/* Linha do Tempo do Status */
+.linha-tempo-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    padding: 0 10px;
+    margin-bottom: 25px;
+}
+
+.linha-tempo-status::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 10px;
+    right: 10px;
+    height: 4px;
+    background-color: var(--grey-medium);
+    z-index: 1;
+}
+
+.barra-progresso-status {
+    position: absolute;
+    top: 16px;
+    left: 10px;
+    height: 4px;
+    background-color: var(--green-color);
+    z-index: 2;
+    width: 0%; /* Controlado via JS */
+    transition: width 0.5s ease-in-out;
+}
+
+
+.etapa-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 80px;
+    z-index: 3;
+}
+
+.etapa-status .icone-etapa {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--grey-medium);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    border: 4px solid var(--background-color);
+    transition: background-color 0.5s, color 0.5s;
+}
+
+.etapa-status.ativa .icone-etapa {
+    background-color: var(--green-color);
+}
+
+.etapa-status p {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 8px;
+    color: var(--grey-dark);
+}
+
+.etapa-status.ativa p {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+
+.rodape-cartao-pedido {
+    border-top: 1px solid var(--grey-light);
+    padding-top: 15px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rodape-cartao-pedido button {
+    background-color: var(--grey-light);
+    color: var(--text-color);
+    border: 1px solid var(--grey-medium);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.rodape-cartao-pedido .ver-detalhes {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+#sem-pedidos {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--grey-dark);
+}
+
+#sem-pedidos ion-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
