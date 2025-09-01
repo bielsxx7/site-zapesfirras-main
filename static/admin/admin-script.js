@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     const logoutButton = document.getElementById('logout-button');
+    let isAudioUnlocked = false;
 
     // --- MOCK DATA ---
     const initialMockOrders = [
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMap[viewName]();
     }
     
-    // --- DASHBOARD ---
+    // --- DASHBOARD (Revertido para o estilo simples) ---
     function renderDashboard() {
         const viewElement = document.getElementById('view-dashboard');
         const today = new Date().toISOString().split('T')[0];
@@ -99,14 +100,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const revenueLastMonth = 0;
         viewElement.innerHTML = `
             <div class="dashboard-grid">
-                <div class="stat-card faturamento-hoje"><div class="stat-card-header"><div class="icon"><ion-icon name="cash-outline"></ion-icon></div><h3>Faturamento Hoje</h3></div><div class="stat-card-main-value">${formatCurrency(revenueToday)}</div><div class="stat-card-footer">Atualizado em tempo real</div></div>
-                <div class="stat-card pedidos-hoje"><div class="stat-card-header"><div class="icon"><ion-icon name="receipt-outline"></ion-icon></div><h3>Pedidos Hoje</h3></div><div class="stat-card-main-value">${ordersToday.length}</div><div class="stat-card-footer">Total de pedidos recebidos</div></div>
-                <div class="stat-card mes-atual"><div class="stat-card-header"><div class="icon"><ion-icon name="calendar-outline"></ion-icon></div><h3>Vendas Mês Atual</h3></div><div class="stat-card-main-value">${formatCurrency(revenueThisMonth)}</div><div class="stat-card-footer">Aguardando novos pedidos</div></div>
-                <div class="stat-card mes-anterior"><div class="stat-card-header"><div class="icon"><ion-icon name="archive-outline"></ion-icon></div><h3>Vendas Mês Anterior</h3></div><div class="stat-card-main-value">${formatCurrency(revenueLastMonth)}</div><div class="stat-card-footer">Dados do mês anterior</div></div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="icon faturamento-hoje"><ion-icon name="cash-outline"></ion-icon></div>
+                        <span>Faturamento Hoje</span>
+                    </div>
+                    <div class="stat-card-main-value">${formatCurrency(revenueToday)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="icon pedidos-hoje"><ion-icon name="receipt-outline"></ion-icon></div>
+                        <span>Pedidos Hoje</span>
+                    </div>
+                    <div class="stat-card-main-value">${ordersToday.length}</div>
+                </div>
+                <div class="stat-card">
+                     <div class="stat-card-header">
+                        <div class="icon mes-atual"><ion-icon name="calendar-outline"></ion-icon></div>
+                        <span>Vendas Mês Atual</span>
+                    </div>
+                    <div class="stat-card-main-value">${formatCurrency(revenueThisMonth)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="icon mes-anterior"><ion-icon name="archive-outline"></ion-icon></div>
+                        <span>Vendas Mês Anterior</span>
+                    </div>
+                    <div class="stat-card-main-value">${formatCurrency(revenueLastMonth)}</div>
+                </div>
             </div>`;
     }
 
-    // --- PEDIDOS ---
+    // --- PEDIDOS (renderOrderCard foi modificado) ---
     function renderPedidosView() { 
         const viewElement = document.getElementById('view-pedidos'); 
         const statuses = ['Novo', 'Em Preparo', 'Prontos', 'Em Entrega', 'Finalizado']; 
@@ -137,12 +162,24 @@ document.addEventListener('DOMContentLoaded', () => {
             actionButtonHTML = `<button class="btn action-button complete" data-order-id="${order.id}" data-next-status="Finalizado"><ion-icon name="archive-outline"></ion-icon>Finalizar</button>`; 
         } 
         let addressHTML = ''; 
-        if (order.tipo === 'Entrega') { 
+        if (order.tipo === 'Entrega' && order.entrega.rua !== 'Retirar no local') { 
             const { rua, numero, bairro, complemento } = order.entrega; 
             addressHTML = `<div class="order-card-address"><p><ion-icon name="location-outline"></ion-icon> <b>Rua:</b> ${rua}, ${numero}</p><p><b>Bairro:</b> ${bairro}</p>${complemento ? `<p><b>Comp:</b> ${complemento}</p>` : ''}</div>`; 
         } 
         const isNew = order.status === 'Novo';
-        return `<div class="order-card ${state.selectedOrderId == order.id ? 'active' : ''} ${isNew ? 'new-order' : ''}" data-order-id="${order.id}"><div class="order-card-header"><b>#${order.id}</b><span>${formatCurrency(order.valor)}</span></div><p class="order-card-customer">${order.cliente.nome}</p><div class="order-card-info"><span><ion-icon name="time-outline"></ion-icon>${order.horario}</span><span><ion-icon name="${order.tipo === 'Entrega' ? 'bicycle-outline' : 'walk-outline'}"></ion-icon>${order.tipo}</span></div>${addressHTML}<div class="order-card-footer">${actionButtonHTML}</div></div>`; 
+        return `<div class="order-card ${state.selectedOrderId == order.id ? 'active' : ''} ${isNew ? 'new-order' : ''}" data-order-id="${order.id}">
+                    <div class="order-card-header">
+                        <b>#${order.id}</b>
+                        <span>${formatCurrency(order.valor)}</span>
+                    </div>
+                    <p class="order-card-customer">${order.cliente.nome}</p>
+                    ${addressHTML}
+                    <div class="order-card-info">
+                        <span><ion-icon name="time-outline"></ion-icon>${order.horario}</span>
+                        <span><ion-icon name="${order.tipo === 'Entrega' ? 'bicycle-outline' : 'walk-outline'}"></ion-icon>${order.tipo}</span>
+                    </div>
+                    <div class="order-card-footer">${actionButtonHTML}</div>
+                </div>`; 
     }
     
     function renderOrderDetails(orderId) { 
@@ -339,32 +376,28 @@ document.addEventListener('DOMContentLoaded', () => {
             order.status = newStatus;
             saveData();
             
+            renderPedidosView();
+            
             if (oldStatus === 'Novo' && newStatus === 'Em Preparo') {
-                // Adiciona um pequeno delay para garantir que o DOM/estado seja atualizado antes de imprimir
                 setTimeout(() => {
                     directPrint(order);
                 }, 100);
             }
-
-            renderPedidosView();
         }
     }
     
-    // --- SIMULADOR DE NOVOS PEDIDOS (ATIVADO PARA TESTE) ---
-    function simulateNewOrder() {
-        const newId = (state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) : 10001) + 1;
-        const newOrder = { id: newId, date: new Date().toISOString().split('T')[0], cliente: { nome: "Cliente Simulado", telefone: "19 00000-0000" }, horario: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), valor: 42.50, tipo: "Entrega", status: "Novo", entrega: { rua: "Rua Fictícia", numero: "S/N", bairro: "Bairro Demo", complemento: "" }, pagamento: { metodo: "Pix", detalhes: "Pagamento online" }, itens: [{ name: "Esfirra de Queijo", quantity: 5, total: 25.00 }, {name: "Guaraná Lata", quantity: 2, total: 17.50}] };
-        state.orders.unshift(newOrder);
-        saveData();
-        showNotification(`Novo pedido #${newId} recebido!`, 'success');
-        notificationSound.play().catch(e => console.log("Autoplay de áudio bloqueado."));
-        if(state.currentView === 'pedidos' || state.currentView === 'dashboard') {
-             renderView(state.currentView);
-        }
-    }
-    setInterval(simulateNewOrder, 30000);
+
 
     // --- EVENT LISTENERS ---
+    function unlockAudio() {
+        if (isAudioUnlocked) return;
+        notificationSound.play().catch(()=>{});
+        notificationSound.pause();
+        notificationSound.currentTime = 0;
+        isAudioUnlocked = true;
+        console.log('Contexto de áudio liberado pelo usuário.');
+    }
+    
     function toggleSidebar() {
         sidebar.classList.toggle('visible');
         sidebarOverlay.classList.toggle('active');
@@ -388,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); }
         const navLink = e.target.closest('.nav-link');
         if (navLink && !navLink.id.includes('logout')) { 
+            unlockAudio(); // Libera o áudio no primeiro clique de navegação
             if (window.innerWidth <= 992 && sidebar.classList.contains('visible')) {
                 toggleSidebar();
             }
