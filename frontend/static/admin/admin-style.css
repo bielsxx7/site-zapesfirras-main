@@ -83,7 +83,7 @@ body.dark-mode .sidebar-nav .nav-link:hover:not(.active) { background-color: rgb
 .admin-view { display: none; }
 .admin-view.active { display: block; animation: fadeIn 0.5s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.view-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+.view-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
 .view-header h2 { font-family: var(--font-header); font-size: 2rem; font-weight: 700; }
 .view-header p { font-size: 1rem; color: var(--text-secondary); margin-top: 4px;}
 
@@ -164,12 +164,19 @@ body.dark-mode .stat-card.mes-anterior .icon { background-color: #5a5a5a30; }
 .print-button:hover { background: var(--primary-color-dark); box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4); }
 
 /* --- TELA DE CARDÁPIO --- */
+.view-header-actions { display: flex; gap: 12px; } 
+.category-search-container { width: 100%; max-width: 300px; position: relative; }
+.category-search-container input { width: 100%; padding: 8px 12px 8px 36px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--background-color); color: var(--text-primary); font-size: 0.9rem; }
+.category-search-container ion-icon { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); color: var(--text-secondary); }
 .cardapio-grid { display: flex; flex-direction: column; gap: 32px; }
 .category-section { background-color: var(--surface-color); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-md); }
 .category-header { font-family: var(--font-header); font-size: 1.5rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
-.btn-edit-category { background: none; border: none; cursor: pointer; color: var(--text-secondary); opacity: 0.5; transition: all 0.2s ease; padding: 4px; }
-.btn-edit-category:hover { opacity: 1; color: var(--primary-color); }
-.btn-edit-category ion-icon { font-size: 1.2rem; }
+.category-actions { display: flex; align-items: center; gap: 12px; }
+.btn-category-action { background: none; border: none; cursor: pointer; color: var(--text-secondary); opacity: 0.6; transition: all 0.2s ease; padding: 4px; display: flex; align-items: center; justify-content: center; }
+.btn-category-action:hover { opacity: 1; color: var(--primary-color); }
+.btn-category-action ion-icon { font-size: 1.2rem; }
+.btn-category-action.invisible ion-icon { color: var(--primary-color); }
+.btn-category-action.invisible:hover ion-icon { color: var(--secondary-color); }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 .product-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all var(--transition-speed); position: relative;}
 .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
@@ -241,24 +248,3 @@ body.dark-mode .product-options { background-color: rgba(30,30,30,0.8); }
     .admin-header .menu-toggle { display: block; }
 }
 @media (max-width: 576px) { .image-upload-container { flex-direction: column; align-items: center; } }
-
-
-
-
-/* --- TELA DE CARDÁPIO --- */
-.cardapio-grid { display: flex; flex-direction: column; gap: 32px; }
-.category-section { background-color: var(--surface-color); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-md); }
-.category-header { font-family: var(--font-header); font-size: 1.5rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
-
-/* [NOVO] Estilos para os botões de ação da categoria */
-.category-actions { display: flex; align-items: center; gap: 8px; }
-.btn-category-action { background: none; border: none; cursor: pointer; color: var(--text-secondary); opacity: 0.6; transition: all 0.2s ease; padding: 4px; display: flex; align-items: center; justify-content: center; }
-.btn-category-action:hover { opacity: 1; color: var(--primary-color); }
-.btn-category-action ion-icon { font-size: 1.2rem; }
-.btn-category-action.invisible ion-icon { color: var(--primary-color); } /* Destaque para o olho quando invisível */
-.btn-category-action.invisible:hover ion-icon { color: var(--secondary-color); }
-
-.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-.product-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all var(--transition-speed); position: relative;}
-
-/* ... (resto do CSS) ... */

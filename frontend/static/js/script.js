@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // =======================================================
-    // --- ESTADO DA APLICAÇÃO E CONSTANTES GLOBAIS ---
-    // =======================================================
+    const socket = io('http://localhost:3000');
+
+    socket.on('menu_updated', () => {
+        console.log('Recebido evento de atualização do menu! Recarregando...');
+        mostrarNotificacao('O cardápio foi atualizado!');
+        carregarDadosDaAPI();
+    });
+
     let carrinho = [];
     const TAXA_ENTREGA = 5.00;
     let produtoAtualModal = {};
@@ -11,37 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let pedido = {
         pagamento: { metodo: 'Cartão', tipo: 'Crédito' }
     };
-    let menuData = {}; // Guarda o cardápio vindo da API
+    let menuData = {}; 
 
     const adicionaisPorCategoria = {
-        'Salgadas': [
-            { nome: 'Bacon', preco: 3.50 },
-            { nome: 'Catupiry Extra', preco: 3.00 },
-            { nome: 'Cheddar', preco: 3.00 },
-            { nome: 'Alho Frito', preco: 2.00 }
-        ],
-        'Beirutes': [
-            { nome: 'Ovo', preco: 2.50 },
-            { nome: 'Bacon', preco: 4.00 },
-            { nome: 'Catupiry', preco: 3.50 },
-            { nome: 'Dobro de Queijo', preco: 5.00 }
-        ],
-        'Lanches': [
-            { nome: 'Ovo', preco: 2.50 },
-            { nome: 'Bacon', preco: 4.00 },
-            { nome: 'Cheddar', preco: 3.00 },
-            { nome: 'Hambúrguer Extra', preco: 6.00 }
-        ],
-        'default': [
-            { nome: 'Bacon', preco: 3.50 },
-            { nome: 'Cheddar', preco: 3.00 },
-            { nome: 'Catupiry', preco: 3.00 },
-        ]
+        'Esfirras Salgadas': [ { nome: 'Bacon', preco: 3.50 }, { nome: 'Catupiry Extra', preco: 3.00 }, { nome: 'Cheddar', preco: 3.00 }, { nome: 'Alho Frito', preco: 2.00 } ],
+        'Beirutes': [ { nome: 'Ovo', preco: 2.50 }, { nome: 'Bacon', preco: 4.00 }, { nome: 'Catupiry', preco: 3.50 }, { nome: 'Dobro de Queijo', preco: 5.00 } ],
+        'Lanches': [ { nome: 'Ovo', preco: 2.50 }, { nome: 'Bacon', preco: 4.00 }, { nome: 'Cheddar', preco: 3.00 }, { nome: 'Hambúrguer Extra', preco: 6.00 } ],
+        'default': [ { nome: 'Bacon', preco: 3.50 }, { nome: 'Cheddar', preco: 3.00 }, { nome: 'Catupiry', preco: 3.00 }, ]
     };
-
-    // =======================================================
-    // --- SELETORES DE ELEMENTOS (DOM) ---
-    // =======================================================
+    
     const telaCarregamento = document.getElementById('tela-carregamento');
     const conteudoPrincipal = document.getElementById('conteudo-principal');
     const sobreposicaoModal = document.getElementById('modal-sobreposicao');
@@ -79,49 +62,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleAdicionaisBtn = document.getElementById('toggle-adicionais');
     const listaAdicionaisContainer = document.getElementById('lista-adicionais');
     const formContatoRodape = document.getElementById('form-contato-rodape');
-
     let todosCartoesProduto = [];
     let secoesProdutos = [];
 
-    // =======================================================
-    // --- LÓGICA DE API E RENDERIZAÇÃO DO CARDÁPIO ---
-    // =======================================================
-    async function carregarCardapioDaAPI() {
+    async function carregarDadosDaAPI() {
         try {
-            const response = await fetch('http://localhost:3000/api/products');
-            if (!response.ok) throw new Error('Erro de rede ao buscar produtos.');
-            const produtos = await response.json();
+            const [categoriesResponse, productsResponse] = await Promise.all([
+                fetch('http://localhost:3000/api/categories'),
+                fetch('http://localhost:3000/api/products')
+            ]);
+
+            if (!categoriesResponse.ok) throw new Error('Erro ao buscar categorias.');
+            if (!productsResponse.ok) throw new Error('Erro de rede ao buscar produtos.');
             
-            const produtosAgrupados = produtos
-                .filter(p => p.available)
-                .reduce((acc, produto) => {
-                    if (!acc[produto.category_name]) {
-                        acc[produto.category_name] = [];
-                    }
-                    acc[produto.category_name].push(produto);
-                    return acc;
-                }, {});
+            const categoriasVisiveis = await categoriesResponse.json();
+            const todosProdutos = await productsResponse.json();
             
-            menuData = produtosAgrupados;
+            renderizarFiltros(categoriasVisiveis);
+
+            const produtosVisiveis = todosProdutos.filter(p => p.available && p.category_is_visible);
+            
+            menuData = produtosVisiveis.reduce((acc, produto) => {
+                if (!acc[produto.category_name]) {
+                    acc[produto.category_name] = [];
+                }
+                acc[produto.category_name].push(produto);
+                return acc;
+            }, {});
+
             const containerPrincipal = document.querySelector('main.container-principal');
             const secoesAntigas = containerPrincipal.querySelectorAll('.container-secao[data-category]');
             secoesAntigas.forEach(secao => secao.remove());
 
-            for (const categoria in produtosAgrupados) {
-                const secaoHTML = `
-                    <section class="container-secao" data-category="${categoria}">
-                        <h2 class="titulo-secao">${categoria}</h2>
-                        <div class="grade-produtos">
-                            ${produtosAgrupados[categoria].map(produto => criarCardProdutoHTML(produto)).join('')}
-                        </div>
-                    </section>
-                `;
-                containerPrincipal.insertAdjacentHTML('beforeend', secaoHTML);
-            }
+            categoriasVisiveis.forEach(categoria => {
+                const produtosDaCategoria = menuData[categoria.name];
+                if (produtosDaCategoria && produtosDaCategoria.length > 0) {
+                    const secaoHTML = `
+                        <section class="container-secao" data-category="${categoria.name}">
+                            <h2 class="titulo-secao">${categoria.name}</h2>
+                            <div class="grade-produtos">
+                                ${produtosDaCategoria.map(produto => criarCardProdutoHTML(produto)).join('')}
+                            </div>
+                        </section>
+                    `;
+                    containerPrincipal.insertAdjacentHTML('beforeend', secaoHTML);
+                }
+            });
 
             todosCartoesProduto = document.querySelectorAll('.cartao-produto');
             secoesProdutos = document.querySelectorAll('.container-secao[data-category]');
             renderizarSugestoes();
+            gerenciarSetasScroll();
+
         } catch (error) {
             console.error("Falha ao carregar cardápio:", error);
             const containerPrincipal = document.querySelector('main.container-principal');
@@ -129,65 +121,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    function criarCardProdutoHTML(produto) {
-        return `
-            <div class="cartao-produto" data-id="${produto.id}" data-category="${produto.category_name}">
-                <div class="container-detalhes-produto">
-                    <img src="${produto.image || 'assets/placeholder.png'}" alt="${produto.name}" class="imagem-produto">
-                    <div class="texto-info-produto">
-                        <h3>${produto.name}</h3>
-                        <h4>${produto.description || ''}</h4>
-                    </div>
-                </div>
-                <div class="acoes-produto">
-                    <span class="preco">R$ ${parseFloat(produto.price).toFixed(2).replace('.', ',')}</span>
-                    <div class="botoes-container">
-                        <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
-                    </div>
-                </div>
-            </div>
-        `;
+    function renderizarFiltros(categorias) {
+        if (!barraFiltros) return;
+        barraFiltros.innerHTML = '<button class="botao-filtro ativo" data-categoria="Todos">Todos</button>';
+        categorias.forEach(categoria => {
+            const filtroHTML = `<button class="botao-filtro" data-categoria="${categoria.name}">${categoria.name}</button>`;
+            barraFiltros.insertAdjacentHTML('beforeend', filtroHTML);
+        });
     }
 
-    function renderizarSugestoes() {
-        const container = document.querySelector('.carrossel-sugestoes');
-        if (!container) return;
-        const bebidas = [
-            ...(menuData['Refrigerantes'] || []),
-            ...(menuData['Sucos'] || []),
-            ...(menuData['Chope/Cervejas'] || [])
-        ];
-        const sugestoes = bebidas.sort(() => 0.5 - Math.random()).slice(0, 3);
-        container.innerHTML = '';
-        if (sugestoes.length > 0) {
-            sugestoes.forEach(item => {
-                const itemHTML = `
-                    <div class="item-sugestao" data-id="${item.id}" data-category="${item.category_name}">
-                        <img src="${item.image}" alt="${item.name}">
-                        <p>${item.name}</p>
-                        <span>${(parseFloat(item.price)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                        <button class="botao-add-sugestao">+</button>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', itemHTML);
-            });
-        }
-    }
-
-    // =======================================================
-    // --- FUNÇÕES GERAIS E AUXILIARES ---
-    // =======================================================
+    function criarCardProdutoHTML(produto) { return ` <div class="cartao-produto" data-id="${produto.id}" data-category="${produto.category_name}"> <div class="container-detalhes-produto"> <img src="${produto.image || 'assets/placeholder.png'}" alt="${produto.name}" class="imagem-produto"> <div class="texto-info-produto"> <h3>${produto.name}</h3> <h4>${produto.description || ''}</h4> </div> </div> <div class="acoes-produto"> <span class="preco">R$ ${parseFloat(produto.price).toFixed(2).replace('.', ',')}</span> <div class="botoes-container"> <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button> </div> </div> </div> `; }
+    function renderizarSugestoes() { const container = document.querySelector('.carrossel-sugestoes'); if (!container) return; const bebidas = [ ...(menuData['Refrigerantes'] || []), ...(menuData['Sucos'] || []), ...(menuData['Chope/Cervejas'] || []) ]; const sugestoes = bebidas.sort(() => 0.5 - Math.random()).slice(0, 3); container.innerHTML = ''; if (sugestoes.length > 0) { sugestoes.forEach(item => { const itemHTML = ` <div class="item-sugestao" data-id="${item.id}" data-category="${item.category_name}"> <img src="${item.image}" alt="${item.name}"> <p>${item.name}</p> <span>${(parseFloat(item.price)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span> <button class="botao-add-sugestao">+</button> </div> `; container.insertAdjacentHTML('beforeend', itemHTML); }); } }
     function atualizarInfoCabecalho() { const greetingEl = document.getElementById('greeting'); const dateEl = document.getElementById('current-date'); const mobileGreetingContainer = document.getElementById('header-greeting-mobile'); if (!greetingEl || !dateEl) return; const agora = new Date(); const hora = agora.getHours(); let saudacao; if (hora >= 5 && hora < 12) { saudacao = 'Bom dia!'; } else if (hora >= 12 && hora < 18) { saudacao = 'Boa tarde!'; } else { saudacao = 'Boa noite!'; } const opcoesData = { weekday: 'long', month: 'long', day: 'numeric' }; let dataFormatada = agora.toLocaleDateString('pt-BR', opcoesData); dataFormatada = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1); greetingEl.textContent = saudacao; dateEl.textContent = dataFormatada; if (mobileGreetingContainer) { mobileGreetingContainer.innerHTML = `<span>${saudacao}</span> &#8226; <span>${dataFormatada}</span>`; } }
     function ajustarPaddingCorpo() { const navBar = document.querySelector('.barra-navegacao'); if (navBar) { const alturaTotalOcupada = navBar.getBoundingClientRect().bottom; document.body.style.paddingTop = `${alturaTotalOcupada}px`; } }
     function filtrarEBuscarProdutos(termo) { let produtoEncontrado = false; todosCartoesProduto.forEach(cartao => { const nomeProduto = cartao.querySelector('h3').textContent.toLowerCase(); const deveMostrar = nomeProduto.includes(termo); cartao.style.display = deveMostrar ? 'flex' : 'none'; if (deveMostrar) produtoEncontrado = true; }); secoesProdutos.forEach(secao => { const produtosVisiveis = secao.querySelectorAll('.cartao-produto[style*="display: flex"]').length; secao.style.display = produtosVisiveis > 0 || termo === '' ? 'block' : 'none'; }); if (mensagemSemResultados) { mensagemSemResultados.style.display = !produtoEncontrado && termo !== '' ? 'block' : 'none'; } }
-    function filtrarPorCategoria(categoriaAlvo) {
-        secoesProdutos.forEach(secao => {
-            const categoriaDaSecao = secao.dataset.category;
-            secao.style.display = (categoriaAlvo === 'Todos' || categoriaDaSecao === categoriaAlvo) ? 'block' : 'none';
-        });
-        todasEntradasPesquisa.forEach(input => input.value = '');
-        if (mensagemSemResultados) mensagemSemResultados.style.display = 'none';
-    }
+    function filtrarPorCategoria(categoriaAlvo) { secoesProdutos.forEach(secao => { const categoriaDaSecao = secao.dataset.category; secao.style.display = (categoriaAlvo === 'Todos' || categoriaDaSecao === categoriaAlvo) ? 'block' : 'none'; }); todasEntradasPesquisa.forEach(input => input.value = ''); if (mensagemSemResultados) mensagemSemResultados.style.display = 'none'; }
     function mostrarNotificacao(mensagem) { if (!notificacao || !textoNotificacao) return; clearTimeout(timeoutNotificacao); textoNotificacao.textContent = mensagem; notificacao.classList.add('mostrar'); timeoutNotificacao = setTimeout(() => notificacao.classList.remove('mostrar'), 2500); }
     function gerenciarSetasScroll() { if (!barraFiltros || !btnScrollLeft || !btnScrollRight) return; const temScroll = barraFiltros.scrollWidth > barraFiltros.clientWidth; if (!temScroll) { btnScrollLeft.classList.remove('visivel'); btnScrollRight.classList.remove('visivel'); return; } btnScrollLeft.classList.toggle('visivel', barraFiltros.scrollLeft > 0); const maxScrollLeft = barraFiltros.scrollWidth - barraFiltros.clientWidth; btnScrollRight.classList.toggle('visivel', barraFiltros.scrollLeft < maxScrollLeft - 1); }
     function atualizarPrecoTotalModal() { const quantidade = parseInt(document.querySelector('.modal-produto .entrada-quantidade').value); let precoAdicionais = 0; const adicionaisSelecionados = document.querySelectorAll('#lista-adicionais input[type="checkbox"]:checked'); adicionaisSelecionados.forEach(checkbox => { precoAdicionais += parseFloat(checkbox.dataset.preco); }); const precoUnitarioFinal = produtoAtualModal.precoBase + precoAdicionais; const precoTotal = precoUnitarioFinal * quantidade; produtoAtualModal.precoFinal = precoUnitarioFinal; document.querySelector('.botao-adicionar-carrinho-modal').textContent = `Adicionar R$ ${precoTotal.toFixed(2).replace('.', ',')}`; }
@@ -203,20 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const navegarCarrinho = (novaEtapa) => { etapaAtualCarrinho = novaEtapa; telasCarrinho.forEach(tela => tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`)); const textoBotao = document.querySelector('#btn-continuar-carrinho span:first-child'); switch (novaEtapa) { case 'itens': tituloCarrinho.textContent = 'Meu Carrinho'; btnVoltarCarrinho.style.display = 'none'; textoBotao.textContent = 'Continuar'; break; case 'entrega': tituloCarrinho.textContent = 'Endereço e Entrega'; btnVoltarCarrinho.style.display = 'block'; textoBotao.textContent = 'Ir para o Pagamento'; break; case 'pagamento': tituloCarrinho.textContent = 'Pagamento'; btnVoltarCarrinho.style.display = 'block'; textoBotao.textContent = 'Finalizar Pedido'; break; case 'escolher-pagamento': tituloCarrinho.textContent = 'Forma de Pagamento'; btnVoltarCarrinho.style.display = 'block'; textoBotao.textContent = 'Confirmar Seleção'; break; } atualizarTodosResumos(); };
     const togglePainelCarrinho = (abrir = null) => { const ativo = abrir === null ? !painelCarrinho.classList.contains('ativo') : abrir; if (ativo) navegarCarrinho('itens'); painelCarrinho.classList.toggle('ativo', ativo); sobreposicaoCarrinho.classList.toggle('ativo', ativo); };
     const finalizarEEnviarPedido = () => { alert('Pedido Enviado com sucesso! (Simulação)'); carrinho = []; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); togglePainelCarrinho(false); };
-
-    // =======================================================
-    // --- INICIALIZAÇÃO E EVENT LISTENERS ---
-    // =======================================================
+    
     async function init() {
         atualizarInfoCabecalho();
         ajustarPaddingCorpo();
         carregarCarrinhoLocalStorage();
         atualizarDisplayPagamento();
-        
-        await carregarCardapioDaAPI();
-
+        await carregarDadosDaAPI();
         configurarEventListeners();
-
         setTimeout(() => {
             if (telaCarregamento) {
                 telaCarregamento.style.opacity = '0';
@@ -236,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const nav = document.querySelector('.barra-navegacao');
             const topBar = document.querySelector('.barra-superior-info');
             if (!nav || !topBar) return;
-            
             if (window.scrollY > topBar.offsetHeight) {
                 nav.style.top = '0';
                 nav.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
@@ -283,23 +224,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('main.container-principal').addEventListener('click', (e) => {
             const cartao = e.target.closest('.cartao-produto');
             if (!cartao) return;
-
             const produtoId = parseInt(cartao.dataset.id);
             const categoria = cartao.dataset.category;
             const produto = menuData[categoria]?.find(p => p.id === produtoId);
-
             if (!produto) return;
-
             if (e.target.closest('.botao-adicionar')) {
                 adicionarAoCarrinho(produto, 1, null, []);
             } else {
                 produtoAtualModal = {
                     id: produto.id,
-                    nome: produto.name,
+                    name: produto.name,
+                    price: parseFloat(produto.price),
+                    image: produto.image,
+                    description: produto.description,
                     precoBase: parseFloat(produto.price),
-                    precoFinal: parseFloat(produto.price),
-                    imagem: produto.image,
-                    description: produto.description
+                    precoFinal: parseFloat(produto.price)
                 };
                 
                 document.getElementById('imagem-produto-modal').src = produto.image;
@@ -315,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.getElementById('botao-fechar-modal').addEventListener('click', () => sobreposicaoModal.classList.remove('ativo'));
-        
         document.querySelector('.botao-adicionar-carrinho-modal').addEventListener('click', () => {
             const adicionaisSelecionados = [];
             document.querySelectorAll('#lista-adicionais input:checked').forEach(checkbox => {
@@ -324,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     preco: parseFloat(checkbox.dataset.preco)
                 });
             });
-
             const produtoParaCarrinho = {
                 id: produtoAtualModal.id,
                 name: produtoAtualModal.nome,
@@ -333,9 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const quantidade = parseInt(document.querySelector('.modal-produto .entrada-quantidade').value);
             const observacao = document.getElementById('observacao-produto').value.trim();
-            
             adicionarAoCarrinho(produtoParaCarrinho, quantidade, observacao || null, adicionaisSelecionados);
-            
             sobreposicaoModal.classList.remove('ativo');
         });
 
@@ -493,6 +428,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Inicializa a aplicação
     init();
 });
