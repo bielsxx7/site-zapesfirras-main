@@ -129,12 +129,9 @@ app.post('/api/categories', async (req, res) => {
     }
 });
 
-// [NOVO] ROTA DELETE: Excluir uma categoria
 app.delete('/api/categories/:id', async (req, res) => {
     try {
         const { id } = req.params;
-
-        // 1. Verifica se a categoria tem produtos associados
         const checkSql = "SELECT COUNT(*) AS productCount FROM products WHERE category_id = ?";
         const [rows] = await pool.query(checkSql, [id]);
         const productCount = rows[0].productCount;
@@ -143,31 +140,70 @@ app.delete('/api/categories/:id', async (req, res) => {
             return res.status(400).json({ message: 'Não é possível excluir. Esta categoria contém produtos.' });
         }
 
-        // 2. Se não tiver produtos, exclui a categoria
         const deleteSql = "DELETE FROM categories WHERE id = ?";
         await pool.query(deleteSql, [id]);
-
         io.emit('menu_updated');
         res.json({ message: 'Categoria excluída com sucesso.' });
-
     } catch (error) {
         console.error("Erro ao excluir categoria:", error);
         res.status(500).json({ message: "Erro no servidor ao excluir categoria." });
     }
 });
 
-
-// --- ROTA DE PEDIDOS ---
-app.post('/api/orders', (req, res) => {
-    console.log("Pedido recebido:", req.body);
-    res.status(201).json({message: "Pedido recebido com sucesso!"});
+// --- ROTA ADICIONADA: BUSCAR TODOS OS PEDIDOS (PASSO 6) ---
+app.get('/api/orders', async (req, res) => {
+    try {
+        const [orders] = await pool.query("SELECT * FROM orders ORDER BY created_at DESC");
+        res.json(orders);
+    } catch (error) {
+        console.error("Erro ao buscar pedidos:", error);
+        res.status(500).json({ message: "Erro no servidor ao buscar pedidos." });
+    }
 });
 
+
+// --- ROTA MODIFICADA: SALVAR UM NOVO PEDIDO (COM CORREÇÃO) ---
+app.post('/api/orders', async (req, res) => {
+    try {
+        const { client_info, delivery_info, items, total_value, payment_info, status } = req.body;
+
+        const sql = `
+            INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        
+        // MODIFICADO: Convertendo objetos para string JSON manualmente
+        const [result] = await pool.query(sql, [
+            JSON.stringify(client_info), 
+            JSON.stringify(delivery_info), 
+            JSON.stringify(items), 
+            total_value, 
+            JSON.stringify(payment_info), 
+            status || 'Novo'
+        ]);
+
+        const newOrderId = result.insertId;
+        console.log(`Novo pedido #${newOrderId} inserido no banco de dados.`);
+
+        const [orderRows] = await pool.query("SELECT * FROM orders WHERE id = ?", [newOrderId]);
+        const newOrder = orderRows[0];
+
+        io.emit('new_order', newOrder);
+
+        res.status(201).json({ message: "Pedido criado com sucesso!", orderId: newOrderId });
+
+    } catch (error) {
+        console.error("ERRO AO SALVAR PEDIDO NO BANCO:", error);
+        res.status(500).json({ message: "Erro no servidor ao criar pedido.", error: error.message });
+    }
+});
+
+// --- SOCKET.IO ---
 io.on('connection', (socket) => {
-  console.log('Um cliente se conectou via WebSocket:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectou:', socket.id);
-  });
+    console.log('Um cliente se conectou via WebSocket:', socket.id);
+    socket.on('disconnect', () => {
+        console.log('Cliente desconectou:', socket.id);
+    });
 });
 
 server.listen(port, () => {
