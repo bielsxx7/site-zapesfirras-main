@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Zap Esfirras</title>
     <link rel="stylesheet" href="admin-style.css">
-    <link rel="icon" type="image/png" href="/assets/zapesfiiras.png">
-
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -19,7 +20,7 @@
     <div class="admin-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="/assets/zapesfiiras.png" alt="Zap Esfirras Logo" class="logo">
+                <img src="assets/zapesfiiras.png" alt="Zap Esfirras Logo" class="logo">
                 <h2>Painel Admin</h2>
             </div>
             <nav class="sidebar-nav">
@@ -61,9 +62,8 @@
             <h2 id="modal-title">Adicionar Novo Produto</h2>
             <form id="product-form">
                 <input type="hidden" id="product-id">
-                <input type="hidden" id="product-image-base64">
                 <div class="form-group"><label for="product-name">Nome do Produto</label><input type="text" id="product-name" required></div>
-                <div class="form-group"><label for="product-category">Categoria</label><select id="product-category" required><option value="" disabled selected>Selecione uma categoria</option><option value="Combos">Combos</option><option value="Esfirras Salgadas">Esfirras Salgadas</option><option value="Esfirras Doces">Esfirras Doces</option><option value="Marmitas">Marmitas</option><option value="Beirutes">Beirutes</option><option value="Lanches">Lanches</option><option value="Pastéis Salgados">Pastéis Salgados</option><option value="Pastéis Doces">Pastéis Doces</option><option value="Porções">Porções</option><option value="Refrigerantes">Refrigerantes</option><option value="Sucos">Sucos</option></select></div>
+                <div class="form-group"><label for="product-category">Categoria</label><select id="product-category" required></select></div>
                 <div class="form-group"><label for="product-price">Preço (R$)</label><input type="number" id="product-price" step="0.01" placeholder="Ex: 5.50" required></div>
                 <div class="form-group"><label for="product-description">Descrição</label><textarea id="product-description" rows="3" placeholder="Ex: Deliciosa esfirra de carne..."></textarea></div>
                 <div class="form-group"><label>Imagem do Produto</label><div class="image-upload-container"><div class="image-preview-wrapper"><img id="image-preview" src="https://via.placeholder.com/150x150.png?text=Sem+Imagem" alt="Pré-visualização"></div><div class="image-upload-options"><p>Escolha uma imagem:</p><input type="file" id="product-image-file" accept="image/*" style="display: none;"><button type="button" class="btn btn-secondary" id="upload-image-button"><ion-icon name="cloud-upload-outline"></ion-icon> Enviar do Computador</button><p class="separator">ou</p><input type="text" id="product-image-url" placeholder="Cole a URL de uma imagem aqui"></div></div></div>
@@ -82,7 +82,7 @@
     </div>
 
     <div id="notification-area" class="notification-area"></div>
-    <audio id="notification-sound" src="/assets/notification.mp3" preload="auto"></audio>
+    <audio id="notification-sound" src="https://www.myinstants.com/media/sounds/notification_sound.mp3" preload="auto"></audio>
 
     <script src="admin-script.js"></script>
 </body>
