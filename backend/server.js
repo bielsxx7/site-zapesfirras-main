@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- ROTAS DE PRODUTOS (ATUALIZADAS) ---
+// --- ROTAS DE PRODUTOS ---
 app.get('/api/products', async (req, res) => {
     try {
         const sql = `
@@ -38,7 +38,6 @@ app.get('/api/products', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
     try {
-        // Adicionado 'custom_additions'
         const { name, price, category_id, description, image, available, custom_additions } = req.body;
         const sql = "INSERT INTO products (name, price, category_id, description, image, available, custom_additions) VALUES (?, ?, ?, ?, ?, ?, ?)";
         const [result] = await pool.query(sql, [name, price, category_id, description, image, available, custom_additions ? JSON.stringify(custom_additions) : null]);
@@ -53,7 +52,6 @@ app.post('/api/products', async (req, res) => {
 app.put('/api/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        // Adicionado 'custom_additions'
         const { name, price, category_id, description, image, available, custom_additions } = req.body;
         const sql = "UPDATE products SET name = ?, price = ?, category_id = ?, description = ?, image = ?, available = ?, custom_additions = ? WHERE id = ?";
         await pool.query(sql, [name, price, category_id, description, image, available, custom_additions ? JSON.stringify(custom_additions) : null, id]);
@@ -78,8 +76,6 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// --- O RESTANTE DO ARQUIVO (CATEGORIAS, PEDIDOS, ETC.) PERMANECE O MESMO ---
-// ... (copie e cole o restante do seu server.js aqui)
 // --- ROTAS DE CATEGORIAS ---
 app.get('/api/categories', async (req, res) => {
     try {
@@ -166,27 +162,6 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-app.put('/api/orders/:id/status', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status, delivery_number } = req.body;
-        let sql = 'UPDATE orders SET status = ?';
-        const params = [status];
-        if (delivery_number) {
-            sql += ', delivery_number = ?';
-            params.push(delivery_number);
-        }
-        sql += ' WHERE id = ?';
-        params.push(id);
-        await pool.query(sql, params);
-        console.log(`Status do pedido #${id} atualizado para "${status}".`);
-        res.json({ message: "Status do pedido atualizado com sucesso." });
-    } catch (error) {
-        console.error(`Erro ao atualizar status do pedido #${req.params.id}:`, error);
-        res.status(500).json({ message: "Erro no servidor ao atualizar o status." });
-    }
-});
-
 app.post('/api/orders', async (req, res) => {
     try {
         const { client_info, delivery_info, items, total_value, payment_info, status } = req.body;
@@ -217,6 +192,35 @@ app.post('/api/orders', async (req, res) => {
         res.status(500).json({ message: "Erro no servidor ao criar pedido.", error: error.message });
     }
 });
+
+app.put('/api/orders/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, delivery_number } = req.body;
+        let sql = 'UPDATE orders SET status = ?';
+        const params = [status];
+        if (delivery_number) {
+            sql += ', delivery_number = ?';
+            params.push(delivery_number);
+        }
+        sql += ' WHERE id = ?';
+        params.push(id);
+        await pool.query(sql, params);
+
+        console.log(`Status do pedido #${id} atualizado para "${status}".`);
+        
+        // --- LINHA ADICIONADA ---
+        // Emite o evento para o cliente saber que o status mudou
+        io.emit('order_status_updated', { orderId: id, newStatus: status });
+
+        res.json({ message: "Status do pedido atualizado com sucesso." });
+
+    } catch (error) {
+        console.error(`Erro ao atualizar status do pedido #${req.params.id}:`, error);
+        res.status(500).json({ message: "Erro no servidor ao atualizar o status." });
+    }
+});
+
 
 // --- SOCKET.IO ---
 io.on('connection', (socket) => {

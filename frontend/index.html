@@ -186,6 +186,7 @@
                         <span class="opcao-radio-preco gratis">Grátis</span>
                     </label>
                 </div>
+
                 <div id="container-form-retirada" style="display: none;">
                     <h4>Informações para Retirada</h4>
                     <form id="form-retirada" class="form-endereco">
@@ -197,9 +198,18 @@
                         </div>
                     </form>
                 </div>
+
                 <div id="container-form-endereco">
-                    <h4>Endereço de Entrega</h4>
+                    <h4>Suas Informações</h4>
                     <form id="form-endereco" class="form-endereco">
+                        <div class="grupo-campo-endereco">
+                            <input type="text" id="cliente-nome" placeholder="Seu nome*" required>
+                        </div>
+                        <div class="grupo-campo-endereco">
+                            <input type="tel" id="cliente-telefone" placeholder="Seu telefone / WhatsApp*">
+                        </div>
+
+                        <h4 class="titulo-endereco-entrega">Endereço de Entrega</h4>
                         <div class="grupo-campo-endereco">
                             <input type="text" id="endereco-rua" placeholder="Rua, Avenida*" required>
                         </div>
@@ -217,13 +227,12 @@
                     </form>
                 </div>
                 <div class="resumo-valores" id="resumo-tela-entrega"></div>
-            </div>
-    
+            </div> 
+
             <div id="tela-pagamento" class="tela-carrinho">
                  <div class="secao-pagamento">
                     <h4>Forma de Pagamento</h4>
-                    <div class="card-info" id="card-info-pagamento">
-                    </div>
+                    <div class="card-info" id="card-info-pagamento"></div>
                 </div>
                 <div class="secao-cupom">
                     <div class="input-cupom-container">
@@ -244,7 +253,7 @@
                 </div>
                 <div class="resumo-valores" id="resumo-tela-pagamento"></div>
             </div>
-    
+
             <div id="tela-escolher-pagamento" class="tela-carrinho">
                 <div class="secao-opcoes-pagamento">
                     <label class="metodo-pagamento-card">
@@ -269,7 +278,7 @@
                                 <span>19 99168-6522</span>
                             </div>
                             <p>Mande o comprovante pelo WhatsApp</p>
-                            <a href="https://wa.me/5519991432597?text=Olá!%20Estou%20enviando%20o%20comprovante%20do%20meu%20pedido." target="_blank" class="botao-whatsapp">
+                            <a href="#" target="_blank" class="botao-whatsapp" id="btn-whatsapp-comprovante">
                                 <ion-icon name="logo-whatsapp"></ion-icon>
                                 Enviar Comprovante
                             </a>

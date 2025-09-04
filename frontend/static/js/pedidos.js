@@ -6,13 +6,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCarrinhoMobile = document.getElementById('botao-carrinho-mobile');
 
     const statusInfo = {
-        recebido: { texto: "Pedido Recebido", icone: "receipt-outline", progresso: 0 },
-        preparando: { texto: "Em Preparo", icone: "restaurant-outline", progresso: 33 },
-        'a-caminho': { texto: "Saiu para Entrega", icone: "bicycle-outline", progresso: 66 },
-        entregue: { texto: "Pedido Entregue", icone: "checkmark-done-circle-outline", progresso: 100 },
-        'pronto-retirada': { texto: "Pronto para Retirada", icone: "bag-handle-outline", progresso: 66 },
-        finalizado: { texto: "Pedido Finalizado", icone: "checkmark-done-circle-outline", progresso: 100 }
+        'Novo': { texto: "Pedido Recebido", icone: "receipt-outline", progresso: 0 },
+        'Em Preparo': { texto: "Em Preparo", icone: "restaurant-outline", progresso: 33 },
+        'Prontos': { texto: "Pronto para Retirada", icone: "bag-handle-outline", progresso: 66 },
+        'Em Entrega': { texto: "Saiu para Entrega", icone: "bicycle-outline", progresso: 66 },
+        'Finalizado': { texto: "Pedido Finalizado", icone: "checkmark-done-circle-outline", progresso: 100 }
     };
+    
+    // --- CONEXÃO COM SOCKET.IO ---
+    const socket = io('http://localhost:3000');
+
+    socket.on('connect', () => {
+        console.log('Conectado ao servidor de pedidos!');
+    });
+
+    // --- OUVINTE PARA ATUALIZAÇÕES DE STATUS ---
+    socket.on('order_status_updated', ({ orderId, newStatus }) => {
+        console.log(`Atualização recebida: Pedido #${orderId} está agora "${newStatus}"`);
+        
+        const pedidoEl = document.getElementById(`pedido-${orderId}`);
+        if (pedidoEl) {
+            const tipoEntrega = pedidoEl.dataset.tipoEntrega;
+            atualizarUIStatus(pedidoEl, newStatus, tipoEntrega);
+            
+            // Atualiza o pedido no localStorage também
+            let pedidos = JSON.parse(localStorage.getItem('pedidosZapEsfirras')) || [];
+            const pedidoIndex = pedidos.findIndex(p => p.id == orderId);
+            if(pedidoIndex > -1){
+                pedidos[pedidoIndex].status = newStatus;
+                localStorage.setItem('pedidosZapEsfirras', JSON.stringify(pedidos));
+            }
+        }
+    });
 
     function carregarPedidos() {
         const pedidos = JSON.parse(localStorage.getItem('pedidosZapEsfirras')) || [];
@@ -25,10 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         } else {
-            // Ordena para mostrar os mais recentes primeiro
             pedidos.sort((a, b) => new Date(b.data) - new Date(a.data));
             containerListaPedidos.innerHTML = pedidos.map(criarCartaoPedidoHTML).join('');
-            pedidos.forEach(iniciarSimulacaoStatus);
+            
+            // Atualiza a UI de todos os cards para o estado mais recente
+            pedidos.forEach(pedido => {
+                const cartaoPedido = document.getElementById(`pedido-${pedido.id}`);
+                if (cartaoPedido) {
+                    atualizarUIStatus(cartaoPedido, pedido.status, pedido.tipoEntrega);
+                }
+            });
         }
     }
 
@@ -37,30 +68,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataFormatada = dataPedido.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
         const horaFormatada = dataPedido.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         
-        const etapaEntrega = pedido.tipoEntrega === 'padrao' ? 'a-caminho' : 'pronto-retirada';
-        const etapaFinal = pedido.tipoEntrega === 'padrao' ? 'entregue' : 'finalizado';
+        const etapaEntrega = pedido.tipoEntrega === 'padrao' ? 'Em Entrega' : 'Prontos';
+        const etapaFinal = pedido.tipoEntrega === 'padrao' ? 'Finalizado' : 'Finalizado'; // Simplificado, ambos finalizam
 
         return `
-            <div class="cartao-pedido" id="pedido-${pedido.id}">
+            <div class="cartao-pedido" id="pedido-${pedido.id}" data-tipo-entrega="${pedido.tipoEntrega}">
                 <div class="cabecalho-cartao-pedido">
                     <h3>Pedido #${String(pedido.id).slice(-4)}</h3>
                     <span>${dataFormatada} às ${horaFormatada}</span>
                 </div>
                 <div class="corpo-cartao-pedido">
                     <div class="status-atual">
-                        <ion-icon name="${statusInfo[pedido.status].icone}"></ion-icon>
+                        <ion-icon name="receipt-outline"></ion-icon>
                         <div class="texto-status">
-                            <h4>${statusInfo[pedido.status].texto}</h4>
+                            <h4>Pedido Recebido</h4>
                             <p>Previsão: ${new Date(dataPedido.getTime() + 45 * 60000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                     </div>
                     <div class="linha-tempo-status">
-                        <div class="barra-progresso-status"></div>
-                        <div class="etapa-status" data-etapa="recebido">
+                        <div class="barra-progresso-status" style="width: 0%;"></div>
+                        <div class="etapa-status" data-etapa="Novo">
                             <div class="icone-etapa"><ion-icon name="receipt-outline"></ion-icon></div>
                             <p>Recebido</p>
                         </div>
-                        <div class="etapa-status" data-etapa="preparando">
+                        <div class="etapa-status" data-etapa="Em Preparo">
                             <div class="icone-etapa"><ion-icon name="restaurant-outline"></ion-icon></div>
                             <p>Preparando</p>
                         </div>
@@ -82,75 +113,43 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function iniciarSimulacaoStatus(pedido) {
-        const cartaoPedido = document.getElementById(`pedido-${pedido.id}`);
-        if (!cartaoPedido) return;
-
-        const etapaEntrega = pedido.tipoEntrega === 'padrao' ? 'a-caminho' : 'pronto-retirada';
-        const etapaFinal = pedido.tipoEntrega === 'padrao' ? 'entregue' : 'finalizado';
-        
-        const sequenciaStatus = ['recebido', 'preparando', etapaEntrega, etapaFinal];
-        let statusAtualIndex = sequenciaStatus.indexOf(pedido.status);
-
-        if (statusAtualIndex >= sequenciaStatus.length - 1) {
-            atualizarUIStatus(cartaoPedido, pedido.status, pedido.tipoEntrega);
-            return;
-        }
-
-        function proximoStatus() {
-            statusAtualIndex++;
-            if (statusAtualIndex < sequenciaStatus.length) {
-                pedido.status = sequenciaStatus[statusAtualIndex];
-                atualizarUIStatus(cartaoPedido, pedido.status, pedido.tipoEntrega);
-                setTimeout(proximoStatus, 15000); // Avança a cada 15 segundos
-            }
-        }
-        
-        atualizarUIStatus(cartaoPedido, pedido.status, pedido.tipoEntrega);
-        setTimeout(proximoStatus, 15000); // Inicia a simulação
-    }
-
     function atualizarUIStatus(cartao, status, tipoEntrega) {
         const statusAtualEl = cartao.querySelector('.status-atual');
         const barraProgresso = cartao.querySelector('.barra-progresso-status');
         const etapas = cartao.querySelectorAll('.etapa-status');
 
-        const etapaEntrega = tipoEntrega === 'padrao' ? 'a-caminho' : 'pronto-retirada';
-        const etapaFinal = tipoEntrega === 'padrao' ? 'entregue' : 'finalizado';
-        const sequenciaStatus = ['recebido', 'preparando', etapaEntrega, etapaFinal];
-        
-        statusAtualEl.querySelector('ion-icon').name = statusInfo[status].icone;
-        statusAtualEl.querySelector('h4').textContent = statusInfo[status].texto;
-        barraProgresso.style.width = `${statusInfo[status].progresso}%`;
+        const info = statusInfo[status];
+        if (!info) return;
 
-        let statusEncontrado = false;
-        etapas.forEach(etapa => {
-            const nomeEtapa = etapa.dataset.etapa;
-            if (statusEncontrado) {
-                etapa.classList.remove('ativa');
-            } else {
+        statusAtualEl.querySelector('ion-icon').name = info.icone;
+        statusAtualEl.querySelector('h4').textContent = info.texto;
+        barraProgresso.style.width = `${info.progresso}%`;
+
+        const sequenciaStatus = ['Novo', 'Em Preparo', tipoEntrega === 'padrao' ? 'Em Entrega' : 'Prontos', 'Finalizado'];
+        const statusAtualIndex = sequenciaStatus.indexOf(status);
+
+        etapas.forEach((etapa, index) => {
+            if (index <= statusAtualIndex) {
                 etapa.classList.add('ativa');
-            }
-            if (nomeEtapa === status) {
-                statusEncontrado = true;
+            } else {
+                etapa.classList.remove('ativa');
             }
         });
     }
 
-    // Função para atualizar o contador do carrinho (que deve estar vazio nesta página)
     function atualizarContadorCarrinho() {
         const carrinho = JSON.parse(localStorage.getItem('carrinhoZapEsfirras')) || [];
-        const totalItens = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
+        const totalItens = carrinho.reduce((acc, item) => acc + item.quantity, 0);
         if (contadorCarrinhoMobileEl) {
             contadorCarrinhoMobileEl.textContent = totalItens;
             contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0);
-            // Redireciona para o início se clicar na sacola, já que aqui não há painel
+        }
+        if (btnCarrinhoMobile) {
             btnCarrinhoMobile.addEventListener('click', () => {
                 window.location.href = 'index.html';
             });
         }
     }
-
 
     // --- INICIALIZAÇÃO ---
     setTimeout(() => {
