@@ -16,6 +16,11 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
+    <div id="audio-unlock-prompt" class="audio-prompt">
+        <ion-icon name="volume-mute-outline"></ion-icon>
+        <span>O som está desativado. Clique em qualquer lugar para ativar as notificações.</span>
+    </div>
+
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="admin-container">
         <aside class="sidebar" id="sidebar">
@@ -56,22 +61,36 @@
             <section class="admin-view" id="view-configuracoes"></section>
         </main>
     </div>
+<div class="modal-overlay" id="product-modal-overlay">
+    <div class="modal-content">
+        <h2 id="modal-title">Adicionar Novo Produto</h2>
+        <form id="product-form">
+            <input type="hidden" id="product-id">
+            <div class="form-group"><label for="product-name">Nome do Produto</label><input type="text" id="product-name" required></div>
+            <div class="form-group"><label for="product-category">Categoria</label><select id="product-category" required></select></div>
+            <div class="form-group"><label for="product-price">Preço (R$)</label><input type="number" id="product-price" step="0.01" placeholder="Ex: 5.50" required></div>
+            <div class="form-group"><label for="product-description">Descrição</label><textarea id="product-description" rows="3" placeholder="Ex: Deliciosa esfirra de carne..."></textarea></div>
+            
+            <div class="form-group">
+                <label>Adicionais do Produto</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="adicionais-option" value="default" checked> Manter Padrões da Categoria</label>
+                    <label><input type="radio" name="adicionais-option" value="custom"> Personalizar Adicionais</label>
+                </div>
+            </div>
+            <div id="custom-additions-container" class="custom-additions-container" style="display: none;">
+                <div id="custom-additions-list">
+                </div>
+                <button type="button" class="btn btn-secondary btn-add-more" id="add-new-addition-btn"><ion-icon name="add-outline"></ion-icon> Adicionar Novo Adicional</button>
+            </div>
 
-    <div class="modal-overlay" id="product-modal-overlay">
-        <div class="modal-content">
-            <h2 id="modal-title">Adicionar Novo Produto</h2>
-            <form id="product-form">
-                <input type="hidden" id="product-id">
-                <div class="form-group"><label for="product-name">Nome do Produto</label><input type="text" id="product-name" required></div>
-                <div class="form-group"><label for="product-category">Categoria</label><select id="product-category" required></select></div>
-                <div class="form-group"><label for="product-price">Preço (R$)</label><input type="number" id="product-price" step="0.01" placeholder="Ex: 5.50" required></div>
-                <div class="form-group"><label for="product-description">Descrição</label><textarea id="product-description" rows="3" placeholder="Ex: Deliciosa esfirra de carne..."></textarea></div>
-                <div class="form-group"><label>Imagem do Produto</label><div class="image-upload-container"><div class="image-preview-wrapper"><img id="image-preview" src="https://via.placeholder.com/150x150.png?text=Sem+Imagem" alt="Pré-visualização"></div><div class="image-upload-options"><p>Escolha uma imagem:</p><input type="file" id="product-image-file" accept="image/*" style="display: none;"><button type="button" class="btn btn-secondary" id="upload-image-button"><ion-icon name="cloud-upload-outline"></ion-icon> Enviar do Computador</button><p class="separator">ou</p><input type="text" id="product-image-url" placeholder="Cole a URL de uma imagem aqui"></div></div></div>
-                <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-modal-button">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
-            </form>
-            <button class="close-modal-button" id="close-modal-button"><ion-icon name="close-outline"></ion-icon></button>
-        </div>
+            <div class="form-group"><label>Imagem do Produto</label><div class="image-upload-container"><div class="image-preview-wrapper"><img id="image-preview" src="https://via.placeholder.com/150x150.png?text=Sem+Imagem" alt="Pré-visualização"></div><div class="image-upload-options"><p>Escolha uma imagem:</p><input type="file" id="product-image-file" accept="image/*" style="display: none;"><button type="button" class="btn btn-secondary" id="upload-image-button"><ion-icon name="cloud-upload-outline"></ion-icon> Enviar do Computador</button><p class="separator">ou</p><input type="text" id="product-image-url" placeholder="Cole a URL de uma imagem aqui"></div></div></div>
+            
+            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-modal-button">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
+        </form>
+        <button class="close-modal-button" id="close-modal-button"><ion-icon name="close-outline"></ion-icon></button>
     </div>
+</div>
     
     <div class="modal-overlay" id="confirm-modal-overlay">
         <div class="modal-content">
@@ -82,7 +101,7 @@
     </div>
 
     <div id="notification-area" class="notification-area"></div>
-    <audio id="notification-sound" src="https://www.myinstants.com/media/sounds/notification_sound.mp3" preload="auto"></audio>
+    <audio id="notification-sound" src="/frontend/assets/notification.mp3" preload="auto"></audio>
 
     <script src="admin-script.js"></script>
 </body>

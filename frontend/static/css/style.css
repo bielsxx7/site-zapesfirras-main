@@ -1909,3 +1909,44 @@ body.pagina-pedidos .container-principal {
 }
 
 
+/* EM /frontend/static/css/style.css */
+
+/* --- ESTILOS PARA TELA DE SUCESSO DO PEDIDO --- */
+.tela-sucesso {
+    display: none; /* Começa escondida */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    height: 100%;
+}
+
+.tela-sucesso ion-icon {
+    font-size: 6rem;
+    color: var(--green-color);
+    margin-bottom: 20px;
+    animation: zoomInSuccess 0.5s ease-out;
+}
+
+.tela-sucesso h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.tela-sucesso p {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+@keyframes zoomInSuccess {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

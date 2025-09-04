@@ -16,9 +16,10 @@ const io = new Server(server, {
 const port = 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- ROTAS DE PRODUTOS ---
+// --- ROTAS DE PRODUTOS (ATUALIZADAS) ---
 app.get('/api/products', async (req, res) => {
     try {
         const sql = `
@@ -37,9 +38,10 @@ app.get('/api/products', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
     try {
-        const { name, price, category_id, description, image, available } = req.body;
-        const sql = "INSERT INTO products (name, price, category_id, description, image, available) VALUES (?, ?, ?, ?, ?, ?)";
-        const [result] = await pool.query(sql, [name, price, category_id, description, image, available]);
+        // Adicionado 'custom_additions'
+        const { name, price, category_id, description, image, available, custom_additions } = req.body;
+        const sql = "INSERT INTO products (name, price, category_id, description, image, available, custom_additions) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        const [result] = await pool.query(sql, [name, price, category_id, description, image, available, custom_additions ? JSON.stringify(custom_additions) : null]);
         io.emit('menu_updated');
         res.status(201).json({ id: result.insertId });
     } catch (error) {
@@ -51,9 +53,10 @@ app.post('/api/products', async (req, res) => {
 app.put('/api/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, category_id, description, image, available } = req.body;
-        const sql = "UPDATE products SET name = ?, price = ?, category_id = ?, description = ?, image = ?, available = ? WHERE id = ?";
-        await pool.query(sql, [name, price, category_id, description, image, available, id]);
+        // Adicionado 'custom_additions'
+        const { name, price, category_id, description, image, available, custom_additions } = req.body;
+        const sql = "UPDATE products SET name = ?, price = ?, category_id = ?, description = ?, image = ?, available = ?, custom_additions = ? WHERE id = ?";
+        await pool.query(sql, [name, price, category_id, description, image, available, custom_additions ? JSON.stringify(custom_additions) : null, id]);
         io.emit('menu_updated');
         res.json({ message: "Produto atualizado com sucesso." });
     } catch (error) {
@@ -75,6 +78,8 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
+// --- O RESTANTE DO ARQUIVO (CATEGORIAS, PEDIDOS, ETC.) PERMANECE O MESMO ---
+// ... (copie e cole o restante do seu server.js aqui)
 // --- ROTAS DE CATEGORIAS ---
 app.get('/api/categories', async (req, res) => {
     try {
@@ -150,7 +155,7 @@ app.delete('/api/categories/:id', async (req, res) => {
     }
 });
 
-// --- ROTA ADICIONADA: BUSCAR TODOS OS PEDIDOS (PASSO 6) ---
+// --- ROTAS DE PEDIDOS ---
 app.get('/api/orders', async (req, res) => {
     try {
         const [orders] = await pool.query("SELECT * FROM orders ORDER BY created_at DESC");
@@ -161,18 +166,32 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+app.put('/api/orders/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, delivery_number } = req.body;
+        let sql = 'UPDATE orders SET status = ?';
+        const params = [status];
+        if (delivery_number) {
+            sql += ', delivery_number = ?';
+            params.push(delivery_number);
+        }
+        sql += ' WHERE id = ?';
+        params.push(id);
+        await pool.query(sql, params);
+        console.log(`Status do pedido #${id} atualizado para "${status}".`);
+        res.json({ message: "Status do pedido atualizado com sucesso." });
+    } catch (error) {
+        console.error(`Erro ao atualizar status do pedido #${req.params.id}:`, error);
+        res.status(500).json({ message: "Erro no servidor ao atualizar o status." });
+    }
+});
 
-// --- ROTA MODIFICADA: SALVAR UM NOVO PEDIDO (COM CORREÇÃO) ---
 app.post('/api/orders', async (req, res) => {
     try {
         const { client_info, delivery_info, items, total_value, payment_info, status } = req.body;
-
-        const sql = `
-            INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
+        const sql = `INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) VALUES (?, ?, ?, ?, ?, ?)`;
         
-        // MODIFICADO: Convertendo objetos para string JSON manualmente
         const [result] = await pool.query(sql, [
             JSON.stringify(client_info), 
             JSON.stringify(delivery_info), 
@@ -189,6 +208,7 @@ app.post('/api/orders', async (req, res) => {
         const newOrder = orderRows[0];
 
         io.emit('new_order', newOrder);
+        io.emit('print_new_order', newOrder);
 
         res.status(201).json({ message: "Pedido criado com sucesso!", orderId: newOrderId });
 
