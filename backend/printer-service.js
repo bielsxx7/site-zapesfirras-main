@@ -3,7 +3,7 @@ const socketIOClient = require('socket.io-client');
 const path = require('path');
 
 // --- CONFIGURAÇÕES ---
-const SERVER_URL = "http://localhost:3000"; 
+const SERVER_URL = "http://localhost:3000";
 const PRINTER_NAME = 'XP-80C'; // <--- IMPORTANTE: Altere para o nome da sua impressora
 const LOGO_PATH = path.join(__dirname, '../frontend/assets/zapesfiiras.png');
 // --- FIM DAS CONFIGURAÇÕES ---
@@ -32,7 +32,7 @@ function initializePrinterService() {
             console.log("Imprimindo VIA - COZINHA...");
             await printReceipt(order, "VIA - COZINHA");
             
-            await new Promise(resolve => setTimeout(resolve, 1000)); 
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             console.log("Imprimindo VIA - CLIENTE...");
             await printReceipt(order, "VIA - CLIENTE");
@@ -121,6 +121,10 @@ async function printReceipt(order, copyTitle = null) {
         if (order.delivery_info.complemento) {
             printer.println(`Comp: ${order.delivery_info.complemento}`);
         }
+        // --- BLOCO ADICIONADO AQUI ---
+        if (order.delivery_info.referencia) {
+            printer.println(`Ref: ${order.delivery_info.referencia}`);
+        }
         printer.drawLine();
     }
     
@@ -141,9 +145,17 @@ async function printReceipt(order, copyTitle = null) {
     
     printer.drawLine();
 
-    const taxaEntrega = order.delivery_info.tipo === 'Entrega' ? 5.00 : 0;
-    const subtotal = order.total_value - taxaEntrega;
-    const descontos = 0;
+    // --- CORREÇÃO IMPORTANTE NA LÓGICA DA TAXA ---
+    // Primeiro, calcula o subtotal real dos itens, incluindo adicionais
+    const subtotal = order.items.reduce((acc, item) => {
+        const precoAdicionais = item.adicionais ? item.adicionais.reduce((sum, ad) => sum + (ad.price || 0), 0) : 0;
+        const precoTotalItem = (parseFloat(item.price) + precoAdicionais) * item.quantity;
+        return acc + precoTotalItem;
+    }, 0);
+
+    // A taxa de entrega é a diferença entre o total do pedido e o subtotal dos itens
+    const taxaEntrega = order.total_value - subtotal;
+    const descontos = 0; // Mantido como 0 por enquanto
 
     printer.tableCustom([ { text: "Subtotal", align: "LEFT" }, { text: formatCurrency(subtotal), align: "RIGHT" } ]);
     printer.tableCustom([ { text: "Taxa de Entrega", align: "LEFT" }, { text: formatCurrency(taxaEntrega), align: "RIGHT" } ]);

@@ -4,6 +4,9 @@ const { Server } = require("socket.io");
 const cors = require('cors');
 const pool = require('./db');
 
+// <-- CORREÇÃO 1: Trocamos a biblioteca confusa pela 'string-similarity'
+const stringSimilarity = require("string-similarity");
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -18,6 +21,86 @@ const port = 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// DICIONÁRIO FINAL DE BAIRROS ESPECIAIS (sem alterações)
+const bairrosEspeciais = [
+    {
+        nomeOficial: 'conjunto habitacional gilberto rossetti',
+        aliases: ['cohab 2', 'cohab ii', 'cohab2', 'gilberto rossetti']
+    },
+    {
+        nomeOficial: 'loteamento residencial vale verde',
+        aliases: ['vale verde', 'valeverde']
+    },
+    {
+        nomeOficial: 'altos do vale ii',
+        aliases: ['altos do vale ii', 'altos do vale 2', 'altos do vale']
+    },
+    {
+        nomeOficial: 'parque dos manacas i',
+        aliases: ['parque manacas', 'parque manacás', 'manacas', 'manacás', 'parque dos manacas i']
+    },
+    {
+        nomeOficial: 'chacara palmeirinha',
+        aliases: ['chacara palmeirinha', 'chacara da palmeirinha', 'palmeirinha']
+    },
+    {
+        nomeOficial: 'chacara da pamonha',
+        aliases: ['chacara da pamonha', 'pamonha', 'chacara pamonha', 'chacara das suculentas']
+    },
+    {
+        nomeOficial: 'distrito industrial ii',
+        aliases: ['distrito industrial 2', 'distrito 2', 'distrito industrial']
+    }
+];
+
+// ROTA ATUALIZADA COM A NOVA BIBLIOTECA
+app.post('/api/calculate-delivery-fee', (req, res) => {
+    try {
+        const { bairro } = req.body;
+        if (!bairro) {
+            return res.status(400).json({ message: "O nome do bairro é obrigatório." });
+        }
+
+        const bairroNormalizado = bairro.toLowerCase()
+                                      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                                      .trim();
+
+        let taxa = 5.00;
+        // <-- CORREÇÃO 2: A lógica mudou. Agora verificamos a similaridade. 0.7 = 70% parecido.
+        const SIMILARITY_THRESHOLD = 0.7;
+
+        for (const bairroConfig of bairrosEspeciais) {
+            let match = false;
+
+            for (const alias of bairroConfig.aliases) {
+                const similaridade = stringSimilarity.compareTwoStrings(bairroNormalizado, alias);
+                if (similaridade >= SIMILARITY_THRESHOLD) {
+                    match = true;
+                    break;
+                }
+            }
+
+            if (!match && bairroNormalizado.includes(bairroConfig.nomeOficial)) {
+                match = true;
+            }
+
+            if (match) {
+                taxa = 10.00;
+                break;
+            }
+        }
+        
+        res.json({ taxaDeEntrega: taxa });
+
+    } catch (error) {
+        console.error("Erro ao calcular taxa de entrega:", error);
+        res.status(500).json({ message: "Erro no servidor ao calcular a taxa." });
+    }
+});
+
+
+// --- O RESTO DO SEU CÓDIGO CONTINUA DAQUI PARA BAIXO, SEM ALTERAÇÕES ---
 
 // --- ROTAS DE PRODUTOS ---
 app.get('/api/products', async (req, res) => {
@@ -209,8 +292,6 @@ app.put('/api/orders/:id/status', async (req, res) => {
 
         console.log(`Status do pedido #${id} atualizado para "${status}".`);
         
-        // --- LINHA ADICIONADA ---
-        // Emite o evento para o cliente saber que o status mudou
         io.emit('order_status_updated', { orderId: id, newStatus: status });
 
         res.json({ message: "Status do pedido atualizado com sucesso." });

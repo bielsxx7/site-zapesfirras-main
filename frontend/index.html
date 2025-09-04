@@ -161,8 +161,7 @@
                         <button>Aplicar</button>
                     </div>
                 </div>
-                <div class="resumo-valores" id="resumo-tela-itens"></div>
-            </div>
+                </div>
     
             <div id="tela-entrega" class="tela-carrinho">
                 <div class="secao-opcoes-entrega">
@@ -210,24 +209,36 @@
                         </div>
 
                         <h4 class="titulo-endereco-entrega">Endereço de Entrega</h4>
-                        <div class="grupo-campo-endereco">
-                            <input type="text" id="endereco-rua" placeholder="Rua, Avenida*" required>
-                        </div>
+                        
+                        <label class="checkbox-container" style="margin-bottom: 15px; font-size: 0.9em;">
+                            <input type="checkbox" id="nao-sei-cep-checkbox">
+                            <span class="checkmark"></span>
+                            Não sei meu CEP, digitar manualmente
+                        </label>
+                        
                         <div class="campos-inline">
                             <div class="grupo-campo-endereco">
-                                <input type="text" id="endereco-bairro" placeholder="Bairro*" required>
+                                <input type="tel" id="endereco-cep" placeholder="Digite o CEP*" required maxlength="9">
                             </div>
                             <div class="grupo-campo-endereco">
                                 <input type="text" id="endereco-numero" placeholder="Número*" required>
                             </div>
                         </div>
                         <div class="grupo-campo-endereco">
+                            <input type="text" id="endereco-rua" placeholder="Rua / Avenida*" required readonly style="background-color: #e9ecef;">
+                        </div>
+                        <div class="grupo-campo-endereco">
+                            <input type="text" id="endereco-bairro" placeholder="Bairro*" required readonly style="background-color: #e9ecef;">
+                        </div>
+                        <div class="grupo-campo-endereco">
                             <input type="text" id="endereco-complemento" placeholder="Complemento (Apto, Bloco...)">
+                        </div>
+                        <div class="grupo-campo-endereco">
+                            <input type="text" id="endereco-referencia" placeholder="Ponto de Referência (Opcional)">
                         </div>
                     </form>
                 </div>
-                <div class="resumo-valores" id="resumo-tela-entrega"></div>
-            </div> 
+                </div> 
 
             <div id="tela-pagamento" class="tela-carrinho">
                  <div class="secao-pagamento">
@@ -251,8 +262,7 @@
                         <input type="tel" id="cpf-input" placeholder="Digite seu CPF">
                     </div>
                 </div>
-                <div class="resumo-valores" id="resumo-tela-pagamento"></div>
-            </div>
+                </div>
 
             <div id="tela-escolher-pagamento" class="tela-carrinho">
                 <div class="secao-opcoes-pagamento">
@@ -338,12 +348,14 @@
         </div>
     
         <footer class="carrinho-rodape">
+            <div class="resumo-valores" id="resumo-rodape-geral" style="display: none;">
+                </div>
+
             <button class="botao-continuar-carrinho" id="btn-continuar-carrinho">
                 <span>Continuar</span>
-                <span id="total-botao-carrinho">R$ 0,00</span>
-            </button>
+                </button>
         </footer>
-    </div>
+        </div>
     
     <nav class="bottom-nav">
         <a href="index.html" class="bottom-nav-item active">
