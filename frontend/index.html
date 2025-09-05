@@ -24,7 +24,7 @@
         
         <header>
             <div class="barra-superior-info apenas-desktop">
-                <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Sábado, 30 de agosto de 2025</span>
+                <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Sexta-feira, 5 de setembro</span>
             </div>
         
             <div class="barra-navegacao">
@@ -161,16 +161,16 @@
                         <button>Aplicar</button>
                     </div>
                 </div>
-                </div>
+            </div>
     
-            <div id="tela-entrega" class="tela-carrinho">
+            <div id="tela-metodo-entrega" class="tela-carrinho">
                 <div class="secao-opcoes-entrega">
                     <h4>Como você quer receber seu pedido?</h4>
                     <label class="opcao-radio">
                         <input type="radio" name="tipo-entrega" value="padrao" checked>
                         <div class="radio-customizado"></div>
                         <div class="opcao-radio-info">
-                            <p>Entrega Padrão</p>
+                            <p>Receber em Casa (Entrega)</p>
                             <span>Receba em <strong>45-60 min</strong></span>
                         </div>
                         <span class="opcao-radio-preco">R$ 5,00</span>
@@ -185,8 +185,55 @@
                         <span class="opcao-radio-preco gratis">Grátis</span>
                     </label>
                 </div>
+            </div>
 
-                <div id="container-form-retirada" style="display: none;">
+            <div id="tela-dados-entrega" class="tela-carrinho">
+                 <form id="form-endereco" class="novo-form-vertical">
+                    <h4 class="form-titulo-secao">Quem está recebendo?</h4>
+                    <div class="form-campo">
+                        <label for="cliente-nome">Seu nome*</label>
+                        <input type="text" id="cliente-nome" placeholder="Digite seu nome completo" required>
+                    </div>
+                    <div class="form-campo">
+                        <label for="cliente-telefone">Seu telefone / WhatsApp*</label>
+                        <input type="tel" id="cliente-telefone" placeholder="(99) 99999-9999" required>
+                    </div>
+    
+                    <h4 class="form-titulo-secao">Onde entregar?</h4>
+                    <div class="form-campo">
+                        <label for="endereco-cep">CEP*</label>
+                        <input type="tel" id="endereco-cep" placeholder="Digite o CEP para buscar o endereço" required maxlength="9">
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-rua">Rua / Avenida*</label>
+                        <input type="text" id="endereco-rua" placeholder="Preenchido automaticamente" required readonly>
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-numero">Número*</label>
+                        <input type="text" id="endereco-numero" placeholder="Ex: 123" required>
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-bairro">Bairro*</label>
+                        <input type="text" id="endereco-bairro" placeholder="Preenchido automaticamente" required readonly>
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-complemento">Complemento</label>
+                        <input type="text" id="endereco-complemento" placeholder="Apto, Bloco, Casa dos fundos...">
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-referencia">Ponto de Referência</label>
+                        <input type="text" id="endereco-referencia" placeholder="Ex: Próximo ao mercado">
+                    </div>
+                     <label class="checkbox-container" style="margin-top: 10px;">
+                        <input type="checkbox" id="nao-sei-cep-checkbox">
+                        <span class="checkmark"></span>
+                        Não sei meu CEP, digitar manualmente
+                    </label>
+                </form>
+            </div>
+    
+            <div id="tela-dados-retirada" class="tela-carrinho">
+                 <div id="container-form-retirada">
                     <h4>Informações para Retirada</h4>
                     <form id="form-retirada" class="form-endereco">
                         <div class="grupo-campo-endereco">
@@ -197,51 +244,10 @@
                         </div>
                     </form>
                 </div>
-
-                <div id="container-form-endereco">
-                    <h4>Suas Informações</h4>
-                    <form id="form-endereco" class="form-endereco">
-                        <div class="grupo-campo-endereco">
-                            <input type="text" id="cliente-nome" placeholder="Seu nome*" required>
-                        </div>
-                        <div class="grupo-campo-endereco">
-                            <input type="tel" id="cliente-telefone" placeholder="Seu telefone / WhatsApp*">
-                        </div>
-
-                        <h4 class="titulo-endereco-entrega">Endereço de Entrega</h4>
-                        
-                        <label class="checkbox-container" style="margin-bottom: 15px; font-size: 0.9em;">
-                            <input type="checkbox" id="nao-sei-cep-checkbox">
-                            <span class="checkmark"></span>
-                            Não sei meu CEP, digitar manualmente
-                        </label>
-                        
-                        <div class="campos-inline">
-                            <div class="grupo-campo-endereco">
-                                <input type="tel" id="endereco-cep" placeholder="Digite o CEP*" required maxlength="9">
-                            </div>
-                            <div class="grupo-campo-endereco">
-                                <input type="text" id="endereco-numero" placeholder="Número*" required>
-                            </div>
-                        </div>
-                        <div class="grupo-campo-endereco">
-                            <input type="text" id="endereco-rua" placeholder="Rua / Avenida*" required readonly style="background-color: #e9ecef;">
-                        </div>
-                        <div class="grupo-campo-endereco">
-                            <input type="text" id="endereco-bairro" placeholder="Bairro*" required readonly style="background-color: #e9ecef;">
-                        </div>
-                        <div class="grupo-campo-endereco">
-                            <input type="text" id="endereco-complemento" placeholder="Complemento (Apto, Bloco...)">
-                        </div>
-                        <div class="grupo-campo-endereco">
-                            <input type="text" id="endereco-referencia" placeholder="Ponto de Referência (Opcional)">
-                        </div>
-                    </form>
-                </div>
-                </div> 
-
+            </div>
+    
             <div id="tela-pagamento" class="tela-carrinho">
-                 <div class="secao-pagamento">
+                <div class="secao-pagamento">
                     <h4>Forma de Pagamento</h4>
                     <div class="card-info" id="card-info-pagamento"></div>
                 </div>
@@ -262,8 +268,8 @@
                         <input type="tel" id="cpf-input" placeholder="Digite seu CPF">
                     </div>
                 </div>
-                </div>
-
+            </div>
+    
             <div id="tela-escolher-pagamento" class="tela-carrinho">
                 <div class="secao-opcoes-pagamento">
                     <label class="metodo-pagamento-card">
@@ -296,7 +302,7 @@
                     </div>
                     <label class="metodo-pagamento-card">
                         <input type="radio" name="forma-pagamento-principal" value="cartao" checked>
-                          <div class="card-content">
+                        <div class="card-content">
                             <ion-icon name="card-outline"></ion-icon>
                             <span class="card-text">Cartão</span>
                         </div>
@@ -305,7 +311,7 @@
                     <div class="sub-opcoes" id="sub-opcoes-cartao">
                         <label class="metodo-pagamento-card-sub">
                             <input type="radio" name="sub-opcao-cartao" value="credito" checked>
-                             <div class="card-content-sub">Crédito</div>
+                            <div class="card-content-sub">Crédito</div>
                         </label>
                         <label class="metodo-pagamento-card-sub">
                             <input type="radio" name="sub-opcao-cartao" value="debito">
@@ -332,7 +338,7 @@
                             <div class="card-content-sub">Sim, preciso de troco</div>
                         </label>
                         <div class="input-troco-container" id="container-troco">
-                             <input type="text" id="valor-troco" placeholder="Troco para quanto? Ex: 50,00">
+                            <input type="text" id="valor-troco" placeholder="Troco para quanto? Ex: 50,00">
                         </div>
                     </div>
                 </div>
@@ -349,14 +355,12 @@
     
         <footer class="carrinho-rodape">
             <div class="resumo-valores" id="resumo-rodape-geral" style="display: none;">
-                </div>
-
+            </div>
             <button class="botao-continuar-carrinho" id="btn-continuar-carrinho">
                 <span>Continuar</span>
-                </button>
+            </button>
         </footer>
-        </div>
-    
+    </div>
     <nav class="bottom-nav">
         <a href="index.html" class="bottom-nav-item active">
             <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>

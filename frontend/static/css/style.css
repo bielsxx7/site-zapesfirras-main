@@ -740,7 +740,6 @@ body {
     min-height: 0;
     overflow-y: auto;
     padding: 20px;
-    /* A borda de teste foi removida */
 }
 
 /* NOVO ESTILO PARA O RODAPÉ */
@@ -905,13 +904,14 @@ body {
 }
 .campos-inline { display: flex; gap: 15px; }
 .campos-inline > .grupo-campo-endereco { flex: 1; }
-
 #container-form-endereco {
+    padding-bottom: 20px; 
     transition: all 0.4s ease-in-out;
-    max-height: 500px;
+    max-height: 500px; /* Você pode aumentar este valor se precisar de mais espaço */
     overflow: hidden;
     opacity: 1;
 }
+
 #container-form-endereco.escondido {
     max-height: 0;
     opacity: 0;
@@ -1978,4 +1978,91 @@ body.pagina-pedidos .container-principal {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* ======================================================= */
+/* --- 10. REFORMULAÇÃO COMPLETA DO CARRINHO --- */
+/* ======================================================= */
+
+/* --- ESTRUTURA PRINCIPAL DO PAINEL --- */
+.painel-carrinho {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ocupa a altura total da tela */
+    overflow: hidden; /* Impede o painel inteiro de rolar */
+}
+
+.carrinho-cabecalho {
+    flex-shrink: 0; /* Impede o cabeçalho de encolher */
+    border-bottom: 1px solid var(--grey-medium);
+}
+
+.carrinho-corpo {
+    flex-grow: 1;  /* Faz o corpo ocupar todo o espaço restante */
+    overflow-y: auto; /* ADICIONA A ROLAGEM APENAS AQUI */
+    padding: 20px;
+}
+
+.carrinho-rodape {
+    flex-shrink: 0; /* Impede o rodapé de encolher */
+    background-color: var(--navbar-bg);
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+}
+
+/* --- ESTILO DO NOVO FORMULÁRIO VERTICAL --- */
+.novo-form-vertical .form-titulo-secao {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.novo-form-vertical .form-titulo-secao:first-of-type {
+    margin-top: 0;
+}
+
+.novo-form-vertical .form-campo {
+    margin-bottom: 16px;
+}
+
+.novo-form-vertical .form-campo label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.novo-form-vertical .form-campo input {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    border: 1px solid var(--grey-medium);
+    border-radius: 8px;
+    background-color: var(--navbar-bg);
+}
+
+.novo-form-vertical .form-campo input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.novo-form-vertical .form-campo input:read-only {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* Deixa a barra de rolagem um pouco mais visível */
+.carrinho-corpo::-webkit-scrollbar {
+  width: 8px;
+}
+.carrinho-corpo::-webkit-scrollbar-track {
+  background: var(--grey-light);
+}
+.carrinho-corpo::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
 }
