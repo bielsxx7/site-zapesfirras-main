@@ -2066,3 +2066,21 @@ body.pagina-pedidos .container-principal {
   background: #ccc;
   border-radius: 4px;
 }
+
+
+/* Estilos para usuário logado */
+.info-usuario-logado {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 600;
+}
+.botao-logout {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+}

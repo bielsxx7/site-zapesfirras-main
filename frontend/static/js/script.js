@@ -156,107 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const atualizarQuantidade = (idUnico, novaQuantidade) => { if (novaQuantidade < 1) { removerItemDoCarrinho(idUnico); return; } const itemIndex = carrinho.findIndex(item => item.idUnico === idUnico); if (itemIndex > -1) { carrinho[itemIndex].quantity = novaQuantidade; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); } };
     const removerItemDoCarrinho = (idUnico) => { carrinho = carrinho.filter(item => item.idUnico !== idUnico); salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
     const renderizarItensCarrinho = () => { const container = document.getElementById('lista-itens-carrinho'); if (!container) return; if (carrinho.length === 0) { container.innerHTML = '<p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>'; } else { container.innerHTML = carrinho.map(item => ` <div class="item-carrinho-novo" data-id-unico="${item.idUnico}"> <img src="${item.image}" alt="${item.name}"> <div class="info-item"> <p class="nome-item">${item.name}</p> ${item.adicionais && item.adicionais.length > 0 ? ` <div class="adicionais-carrinho"> ${item.adicionais.map(ad => `<span>+ ${ad.nome}</span>`).join('')} </div> ` : ''} <span class="preco-unitario-item">R$ ${parseFloat(item.price).toFixed(2).replace(',', '.')}</span> ${item.observacao ? `<p class="observacao-item">Obs: ${item.observacao}</p>` : ''} </div> <div class="acoes-item"> <div class="seletor-quantidade-carrinho"> <button class="diminuir-item">-</button> <span>${item.quantity}</span> <button class="aumentar-item">+</button> </div> <button class="botao-remover-item"> <ion-icon name="trash-outline"></ion-icon> </button> </div> </div> `).join(''); } atualizarTodosResumos(); };
-
-    // =======================================================
-    // ---      INÍCIO DAS FUNÇÕES MODIFICADAS             ---
-    // =======================================================
-
-    const atualizarTodosResumos = () => {
-        const subtotal = carrinho.reduce((acc, item) => {
-            const precoItemTotal = parseFloat(item.price) + (item.adicionais ? item.adicionais.reduce((sum, ad) => sum + ad.price, 0) : 0);
-            return acc + (precoItemTotal * item.quantity);
-        }, 0);
-        const tipoEntregaEl = document.querySelector('input[name="tipo-entrega"]:checked');
-        const tipoEntrega = tipoEntregaEl ? tipoEntregaEl.value : 'padrao';
-        const taxaEntregaFinal = tipoEntrega === 'retirada' || carrinho.length === 0 ? 0 : taxaDeEntrega;
-        const total = subtotal + taxaEntregaFinal;
-        const resumoHTML = `
-            <div class="linha-resumo"> <span>Subtotal</span> <span>R$ ${subtotal.toFixed(2).replace('.', ',')}</span> </div>
-            <div class="linha-resumo"> <span>Taxa de entrega</span> <span>R$ ${taxaEntregaFinal.toFixed(2).replace('.', ',')}</span> </div>
-            <div class="linha-resumo total"> <span>Total</span> <span>R$ ${total.toFixed(2).replace('.', ',')}</span> </div>
-        `;
-        const resumoRodapeEl = document.getElementById('resumo-rodape-geral');
-        if (resumoRodapeEl) {
-            if (carrinho.length > 0 && (etapaAtualCarrinho === 'pagamento' || etapaAtualCarrinho === 'escolher-pagamento')) {
-                resumoRodapeEl.innerHTML = resumoHTML;
-                resumoRodapeEl.style.display = 'block';
-            } else {
-                resumoRodapeEl.style.display = 'none';
-            }
-        }
-        const totalItens = carrinho.reduce((acc, item) => acc + item.quantity, 0);
-        if (contadorCarrinhoMobileEl) {
-            contadorCarrinhoMobileEl.textContent = totalItens;
-            contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0);
-        }
-        if (contadorCarrinhoDesktopEl) {
-            contadorCarrinhoDesktopEl.textContent = totalItens;
-            contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0);
-        }
-    };
-    
-    const navegarCarrinho = (novaEtapa) => {
-        etapaAtualCarrinho = novaEtapa;
-        telasCarrinho.forEach(tela => tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`));
-        const textoBotao = document.querySelector('#btn-continuar-carrinho span:first-child');
-        const rodapeCarrinho = document.querySelector('.carrinho-rodape');
-        if (rodapeCarrinho) {
-            if (novaEtapa === 'sucesso') {
-                rodapeCarrinho.style.display = 'none';
-            } else {
-                rodapeCarrinho.style.display = 'flex';
-            }
-        }
-        btnVoltarCarrinho.style.display = (novaEtapa === 'itens' || novaEtapa === 'sucesso') ? 'none' : 'block';
-        switch (novaEtapa) {
-            case 'itens':
-                if (tituloCarrinho) tituloCarrinho.textContent = 'Meu Carrinho';
-                if (textoBotao) textoBotao.textContent = 'Continuar';
-                break;
-            case 'metodo-entrega':
-                if (tituloCarrinho) tituloCarrinho.textContent = 'Como Deseja Receber?';
-                if (textoBotao) textoBotao.textContent = 'Continuar';
-                break;
-            case 'dados-entrega':
-                if (tituloCarrinho) tituloCarrinho.textContent = 'Endereço de Entrega';
-                if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento';
-                break;
-            case 'dados-retirada':
-                 if (tituloCarrinho) tituloCarrinho.textContent = 'Dados para Retirada';
-                if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento';
-                break;
-            case 'pagamento':
-                if (tituloCarrinho) tituloCarrinho.textContent = 'Pagamento';
-                if (textoBotao) textoBotao.textContent = 'Finalizar Pedido';
-                break;
-            case 'escolher-pagamento':
-                if (tituloCarrinho) tituloCarrinho.textContent = 'Forma de Pagamento';
-                if (textoBotao) textoBotao.textContent = 'Confirmar Seleção';
-                break;
-            case 'sucesso':
-                if (tituloCarrinho) tituloCarrinho.textContent = 'Pedido Finalizado';
-                break;
-        }
-        atualizarTodosResumos();
-    };
-
-    const togglePainelCarrinho = (abrir = null) => {
-        if (!painelCarrinho) return;
-        const ativo = abrir === null ? !painelCarrinho.classList.contains('ativo') : abrir;
-        if (ativo && etapaAtualCarrinho !== 'itens') {
-             navegarCarrinho('itens');
-        }
-        painelCarrinho.classList.toggle('ativo', ativo);
-        if (sobreposicaoCarrinho) sobreposicaoCarrinho.classList.toggle('ativo', ativo);
-    };
-    
-    // =======================================================
-    // ---        FIM DAS FUNÇÕES MODIFICADAS              ---
-    // =======================================================
-
+    const atualizarTodosResumos = () => { const subtotal = carrinho.reduce((acc, item) => { const precoItemTotal = parseFloat(item.price) + (item.adicionais ? item.adicionais.reduce((sum, ad) => sum + ad.price, 0) : 0); return acc + (precoItemTotal * item.quantity); }, 0); const tipoEntregaEl = document.querySelector('input[name="tipo-entrega"]:checked'); const tipoEntrega = tipoEntregaEl ? tipoEntregaEl.value : 'padrao'; const taxaEntregaFinal = tipoEntrega === 'retirada' || carrinho.length === 0 ? 0 : taxaDeEntrega; const total = subtotal + taxaEntregaFinal; const resumoHTML = ` <div class="linha-resumo"> <span>Subtotal</span> <span>R$ ${subtotal.toFixed(2).replace('.', ',')}</span> </div> <div class="linha-resumo"> <span>Taxa de entrega</span> <span>R$ ${taxaEntregaFinal.toFixed(2).replace('.', ',')}</span> </div> <div class="linha-resumo total"> <span>Total</span> <span>R$ ${total.toFixed(2).replace('.', ',')}</span> </div> `; const resumoRodapeEl = document.getElementById('resumo-rodape-geral'); if (resumoRodapeEl) { if (carrinho.length > 0) { resumoRodapeEl.innerHTML = resumoHTML; resumoRodapeEl.style.display = 'block'; } else { resumoRodapeEl.style.display = 'none'; } } const totalItens = carrinho.reduce((acc, item) => acc + item.quantity, 0); if (contadorCarrinhoMobileEl) { contadorCarrinhoMobileEl.textContent = totalItens; contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0); } if (contadorCarrinhoDesktopEl) { contadorCarrinhoDesktopEl.textContent = totalItens; contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0); } };
     const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const atualizarDisplayPagamento = () => { const container = document.getElementById('card-info-pagamento'); if (!container) return; let iconName = 'card-outline'; let titulo = ''; let subtitulo = ''; if (pedido.pagamento.metodo === 'Pix') { iconName = 'logo-paypal'; titulo = 'Pix'; subtitulo = pedido.pagamento.tipo === 'online' ? 'Pagamento online via PIX' : 'Pagar na entrega'; } else if (pedido.pagamento.metodo === 'Dinheiro') { iconName = 'wallet-outline'; titulo = 'Dinheiro'; subtitulo = 'Pagamento na entrega'; if (pedido.pagamento.trocoPara > 0) { subtitulo = `Troco para ${formatCurrency(pedido.pagamento.trocoPara)}`; } } else { iconName = 'card-outline'; titulo = `Cartão de ${pedido.pagamento.tipo}`; subtitulo = 'Pagamento na entrega'; } container.innerHTML = ` <ion-icon name="${iconName}"></ion-icon> <div class="card-info-texto"> <p>${titulo}</p> <span>${subtitulo}</span> </div> <a href="#" id="btn-trocar-pagamento">Trocar</a> `; const btnTrocar = document.getElementById('btn-trocar-pagamento'); if (btnTrocar) btnTrocar.addEventListener('click', (e) => { e.preventDefault(); navegarCarrinho('escolher-pagamento'); }); };
-    
+    const navegarCarrinho = (novaEtapa) => { etapaAtualCarrinho = novaEtapa; telasCarrinho.forEach(tela => tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`)); const textoBotao = document.querySelector('#btn-continuar-carrinho span:first-child'); const rodapeCarrinho = document.querySelector('.carrinho-rodape'); if (rodapeCarrinho) { if (novaEtapa === 'sucesso') { rodapeCarrinho.style.display = 'none'; } else { rodapeCarrinho.style.display = 'flex'; } } switch (novaEtapa) { case 'itens': if (tituloCarrinho) tituloCarrinho.textContent = 'Meu Carrinho'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'none'; if (textoBotao) textoBotao.textContent = 'Continuar'; break; case 'entrega': if (tituloCarrinho) tituloCarrinho.textContent = 'Endereço e Entrega'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento'; break; case 'pagamento': if (tituloCarrinho) tituloCarrinho.textContent = 'Pagamento'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Finalizar Pedido'; break; case 'escolher-pagamento': if (tituloCarrinho) tituloCarrinho.textContent = 'Forma de Pagamento'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Confirmar Seleção'; break; case 'sucesso': if (tituloCarrinho) tituloCarrinho.textContent = 'Pedido Finalizado'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'none'; break; } atualizarTodosResumos(); };
+    const togglePainelCarrinho = (abrir = null) => { if (!painelCarrinho) return; const ativo = abrir === null ? !painelCarrinho.classList.contains('ativo') : abrir; if (ativo) navegarCarrinho('itens'); painelCarrinho.classList.toggle('ativo', ativo); if (sobreposicaoCarrinho) sobreposicaoCarrinho.classList.toggle('ativo', ativo); };
+    const gerenciarVisibilidadeFormEntrega = () => { const tipoEntregaEl = document.querySelector('input[name="tipo-entrega"]:checked'); if (!tipoEntregaEl) return; const tipoEntrega = tipoEntregaEl.value; const nomeRetiradaInput = document.getElementById('retirada-nome'); const cepInput = document.getElementById('endereco-cep'); if (tipoEntrega === 'retirada') { if (containerFormEndereco) containerFormEndereco.style.display = 'none'; if (containerFormRetirada) containerFormRetirada.style.display = 'block'; if (nomeRetiradaInput) nomeRetiradaInput.required = true; if (cepInput) cepInput.required = false; } else { if (containerFormEndereco) containerFormEndereco.style.display = 'block'; if (containerFormRetirada) containerFormRetirada.style.display = 'none'; if (nomeRetiradaInput) nomeRetiradaInput.required = false; if (cepInput) cepInput.required = true; } };
     const finalizarEEnviarPedido = async () => {
         const btnTexto = document.querySelector('#btn-continuar-carrinho span:first-child');
         const btnOriginalText = btnTexto ? btnTexto.textContent : 'Finalizar Pedido';
@@ -339,14 +244,55 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnCarrinho) btnCarrinho.disabled = false;
         }
     };
+    
+    // =======================================================
+    // ---      NOVA FUNÇÃO PARA GERENCIAR LOGIN/LOGOUT    ---
+    // =======================================================
+    function gerenciarEstadoLogin() {
+        const token = localStorage.getItem('authToken');
+        const customerInfo = JSON.parse(localStorage.getItem('customerInfo'));
+
+        const botaoContaDesktop = document.getElementById('botao-conta-desktop');
+        const infoUsuarioDesktop = document.getElementById('info-usuario-desktop');
+        const nomeUsuarioDesktop = document.getElementById('nome-usuario-desktop');
+        const botaoLogoutDesktop = document.getElementById('botao-logout-desktop');
+        
+        const botaoPerfilMobileLink = document.getElementById('botao-perfil-mobile');
+        const botaoPerfilMobileText = botaoPerfilMobileLink ? botaoPerfilMobileLink.querySelector('.bottom-nav-text') : null;
+
+        if (token && customerInfo) {
+            // Se o usuário ESTÁ logado
+            if (botaoContaDesktop) botaoContaDesktop.style.display = 'none';
+            if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'flex';
+            if (nomeUsuarioDesktop) nomeUsuarioDesktop.textContent = `Olá, ${customerInfo.name.split(' ')[0]}!`;
+            if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Minha Conta';
+
+            if (botaoLogoutDesktop) {
+                if (!botaoLogoutDesktop.dataset.listener) {
+                    botaoLogoutDesktop.addEventListener('click', () => {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('customerInfo');
+                        window.location.reload();
+                    });
+                    botaoLogoutDesktop.dataset.listener = 'true';
+                }
+            }
+        } else {
+            // Se o usuário NÃO está logado
+            if (botaoContaDesktop) botaoContaDesktop.style.display = 'flex';
+            if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'none';
+            if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Perfil';
+        }
+    }
 
     async function init() {
+        gerenciarEstadoLogin(); // ADICIONADO AQUI
         atualizarInfoCabecalho();
         ajustarPaddingCorpo();
         carregarCarrinhoLocalStorage();
         if (barraFiltros) {
             atualizarDisplayPagamento();
-            // A função gerenciarVisibilidadeFormEntrega() foi removida daqui
+            gerenciarVisibilidadeFormEntrega();
             try {
                 await carregarDadosDaAPI();
             } catch (e) {
@@ -424,115 +370,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function configurarEventListeners() {
-        if (btnContinuarCarrinho) {
-            btnContinuarCarrinho.addEventListener('click', () => {
-                if (carrinho.length === 0) {
-                    mostrarNotificacao("Sua sacola está vazia!");
-                    return;
-                }
-                switch (etapaAtualCarrinho) {
-                    case 'itens':
-                        navegarCarrinho('metodo-entrega');
-                        break;
-                    case 'metodo-entrega':
-                        const tipoEntrega = document.querySelector('input[name="tipo-entrega"]:checked').value;
-                        if (tipoEntrega === 'padrao') {
-                            navegarCarrinho('dados-entrega');
-                        } else {
-                            navegarCarrinho('dados-retirada');
-                        }
-                        break;
-                    case 'dados-entrega':
-                        const formEndereco = document.getElementById('form-endereco');
-                        if (formEndereco && formEndereco.checkValidity()) {
-                            navegarCarrinho('pagamento');
-                        } else if (formEndereco) {
-                            formEndereco.reportValidity();
-                        }
-                        break;
-                    case 'dados-retirada':
-                        const formRetirada = document.getElementById('form-retirada');
-                        if (formRetirada && formRetirada.checkValidity()) {
-                            navegarCarrinho('pagamento');
-                        } else if (formRetirada) {
-                            formRetirada.reportValidity();
-                        }
-                        break;
-                    case 'pagamento':
-                        finalizarEEnviarPedido();
-                        break;
-                    case 'escolher-pagamento':
-                        const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
-                        if (metodo === 'pix') {
-                            pedido.pagamento = { metodo: 'Pix', tipo: document.querySelector('input[name="sub-opcao-pix"]:checked').value };
-                        } else if (metodo === 'cartao') {
-                            pedido.pagamento = { metodo: 'Cartão', tipo: document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito' };
-                        } else if (metodo === 'dinheiro') {
-                            const precisaTroco = document.querySelector('input[name="precisa-troco"]:checked').value === 'sim';
-                            if (precisaTroco) {
-                                const valorTrocoInput = document.getElementById('valor-troco').value.replace(',', '.');
-                                const trocoPara = parseFloat(valorTrocoInput);
-                                pedido.pagamento = { metodo: 'Dinheiro', trocoPara: isNaN(trocoPara) ? 0 : trocoPara, tipo: `Troco para R$${valorTrocoInput}` };
-                            } else {
-                                pedido.pagamento = { metodo: 'Dinheiro', trocoPara: 0, tipo: 'Não precisa de troco' };
-                            }
-                        }
-                        atualizarDisplayPagamento();
-                        navegarCarrinho('pagamento');
-                        break;
-                }
-            });
-        }
-        if (btnVoltarCarrinho) {
-            btnVoltarCarrinho.addEventListener('click', () => {
-                switch (etapaAtualCarrinho) {
-                    case 'metodo-entrega':
-                        navegarCarrinho('itens');
-                        break;
-                    case 'dados-entrega':
-                    case 'dados-retirada':
-                        navegarCarrinho('metodo-entrega');
-                        break;
-                    case 'pagamento':
-                        const tipoEntrega = document.querySelector('input[name="tipo-entrega"]:checked').value;
-                        if (tipoEntrega === 'padrao') {
-                            navegarCarrinho('dados-entrega');
-                        } else {
-                            navegarCarrinho('dados-retirada');
-                        }
-                        break;
-                    case 'escolher-pagamento':
-                        navegarCarrinho('pagamento');
-                        break;
-                }
-            });
-        }
-        const naoSeiCepCheckbox = document.getElementById('nao-sei-cep-checkbox');
-        if (naoSeiCepCheckbox) {
-            naoSeiCepCheckbox.addEventListener('change', () => {
-                const ruaInput = document.getElementById('endereco-rua');
-                const bairroInput = document.getElementById('endereco-bairro');
-                const cepInput = document.getElementById('endereco-cep');
-                const isManual = naoSeiCepCheckbox.checked;
-                ruaInput.readOnly = !isManual;
-                bairroInput.readOnly = !isManual;
-                cepInput.required = !isManual;
-                if (isManual) {
-                    ruaInput.style.backgroundColor = 'var(--navbar-bg)';
-                    bairroInput.style.backgroundColor = 'var(--navbar-bg)';
-                    ruaInput.placeholder = 'Digite o nome da sua rua';
-                    bairroInput.placeholder = 'Digite o nome do seu bairro';
-                    ruaInput.value = '';
-                    bairroInput.value = '';
-                } else {
-                    ruaInput.style.backgroundColor = '#e9ecef';
-                    bairroInput.style.backgroundColor = '#e9ecef';
-                    ruaInput.placeholder = 'Preenchido automaticamente';
-                    bairroInput.placeholder = 'Preenchido automaticamente';
-                }
-            });
-        }
         configurarBuscaPorCEP();
+        if (secaoOpcoesEntrega) {
+            secaoOpcoesEntrega.addEventListener('change', () => {
+                gerenciarVisibilidadeFormEntrega();
+                atualizarLinkWhatsapp();
+            });
+        }
         if (clienteNomeInput) clienteNomeInput.addEventListener('input', atualizarLinkWhatsapp);
         if (clienteTelefoneInput) clienteTelefoneInput.addEventListener('input', atualizarLinkWhatsapp);
         if (retiradaNomeInput) retiradaNomeInput.addEventListener('input', atualizarLinkWhatsapp);
@@ -540,9 +384,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const painelPagamento = document.getElementById('tela-escolher-pagamento');
         if (painelPagamento) { painelPagamento.addEventListener('change', (e) => { if (e.target.name === 'forma-pagamento-principal') { const subOpcoesDinheiro = document.getElementById('sub-opcoes-dinheiro'); const subOpcoesPix = document.getElementById('sub-opcoes-pix'); if (subOpcoesDinheiro) subOpcoesDinheiro.classList.toggle('visivel', e.target.value === 'dinheiro'); if (subOpcoesPix) subOpcoesPix.classList.toggle('visivel', e.target.value === 'pix'); } if (e.target.name === 'precisa-troco' || e.target.name === 'sub-opcao-pix') { const containerTroco = document.getElementById('container-troco'); const detalhesPix = document.getElementById('detalhes-pix-online'); if (containerTroco) containerTroco.classList.toggle('visivel', e.target.value === 'sim'); if (detalhesPix) detalhesPix.classList.toggle('visivel', e.target.value === 'online'); } }); }
         window.addEventListener('resize', ajustarPaddingCorpo);
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('.barra-navegacao');
+            const topBar = document.querySelector('.barra-superior-info');
+            if (!nav || !topBar) return;
+            if (window.scrollY > topBar.offsetHeight) {
+                nav.style.top = '0';
+                nav.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.05)';
+            } else {
+                nav.style.top = '35px';
+                nav.style.boxShadow = 'none';
+            }
+        });
         const mainContainer = document.querySelector('main.container-principal');
         if (mainContainer) { mainContainer.addEventListener('click', (e) => { const cartao = e.target.closest('.cartao-produto'); if (!cartao) return; const produtoId = parseInt(cartao.dataset.id); const categoria = cartao.dataset.category; const produto = menuData[categoria]?.find(p => p.id === produtoId); if (!produto) return; if (e.target.closest('.botao-adicionar')) { adicionarAoCarrinho(produto, 1, null, []); } else { produtoAtualModal = { id: produto.id, name: produto.name, price: parseFloat(produto.price), image: produto.image, description: produto.description, precoBase: parseFloat(produto.price), precoFinal: parseFloat(produto.price) }; if (document.getElementById('imagem-produto-modal')) document.getElementById('imagem-produto-modal').src = produto.image; if (document.getElementById('nome-produto-modal')) document.getElementById('nome-produto-modal').textContent = produto.name; if (document.getElementById('desc-produto-modal')) document.getElementById('desc-produto-modal').textContent = produto.description; if (document.querySelector('.modal-produto .entrada-quantidade')) document.querySelector('.modal-produto .entrada-quantidade').value = 1; if (document.getElementById('observacao-produto')) document.getElementById('observacao-produto').value = ''; popularAdicionais(produto); atualizarPrecoTotalModal(); if (sobreposicaoModal) sobreposicaoModal.classList.add('ativo'); } }); }
-        if (barraFiltros) { barraFiltros.addEventListener('click', (e) => { if (e.target.classList.contains('botao-filtro')) { barraFiltros.querySelector('.ativo')?.classList.remove('ativo'); e.target.classList.add('ativo'); } }); btnScrollLeft.addEventListener('click', () => barraFiltros.scrollBy({ left: -250, behavior: 'smooth' })); btnScrollRight.addEventListener('click', () => barraFiltros.scrollBy({ left: 250, behavior: 'smooth' })); barraFiltros.addEventListener('scroll', gerenciarSetasScroll); }
+        todasEntradasPesquisa.forEach(input => {
+            input.addEventListener('input', () => {
+                const termo = input.value.toLowerCase().trim();
+                todasEntradasPesquisa.forEach(outroInput => { if (outroInput !== input) outroInput.value = termo; });
+                filtrarEBuscarProdutos(termo);
+            });
+        });
+        const botaoPesquisa = document.querySelector('.acoes-navegacao .botao-pesquisa');
+        if (botaoPesquisa) { botaoPesquisa.addEventListener('click', (e) => { e.preventDefault(); const caixaPesquisa = botaoPesquisa.closest('.caixa-pesquisa'); const inputPesquisa = caixaPesquisa.querySelector('.texto-pesquisa'); caixaPesquisa.classList.toggle('ativo'); if (caixaPesquisa.classList.contains('ativo')) { inputPesquisa.focus(); } }); }
+        if (barraFiltros) { barraFiltros.addEventListener('click', (e) => { if (e.target.classList.contains('botao-filtro')) { barraFiltros.querySelector('.ativo')?.classList.remove('ativo'); e.target.classList.add('ativo'); filtrarPorCategoria(e.target.dataset.categoria); } }); btnScrollLeft.addEventListener('click', () => barraFiltros.scrollBy({ left: -250, behavior: 'smooth' })); btnScrollRight.addEventListener('click', () => barraFiltros.scrollBy({ left: 250, behavior: 'smooth' })); barraFiltros.addEventListener('scroll', gerenciarSetasScroll); }
         const btnFecharModal = document.getElementById('botao-fechar-modal');
         if (btnFecharModal) btnFecharModal.addEventListener('click', () => sobreposicaoModal.classList.remove('ativo'));
         const btnAdicionarModal = document.querySelector('.botao-adicionar-carrinho-modal');
@@ -563,6 +428,62 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnAddMaisItens = document.getElementById('adicionar-mais-itens');
         if (btnAddMaisItens) btnAddMaisItens.addEventListener('click', (e) => { e.preventDefault(); togglePainelCarrinho(false); });
         if (sobreposicaoCarrinho) sobreposicaoCarrinho.addEventListener('click', () => togglePainelCarrinho(false));
+        if (btnContinuarCarrinho) {
+            btnContinuarCarrinho.addEventListener('click', () => {
+                if (carrinho.length === 0) {
+                    mostrarNotificacao("Sua sacola está vazia!");
+                    return;
+                }
+                if (etapaAtualCarrinho === 'itens') {
+                    navegarCarrinho('entrega');
+                } else if (etapaAtualCarrinho === 'entrega') {
+                    const tipoEntrega = document.querySelector('input[name="tipo-entrega"]:checked').value;
+                    let formValido = true;
+                    if (tipoEntrega === 'padrao') {
+                        const formEndereco = document.getElementById('form-endereco');
+                        if (formEndereco) formValido = formEndereco.checkValidity();
+                        if (!formValido && formEndereco) formEndereco.reportValidity();
+                    } else {
+                        const formRetirada = document.getElementById('form-retirada');
+                        if (formRetirada) formValido = formRetirada.checkValidity();
+                        if (!formValido && formRetirada) formRetirada.reportValidity();
+                    }
+                    if (formValido) navegarCarrinho('pagamento');
+                } else if (etapaAtualCarrinho === 'pagamento') {
+                    finalizarEEnviarPedido();
+                }
+                else if (etapaAtualCarrinho === 'escolher-pagamento') {
+                    const metodo = document.querySelector('input[name="forma-pagamento-principal"]:checked').value;
+                    if (metodo === 'pix') {
+                        pedido.pagamento = {
+                            metodo: 'Pix',
+                            tipo: document.querySelector('input[name="sub-opcao-pix"]:checked').value
+                        };
+                    } else if (metodo === 'cartao') {
+                        pedido.pagamento = {
+                            metodo: 'Cartão',
+                            tipo: document.querySelector('input[name="sub-opcao-cartao"]:checked').value === 'credito' ? 'Crédito' : 'Débito'
+                        };
+                    } else if (metodo === 'dinheiro') {
+                        const precisaTroco = document.querySelector('input[name="precisa-troco"]:checked').value === 'sim';
+                        if (precisaTroco) {
+                            const valorTrocoInput = document.getElementById('valor-troco').value.replace(',', '.');
+                            const trocoPara = parseFloat(valorTrocoInput);
+                            pedido.pagamento = { metodo: 'Dinheiro', trocoPara: isNaN(trocoPara) ? 0 : trocoPara, tipo: `Troco para R$${valorTrocoInput}` };
+                        } else {
+                            pedido.pagamento = { metodo: 'Dinheiro', trocoPara: 0, tipo: 'Não precisa de troco' };
+                        }
+                    }
+                    atualizarDisplayPagamento();
+                    navegarCarrinho('pagamento');
+                }
+            });
+        }
+        if (btnVoltarCarrinho) btnVoltarCarrinho.addEventListener('click', () => {
+            if (etapaAtualCarrinho === 'pagamento') navegarCarrinho('entrega');
+            else if (etapaAtualCarrinho === 'entrega') navegarCarrinho('itens');
+            else if (etapaAtualCarrinho === 'escolher-pagamento') navegarCarrinho('pagamento');
+        });
     }
 
     init();

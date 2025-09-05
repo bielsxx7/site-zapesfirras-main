@@ -3,9 +3,15 @@ const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors');
 const pool = require('./db');
-
-// <-- CORREÇÃO 1: Trocamos a biblioteca confusa pela 'string-similarity'
 const stringSimilarity = require("string-similarity");
+
+// BIBLIOTECAS ADICIONADAS PARA CONTAS DE CLIENTE
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+// BIBLIOTECAS ADICIONADAS PARA RECUPERAÇÃO DE SENHA
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +23,8 @@ const io = new Server(server, {
 });
 
 const port = 3000;
+// IMPORTANTE: Troque esta chave por uma frase secreta e segura de sua escolha
+const JWT_SECRET = 'seu_segredo_super_secreto_aqui_troque_depois'; 
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -67,7 +75,6 @@ app.post('/api/calculate-delivery-fee', (req, res) => {
                                       .trim();
 
         let taxa = 5.00;
-        // <-- CORREÇÃO 2: A lógica mudou. Agora verificamos a similaridade. 0.7 = 70% parecido.
         const SIMILARITY_THRESHOLD = 0.7;
 
         for (const bairroConfig of bairrosEspeciais) {
@@ -98,9 +105,6 @@ app.post('/api/calculate-delivery-fee', (req, res) => {
         res.status(500).json({ message: "Erro no servidor ao calcular a taxa." });
     }
 });
-
-
-// --- O RESTO DO SEU CÓDIGO CONTINUA DAQUI PARA BAIXO, SEM ALTERAÇÕES ---
 
 // --- ROTAS DE PRODUTOS ---
 app.get('/api/products', async (req, res) => {
@@ -302,6 +306,186 @@ app.put('/api/orders/:id/status', async (req, res) => {
     }
 });
 
+// --- ROTAS DE CLIENTES (AUTH) ---
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ message: 'Acesso negado. Nenhum token fornecido.' });
+    }
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ message: 'Token inválido.' });
+        }
+        req.customerId = decoded.id;
+        next();
+    });
+};
+
+// ROTA DE CADASTRO DE NOVO CLIENTE (ATUALIZADA)
+app.post('/api/customers/register', async (req, res) => {
+    try {
+        const { name, email, phone, password } = req.body; // Adicionado 'email'
+        if (!name || !email || !phone || !password) { // Adicionado 'email'
+            return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+        }
+
+        const [existingPhone] = await pool.query("SELECT id FROM customers WHERE phone = ?", [phone]);
+        if (existingPhone.length > 0) {
+            return res.status(409).json({ message: 'Este telefone já está cadastrado.' });
+        }
+
+        const [existingEmail] = await pool.query("SELECT id FROM customers WHERE email = ?", [email]);
+        if (existingEmail.length > 0) {
+            return res.status(409).json({ message: 'Este e-mail já está cadastrado.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Adicionado 'email' na query SQL
+        const sql = "INSERT INTO customers (name, email, phone, password) VALUES (?, ?, ?, ?)";
+        const [result] = await pool.query(sql, [name, email, phone, hashedPassword]);
+
+        res.status(201).json({ message: "Cadastro realizado com sucesso!", customerId: result.insertId });
+
+    } catch (error) {
+        console.error("Erro no cadastro de cliente:", error);
+        res.status(500).json({ message: "Erro no servidor ao realizar cadastro." });
+    }
+});
+
+app.post('/api/customers/login', async (req, res) => {
+    try {
+        const { phone, password } = req.body;
+        if (!phone || !password) {
+            return res.status(400).json({ message: 'Telefone e senha são obrigatórios.' });
+        }
+        const [users] = await pool.query("SELECT * FROM customers WHERE phone = ?", [phone]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+        const user = users[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Senha incorreta.' });
+        }
+        const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ 
+            message: "Login bem-sucedido!", 
+            token: token,
+            customer: { id: user.id, name: user.name, phone: user.phone }
+        });
+    } catch (error) {
+        console.error("Erro no login do cliente:", error);
+        res.status(500).json({ message: "Erro no servidor ao fazer login." });
+    }
+});
+
+app.get('/api/customers/me', verifyToken, async (req, res) => {
+    try {
+        const [users] = await pool.query("SELECT id, name, phone FROM customers WHERE id = ?", [req.customerId]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+        res.json(users[0]);
+    } catch (error) {
+        console.error("Erro ao buscar dados do cliente:", error);
+        res.status(500).json({ message: "Erro no servidor." });
+    }
+});
+
+// =======================================================
+// ---      INÍCIO DAS NOVAS ROTAS DE RECUPERAÇÃO DE SENHA     ---
+// =======================================================
+
+// ROTA PARA SOLICITAR A REDEFINIÇÃO DE SENHA
+app.post('/api/customers/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const [users] = await pool.query("SELECT * FROM customers WHERE email = ?", [email]);
+
+        if (users.length === 0) {
+            return res.json({ message: 'Se um e-mail cadastrado for encontrado, um link de redefinição será enviado.' });
+        }
+        const user = users[0];
+
+        const token = crypto.randomBytes(20).toString('hex');
+        const expires = Date.now() + 3600000; // 1 hora em milissegundos
+
+        await pool.query(
+            "UPDATE customers SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?",
+            [token, expires, user.id]
+        );
+
+        // ATENÇÃO: Configure seu e-mail e senha de app aqui!
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'jsdatorres2@gmail.com', // <-- COLOQUE SEU E-MAIL
+                pass: 'vkzc qtaw zrbz ahru'      // <-- COLOQUE SUA SENHA DE APP
+            }
+        });
+
+        const resetLink = `http://127.0.0.1:5500/frontend/resetar-senha.html?token=${token}`;
+        const mailOptions = {
+            from: '"Zap Esfirras" <seu-email@gmail.com>',
+            to: user.email,
+            subject: 'Redefinição de Senha - Zap Esfirras',
+            html: `
+                <p>Olá, ${user.name}!</p>
+                <p>Você solicitou a redefinição da sua senha. Clique no link abaixo para criar uma nova senha:</p>
+                <a href="${resetLink}" style="font-size: 16px;">Redefinir Minha Senha</a>
+                <p>Se você não solicitou isso, por favor, ignore este e-mail.</p>
+                <p>Este link é válido por 1 hora.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.json({ message: 'Se um e-mail cadastrado for encontrado, um link de redefinição será enviado.' });
+
+    } catch (error) {
+        console.error("Erro em /forgot-password:", error);
+        res.status(500).json({ message: "Erro no servidor." });
+    }
+});
+
+// ROTA PARA EFETIVAMENTE REDEFINIR A SENHA
+app.post('/api/customers/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        const [users] = await pool.query(
+            "SELECT * FROM customers WHERE password_reset_token = ? AND password_reset_expires > ?",
+            [token, Date.now()]
+        );
+
+        if (users.length === 0) {
+            return res.status(400).json({ message: 'Token de redefinição inválido ou expirado.' });
+        }
+        const user = users[0];
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await pool.query(
+            "UPDATE customers SET password = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?",
+            [hashedPassword, user.id]
+        );
+
+        res.json({ message: 'Senha redefinida com sucesso!' });
+
+    } catch (error) {
+        console.error("Erro em /reset-password:", error);
+        res.status(500).json({ message: "Erro no servidor." });
+    }
+});
+
+// =======================================================
+// ---       FIM DAS ROTAS DE RECUPERAÇÃO DE SENHA       ---
+// =======================================================
 
 // --- SOCKET.IO ---
 io.on('connection', (socket) => {
