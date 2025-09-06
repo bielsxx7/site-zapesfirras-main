@@ -24,7 +24,7 @@
         
         <header>
             <div class="barra-superior-info apenas-desktop">
-                <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Sexta-feira, 5 de setembro</span>
+                <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Sábado, 6 de setembro</span>
             </div>
         
             <div class="barra-navegacao">
@@ -71,6 +71,12 @@
                 </div>
         </header>
 
+        <div class="promo-banner">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            <span>Compras acima de R$ 100,00, a entrega é por nossa conta! Use o cupom: <strong>ENTREGAGRATIS</strong></span>
+        </div>
+
+
         <main class="container-principal">
             <section class="container-pesquisa-mobile apenas-mobile">
                 <div class="caixa-pesquisa">
@@ -102,7 +108,7 @@
                 <button class="botao-fechar" id="botao-fechar-modal">&times;</button>
                 <div class="conteudo-modal">
                     <div class="container-imagem-modal">
-                        <img id="imagem-produto-modal" src="" alt="Imagem do produto">
+                        
                     </div>
                     <div class="detalhes-modal">
                         <h2 id="nome-produto-modal">Nome do Produto</h2>
@@ -171,21 +177,158 @@
                     </div>
                 </div>
             </div>
-    
-            <div id="tela-metodo-entrega" class="tela-carrinho">
-                </div>
 
+            <div id="tela-metodo-entrega" class="tela-carrinho">
+                <h4 class="form-titulo-secao">Como você quer receber seu pedido?</h4>
+                <section class="secao-opcoes-entrega">
+                    <label class="opcao-entrega-card">
+                        <input type="radio" name="tipo-entrega" value="padrao" checked>
+                        <span class="radio-customizado"></span>
+                        <div class="opcao-entrega-info">
+                            <p>Receber em Casa (Entrega)</p>
+                            <span>Receba em 45-60 min</span>
+                        </div>
+                        <span class="opcao-entrega-preco">R$ 5,00</span>
+                    </label>
+                    <label class="opcao-entrega-card">
+                        <input type="radio" name="tipo-entrega" value="retirada">
+                        <span class="radio-customizado"></span>
+                        <div class="opcao-entrega-info">
+                            <p>Retirar na Loja</p>
+                            <span>Pronto em 25-35 min</span>
+                        </div>
+                        <span class="opcao-entrega-preco gratis">Grátis</span>
+                    </label>
+                </section>
+            </div>
+            
             <div id="tela-dados-entrega" class="tela-carrinho">
-                </div>
-    
+                <form id="form-endereco" class="novo-form-vertical">
+                    <h4 class="form-titulo-secao">Quem está recebendo?</h4>
+                    <div class="form-campo">
+                        <label for="cliente-nome">Seu nome*</label>
+                        <input type="text" id="cliente-nome" placeholder="Digite seu nome completo" required>
+                    </div>
+                    <div class="form-campo">
+                       <label for="cliente-telefone">Seu telefone / WhatsApp*</label>
+                       <input type="tel" id="cliente-telefone" placeholder="(99) 99999-9999" required>
+                   </div>
+
+                    <h4 class="form-titulo-secao">Onde entregar?</h4>
+                    <div class="form-campo">
+                        <label for="endereco-cep">CEP*</label>
+                        <input type="tel" id="endereco-cep" placeholder="Digite o CEP para buscar o endereço" required>
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-rua">Rua / Avenida*</label>
+                        <input type="text" id="endereco-rua" placeholder="Preenchido automaticamente" required readonly>
+                    </div>
+                     <div class="form-campo">
+                        <label for="endereco-bairro">Bairro*</label>
+                        <input type="text" id="endereco-bairro" placeholder="Preenchido automaticamente" required readonly>
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-numero">Número*</label>
+                        <input type="text" id="endereco-numero" placeholder="Ex: 123" required>
+                    </div>
+                    <div class="form-campo">
+                        <label for="endereco-complemento">Complemento</label>
+                        <input type="text" id="endereco-complemento" placeholder="Apto, Bloco, Casa dos fundos...">
+                    </div>
+                     <div class="form-campo">
+                        <label for="endereco-referencia">Ponto de Referência</label>
+                        <input type="text" id="endereco-referencia" placeholder="Ex: Próximo ao mercado">
+                    </div>
+                </form>
+            </div>
+
             <div id="tela-dados-retirada" class="tela-carrinho">
-                </div>
+                 <form id="form-retirada" class="novo-form-vertical">
+                    <h4 class="form-titulo-secao">Quem vai retirar?</h4>
+                     <div class="form-campo">
+                        <label for="retirada-nome">Nome de quem vai retirar*</label>
+                        <input type="text" id="retirada-nome" placeholder="Digite o nome completo" required>
+                    </div>
+                     <div class="form-campo">
+                        <label for="retirada-telefone">Telefone / WhatsApp (opcional)</label>
+                        <input type="tel" id="retirada-telefone" placeholder="Para avisarmos quando estiver pronto">
+                    </div>
+                </form>
+            </div>
     
             <div id="tela-pagamento" class="tela-carrinho">
+                <div class="secao-pagamento">
+                    <h4 class="form-titulo-secao">Forma de Pagamento</h4>
+                    <div class="card-info" id="card-info-pagamento"></div>
                 </div>
+                <div class="secao-cupom">
+                     <div class="input-cupom-container">
+                        <ion-icon name="ticket-outline"></ion-icon>
+                        <input type="text" placeholder="Cupom de desconto">
+                        <button>Aplicar</button>
+                    </div>
+                </div>
+                <div class="secao-cpf">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="cpf-toggle">
+                        <span class="checkmark"></span>
+                        CPF na nota? (Opcional)
+                    </label>
+                    <div class="input-cpf-container" id="container-cpf">
+                        <input type="tel" id="cpf-input" placeholder="Digite seu CPF">
+                    </div>
+                </div>
+            </div>
     
             <div id="tela-escolher-pagamento" class="tela-carrinho">
+                <div class="secao-opcoes-pagamento">
+                    <div class="metodo-pagamento-card-wrapper">
+                        <label class="metodo-pagamento-card">
+                            <input type="radio" name="forma-pagamento-principal" value="dinheiro">
+                            <div class="card-content"><ion-icon name="wallet-outline"></ion-icon><span class="card-text">Dinheiro</span></div>
+                            <ion-icon name="checkmark-circle" class="card-check"></ion-icon>
+                        </label>
+                        <div class="sub-opcoes" id="sub-opcoes-dinheiro">
+                            <label class="metodo-pagamento-card-sub"><input type="radio" name="precisa-troco" value="nao" checked> <span class="card-content-sub">Não preciso de troco</span></label>
+                            <label class="metodo-pagamento-card-sub"><input type="radio" name="precisa-troco" value="sim"> <span class="card-content-sub">Sim, preciso de troco</span></label>
+                            <div class="input-troco-container" id="container-troco">
+                                <input type="text" id="valor-troco" placeholder="Troco para quanto? Ex: 50,00">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metodo-pagamento-card-wrapper">
+                        <label class="metodo-pagamento-card">
+                            <input type="radio" name="forma-pagamento-principal" value="cartao" checked>
+                            <div class="card-content"><ion-icon name="card-outline"></ion-icon><span class="card-text">Cartão</span></div>
+                            <ion-icon name="checkmark-circle" class="card-check"></ion-icon>
+                        </label>
+                        <div class="sub-opcoes visivel" id="sub-opcoes-cartao">
+                            <label class="metodo-pagamento-card-sub"><input type="radio" name="sub-opcao-cartao" value="credito" checked> <span class="card-content-sub">Crédito</span></label>
+                            <label class="metodo-pagamento-card-sub"><input type="radio" name="sub-opcao-cartao" value="debito"> <span class="card-content-sub">Débito</span></label>
+                        </div>
+                    </div>
+                    <div class="metodo-pagamento-card-wrapper">
+                        <label class="metodo-pagamento-card">
+                            <input type="radio" name="forma-pagamento-principal" value="pix">
+                            <div class="card-content"><ion-icon name="logo-paypal"></ion-icon><span class="card-text">Pix</span></div>
+                            <ion-icon name="checkmark-circle" class="card-check"></ion-icon>
+                        </label>
+                        <div class="sub-opcoes" id="sub-opcoes-pix">
+                            <label class="metodo-pagamento-card-sub"><input type="radio" name="sub-opcao-pix" value="entrega" checked> <span class="card-content-sub">Pagar na entrega/retirada</span></label>
+                            <label class="metodo-pagamento-card-sub"><input type="radio" name="sub-opcao-pix" value="online"> <span class="card-content-sub">Pagar online agora</span></label>
+                            <div id="detalhes-pix-online" style="display: none;">
+                                <p>Faça o Pix para a chave abaixo:</p>
+                                <div class="chave-pix-container">19 99168-6522</div>
+                                <p>Mande o comprovante pelo WhatsApp</p>
+                                <a href="#" id="btn-whatsapp-comprovante" class="botao-whatsapp" target="_blank">
+                                    <ion-icon name="logo-whatsapp"></ion-icon>
+                                    <span>Enviar Comprovante</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
             
             <div id="tela-sucesso" class="tela-carrinho tela-sucesso">
                 <ion-icon name="checkmark-circle-outline"></ion-icon>

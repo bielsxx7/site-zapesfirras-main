@@ -1,33 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Lista de usuários e senhas autorizados
-    const users = {
-        'claudio': '123',
-        'elaine': '321',
-        'caua': '1234'
-    };
-
     const loginForm = document.getElementById('login-form');
     const errorMessage = document.getElementById('error-message');
 
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault(); // Impede o envio real do formulário
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMessage.textContent = '';
 
-        const username = document.getElementById('username').value.toLowerCase(); // Converte para minúsculas
+        const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
-        // Verifica se o usuário existe e se a senha está correta
-        if (users[username] && users[username] === password) {
-            // Se as credenciais estiverem corretas:
-            errorMessage.textContent = '';
-            
-            // Salva o nome do usuário na sessão do navegador
-            sessionStorage.setItem('loggedInUser', username);
+        try {
+            const response = await fetch('http://localhost:3000/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao tentar fazer login.');
+            }
+
+            // Salva o token e o nome do usuário na sessão do navegador
+            sessionStorage.setItem('adminAuthToken', data.token);
+            sessionStorage.setItem('loggedInUser', data.admin.username);
 
             // Redireciona para o painel de admin
             window.location.href = 'admin.html';
-        } else {
-            // Se as credenciais estiverem erradas:
-            errorMessage.textContent = 'Usuário ou senha inválidos.';
+
+        } catch (error) {
+            errorMessage.textContent = error.message;
         }
     });
 });

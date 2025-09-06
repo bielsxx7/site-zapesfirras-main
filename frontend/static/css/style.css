@@ -370,9 +370,6 @@ body {
 .botao-adicionar-carrinho-modal:hover { background-color: #B71C1C; }
 
 
-/* ======================================================= */
-/* --- NOVOS ESTILOS PARA SEÇÃO DE ADICIONAIS NO MODAL --- */
-/* ======================================================= */
 .area-adicionais {
     margin-top: 15px;
     border-top: 1px solid var(--grey-medium);
@@ -436,10 +433,9 @@ body {
 }
 
 .item-adicional input[type="checkbox"] {
-    display: none; /* Esconde o checkbox padrão */
+    display: none;
 }
 
-/* Custom Checkbox */
 .item-adicional .checkmark-adicional {
     width: 20px;
     height: 20px;
@@ -478,7 +474,6 @@ body {
     padding-left: 10px;
 }
 
-/* Estilo para Adicionais no Carrinho */
 .info-item .adicionais-carrinho {
     font-size: 0.8rem;
     color: var(--grey-dark);
@@ -488,10 +483,6 @@ body {
     margin-right: 5px;
 }
 
-
-/* ======================================================= */
-/* --- 3. CONTEÚDO PRINCIPAL (Seções, Cards, Filtros) --- */
-/* ======================================================= */
 .container-secao {
     margin-bottom: 50px;
     position: relative;
@@ -508,7 +499,6 @@ body {
 }
 
 
-/* --- SEÇÃO DOS FILTROS REESCRITA PARA CORREÇÃO --- */
 .container-filtros-scroll {
     position: relative;
     width: 100%;
@@ -521,14 +511,14 @@ body {
     align-items: center;
     gap: 15px;
     overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding-bottom: 10px;
 }
 
 
 .barra-filtros::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, and Opera */
+    display: none;
 }
 
 
@@ -621,7 +611,6 @@ body {
     flex-grow: 1;
 }
 
-
 .container-detalhes-produto img {
     width: 100%;
     height: 160px;
@@ -629,7 +618,6 @@ body {
     border-radius: 8px;
     margin-bottom: 15px;
 }
-
 
 .texto-info-produto h3 {
     font-size: 1.1rem;
@@ -686,9 +674,6 @@ body {
 .acoes-produto .botao-adicionar ion-icon { font-size: 1.8rem; }
 
 
-/* ======================================================= */
-/* --- 4. PAINEL DO CARRINHO --- */
-/* ======================================================= */
 .sobreposicao-carrinho {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -700,7 +685,6 @@ body {
 .sobreposicao-carrinho.ativo { opacity: 1; visibility: visible; }
 
 
-/* ===== CORREÇÃO DA ROLAGEM E LAYOUT ===== */
 .painel-carrinho {
     position: fixed;
     top: 0;
@@ -713,7 +697,6 @@ body {
     z-index: 9999;
     transform: translateX(100%);
     transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    
     display: flex;
     flex-direction: column;
     overflow: hidden; 
@@ -742,10 +725,9 @@ body {
     padding: 20px;
 }
 
-/* NOVO ESTILO PARA O RODAPÉ */
 .carrinho-rodape {
-    display: flex; /* Adicionado para ser flexível */
-    flex-direction: column; /* Organiza os itens em coluna */
+    display: flex; 
+    flex-direction: column;
     background-color: var(--navbar-bg);
     padding: 20px;
     border-top: 1px solid var(--grey-medium);
@@ -753,15 +735,10 @@ body {
     flex-shrink: 0;
 }
 
-/* Ajuste no resumo DENTRO do rodapé */
 .carrinho-rodape .resumo-valores {
-    margin-top: 0; /* Remove margem superior que não é mais necessária */
-    margin-bottom: 20px; /* Adiciona espaço entre o resumo e o botão */
-    padding: 0; /* Remove padding extra pois o rodapé já tem */
-    background: none; /* Remove fundo extra */
+    margin-bottom: 20px;
 }
 
-/* Ajuste no botão */
 .botao-continuar-carrinho {
     width: 100%;
     background-color: var(--primary-color);
@@ -773,7 +750,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     display: flex;
-    justify-content: center; /* Centraliza o texto do botão */
+    justify-content: center;
     align-items: center;
 }
 .botao-continuar-carrinho:hover { background-color: #B71C1C; }
@@ -793,7 +770,13 @@ body {
     align-items: center;
     gap: 15px;
 }
-.item-carrinho-novo img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.item-carrinho-novo img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
 .info-item { flex-grow: 1; }
 .info-item .nome-item { font-weight: 600; }
 .info-item .preco-unitario-item { font-size: 0.9rem; color: var(--grey-dark); }
@@ -833,7 +816,7 @@ body {
 .adicionar-mais-itens ion-icon { font-size: 1.5rem; margin-right: 8px; }
 
 
-.secao-peca-tambem h4, #container-form-endereco h4, .secao-pagamento h4 { font-size: 1.1rem; margin-bottom: 15px; }
+.secao-peca-tambem h4 { font-size: 1.1rem; margin-bottom: 15px; }
 .carrossel-sugestoes { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
 .carrossel-sugestoes::-webkit-scrollbar { display: none; }
 .item-sugestao {
@@ -844,7 +827,12 @@ body {
     text-align: center;
     min-width: 120px;
 }
-.item-sugestao img { width: 80px; height: 80px; margin-bottom: 5px; object-fit: cover;}
+.item-sugestao img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 5px;
+    object-fit: cover;
+}
 .item-sugestao p { font-size: 0.9rem; }
 .item-sugestao span { font-weight: 600; color: var(--primary-color); display: block; margin: 5px 0; }
 .botao-add-sugestao {
@@ -853,77 +841,118 @@ body {
     font-size: 1.5rem; color: var(--primary-color); cursor: pointer;
 }
 
-
-.secao-cupom, .secao-doacao, .secao-cpf { margin-top: 25px; }
-.input-cupom-container { display: flex; align-items: center; background: var(--navbar-bg); border-radius: 8px; border: 1px solid var(--grey-medium); }
-.input-cupom-container ion-icon { font-size: 1.3rem; color: var(--grey-dark); padding: 0 15px; }
-.input-cupom-container input { border: none; outline: none; flex-grow: 1; padding: 15px 0; font-size: 1rem; }
-.input-cupom-container button {
-    background: transparent; border: none; color: var(--primary-color);
-    font-weight: 600; padding: 0 15px; cursor: pointer; font-size: 1rem;
+.secao-opcoes-entrega {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
-
-
-.secao-opcoes-entrega { margin-bottom: 25px; }
-.opcao-radio {
-    display: flex; align-items: center; background-color: var(--navbar-bg);
-    padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer;
+.opcao-entrega-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--navbar-bg);
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
     border: 2px solid var(--grey-medium);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.opcao-radio input[type="radio"] { display: none; }
-.opcao-radio input:checked + .radio-customizado { border-color: var(--primary-color); }
-.opcao-radio input:checked + .radio-customizado::after { transform: scale(1); }
+.opcao-entrega-card:has(input:checked) {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+.opcao-entrega-card input[type="radio"] {
+    display: none;
+}
 .radio-customizado {
-    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--grey-medium);
-    margin-right: 15px; display: flex; justify-content: center; align-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--grey-medium);
+    margin-right: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.opcao-entrega-card input:checked + .radio-customizado {
+    border-color: var(--primary-color);
 }
 .radio-customizado::after {
-    content: ''; width: 12px; height: 12px; border-radius: 50%;
-    background-color: var(--primary-color); transform: scale(0); transition: 0.2s;
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    transform: scale(0);
+    transition: 0.2s;
 }
-.opcao-radio-info { flex-grow: 1; }
-.opcao-radio-info p { font-weight: 600; }
-.opcao-radio-info span { font-size: 0.9rem; color: var(--grey-dark); }
-.opcao-radio-preco { font-weight: 600; }
-.opcao-radio-preco.gratis { color: var(--green-color); }
+.opcao-entrega-card input:checked + .radio-customizado::after {
+    transform: scale(1);
+}
+.opcao-entrega-info {
+    flex-grow: 1;
+}
+.opcao-entrega-info p {
+    font-weight: 600;
+}
+.opcao-entrega-info span {
+    font-size: 0.9rem;
+    color: var(--grey-dark);
+}
+.opcao-entrega-preco {
+    font-weight: 600;
+}
+.opcao-entrega-preco.gratis {
+    color: var(--green-color);
+}
 
+.form-titulo-secao {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--grey-medium);
+}
+.novo-form-vertical .form-titulo-secao:first-of-type {
+    margin-top: 0;
+}
 
-.form-endereco { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-.form-endereco input {
+.novo-form-vertical .form-campo {
+    margin-bottom: 16px;
+}
+
+.novo-form-vertical .form-campo label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--grey-dark);
+    margin-bottom: 6px;
+}
+.novo-form-vertical .form-campo input {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     font-size: 1rem;
     border: 1px solid var(--grey-medium);
     border-radius: 8px;
     background-color: var(--navbar-bg);
 }
-.form-endereco input:focus {
+.novo-form-vertical .form-campo input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
 }
-.campos-inline { display: flex; gap: 15px; }
-.campos-inline > .grupo-campo-endereco { flex: 1; }
-#container-form-endereco {
-    padding-bottom: 20px; 
-    transition: all 0.4s ease-in-out;
-    max-height: 500px; /* Você pode aumentar este valor se precisar de mais espaço */
-    overflow: hidden;
-    opacity: 1;
+.novo-form-vertical .form-campo input:read-only {
+    background-color: var(--grey-light);
+    cursor: not-allowed;
 }
-
-#container-form-endereco.escondido {
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0 !important;
-    padding: 0;
-}
-#container-form-endereco h4 { margin-top: 25px; }
 
 
 .card-info {
     display: flex; align-items: center; background-color: var(--navbar-bg);
     padding: 15px; border-radius: 8px;
+    border: 1px solid var(--grey-medium);
 }
 .card-info ion-icon { font-size: 1.8rem; color: var(--primary-color); margin-right: 15px; }
 .card-info-texto { flex-grow: 1; }
@@ -932,34 +961,76 @@ body {
 .card-info a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
 
 
-.secao-doacao {
-    display: flex; align-items: center; background-color: var(--navbar-bg);
-    border: 1px dashed var(--primary-color); border-radius: 8px; padding: 15px;
+.resumo-valores {
+    background-color: var(--navbar-bg);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--grey-medium);
 }
-.secao-doacao ion-icon { font-size: 1.8rem; color: var(--primary-color); margin-right: 15px; }
-.doacao-info { flex-grow: 1; }
-.doacao-info p { font-weight: 600; }
-.doacao-info span { font-size: 0.9rem; color: var(--grey-dark); }
+.resumo-valores .linha-resumo {
+    display: flex; justify-content: space-between;
+    margin-bottom: 12px; color: var(--grey-dark);
+}
+.resumo-valores .linha-resumo:last-child { margin-bottom: 0; }
+.resumo-valores .linha-resumo.total {
+    font-weight: 700; font-size: 1.2rem; color: var(--text-color);
+    margin-top: 15px;
+}
+.linha-resumo.desconto {
+    color: var(--green-color);
+    font-weight: 600;
+}
+
+.mensagem-carrinho-vazio { text-align: center; padding: 40px 20px; color: var(--grey-dark); }
 
 
-.secao-cpf .checkbox-container {
-    display: flex; align-items: center; cursor: pointer; user-select: none;
+.secao-pagamento, .secao-cupom, .secao-cpf {
+    margin-bottom: 25px;
 }
-.checkbox-container input { display: none; }
-.checkbox-container .checkmark {
-    width: 22px; height: 22px; background: var(--navbar-bg); border: 2px solid var(--grey-medium);
-    border-radius: 4px; margin-right: 10px; position: relative;
-}
-.checkbox-container input:checked + .checkmark { background: var(--primary-color); border-color: var(--primary-color); }
-.checkbox-container input:checked + .checkmark::after {
-    content: ''; position: absolute; left: 6px; top: 2px;
-    width: 6px; height: 12px; border: solid white;
-    border-width: 0 3px 3px 0; transform: rotate(45deg);
-}
-.input-cpf-container { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-.input-cpf-container.visivel { max-height: 100px; margin-top: 10px; }
-#cpf-input { width: 100%; padding: 15px; border: 1px solid var(--grey-medium); border-radius: 8px; font-size: 1rem; }
 
+.input-cupom-container {
+    display: flex;
+    align-items: center;
+    background: var(--navbar-bg);
+    border-radius: 8px;
+    border: 1px solid var(--grey-medium);
+    overflow: hidden;
+}
+.input-cupom-container ion-icon {
+    font-size: 1.3rem;
+    color: var(--grey-dark);
+    padding: 0 15px;
+}
+.input-cupom-container input {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    padding: 15px;
+    font-size: 1rem;
+    background: transparent;
+}
+.input-cupom-container button {
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--grey-medium);
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+.input-cupom-container button:hover {
+    background-color: #fdf2f2;
+}
+#tela-pagamento .input-cupom-container ion-icon {
+    display: inline-flex;
+}
+#tela-pagamento .input-cupom-container input {
+    padding-left: 0;
+}
 
 .secao-opcoes-pagamento {
     display: flex;
@@ -990,7 +1061,7 @@ body {
 }
 .metodo-pagamento-card .card-content ion-icon {
     font-size: 1.8rem;
-    color: var(--primary-color);
+    color: var(--text-color);
 }
 .metodo-pagamento-card .card-content .card-text {
     font-weight: 600;
@@ -1004,16 +1075,15 @@ body {
 .metodo-pagamento-card input:checked + .card-content + .card-check {
     color: var(--green-color);
 }
-.metodo-pagamento-card input:checked ~ .card-content ion-icon,
-.metodo-pagamento-card input:checked ~ .card-content .card-text {
-    color: var(--primary-color);
-}
 .metodo-pagamento-card-wrapper input:checked + .metodo-pagamento-card,
 label.metodo-pagamento-card:has(input:checked) {
     border-color: var(--primary-color);
     box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
 }
-
+.metodo-pagamento-card-wrapper input:checked + .metodo-pagamento-card .card-content ion-icon,
+label.metodo-pagamento-card:has(input:checked) .card-content ion-icon {
+    color: var(--primary-color);
+}
 
 .sub-opcoes {
     padding-left: 15px;
@@ -1029,8 +1099,8 @@ label.metodo-pagamento-card:has(input:checked) {
 .sub-opcoes.visivel {
     max-height: 500px;
     opacity: 1;
+    margin-top: 10px;
 }
-
 .metodo-pagamento-card-sub {
     display: flex;
     align-items: center;
@@ -1052,65 +1122,6 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     border-color: var(--primary-color);
 }
 
-.aviso-pagamento {
-    font-size: 0.9rem;
-    color: var(--grey-dark);
-    margin-top: 5px;
-    padding-left: 5px;
-}
-
-
-#detalhes-pix-online {
-    margin-top: 5px;
-    padding: 15px;
-    background-color: var(--navbar-bg);
-    border: 1px dashed var(--primary-color);
-    border-radius: 8px;
-    text-align: center;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: all 0.4s ease;
-}
-#detalhes-pix-online.visivel {
-    max-height: 500px;
-    opacity: 1;
-}
-.chave-pix-container {
-    background-color: var(--grey-light);
-    padding: 12px;
-    border-radius: 8px;
-    margin: 10px 0;
-    font-weight: 600;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-    color: var(--text-color);
-}
-#detalhes-pix-online p {
-    font-weight: 500;
-    margin-bottom: 10px;
-}
-#detalhes-pix-online p:first-child {
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.botao-whatsapp {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background-color: var(--whatsapp-color);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    margin-top: 5px;
-}
-.botao-whatsapp ion-icon {
-    font-size: 1.4rem;
-}
-
 .input-troco-container {
     max-height: 0;
     overflow: hidden;
@@ -1130,34 +1141,70 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     border-radius: 8px;
     background-color: var(--navbar-bg);
 }
-.input-troco-container input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
-}
 
-.resumo-valores {
+.secao-cpf .checkbox-container {
+    display: flex; align-items: center; cursor: pointer; user-select: none;
     background-color: var(--navbar-bg);
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px;
-    margin-top: 25px;
+    border: 1px solid var(--grey-medium);
 }
-.resumo-valores .linha-resumo {
-    display: flex; justify-content: space-between;
-    margin-bottom: 12px; color: var(--grey-dark);
+.checkbox-container input { display: none; }
+.checkbox-container .checkmark {
+    width: 22px; height: 22px; background: var(--navbar-bg); border: 2px solid var(--grey-medium);
+    border-radius: 4px; margin-right: 12px; position: relative;
+    flex-shrink: 0;
 }
-.resumo-valores .linha-resumo:last-child { margin-bottom: 0; }
-.resumo-valores .linha-resumo.total {
-    font-weight: 700; font-size: 1.2rem; color: var(--text-color);
-    margin-top: 15px;
+.checkbox-container input:checked + .checkmark { background: var(--primary-color); border-color: var(--primary-color); }
+.checkbox-container input:checked + .checkmark::after {
+    content: ''; position: absolute; left: 6px; top: 2px;
+    width: 6px; height: 12px; border: solid white;
+    border-width: 0 3px 3px 0; transform: rotate(45deg);
+}
+.input-cpf-container { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.input-cpf-container.visivel { max-height: 100px; margin-top: 15px; }
+#cpf-input { width: 100%; padding: 15px; border: 1px solid var(--grey-medium); border-radius: 8px; font-size: 1rem; }
+
+#detalhes-pix-online {
+    margin-top: 5px;
+    padding: 15px;
+    background-color: var(--navbar-bg);
+    border: 1px dashed var(--primary-color);
+    border-radius: 8px;
+    text-align: center;
+}
+.chave-pix-container {
+    background-color: var(--grey-light);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--text-color);
+}
+#detalhes-pix-online p {
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+.botao-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--whatsapp-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 5px;
+    border: none;
+    cursor: pointer;
+}
+.botao-whatsapp ion-icon {
+    font-size: 1.4rem;
 }
 
-.mensagem-carrinho-vazio { text-align: center; padding: 40px 20px; color: var(--grey-dark); }
-
-
-/* ======================================================= */
-/* --- 5. NAVEGAÇÃO INFERIOR (MOBILE) --- */
-/* ======================================================= */
 .bottom-nav {
     display: none;
     position: fixed;
@@ -1184,21 +1231,24 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     font-family: 'Poppins', sans-serif;
     cursor: pointer;
     position: relative;
+    text-decoration: none;
 }
 .bottom-nav-item.active {
+    color: var(--primary-color);
+}
+.bottom-nav-item.active .bottom-nav-icon,
+.bottom-nav-item.active .bottom-nav-text {
     color: var(--primary-color);
 }
 .bottom-nav-icon {
     font-size: 24px;
     margin-bottom: 2px;
-    text-decoration: none;
-    color: #212121;
+    color: var(--text-color);
 }
 .bottom-nav-text {
     font-size: 12px;
     font-weight: 500;
-    text-decoration: none;
-    color: #212121;
+    color: var(--text-color);
 }
 #botao-carrinho-mobile .contador-carrinho {
     position: absolute;
@@ -1223,32 +1273,36 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     transform: scale(1);
 }
 
+    .promo-banner {
+        font-size: 0.8rem;
+        padding: 10px;
+        background-color: var(--primary-color);
+        justify-content: center;
+        text-align: center;
+        display: flex;
+    }
 
 
-/* ================================================= */
-/* --- 6. RESPONSIVIDADE (MEDIA QUERIES) --- */
-/* ================================================= */
 @media screen and (max-width: 768px) {
     body {
-        /* Remove o padding-bottom pois a nav de baixo já tem um height fixo */
         padding-bottom: 65px;
     }
 
-/* Dentro de @media screen and (max-width: 768px) { ... } */
+    .promo-banner {
+        font-size: 0.8rem;
+        padding: 10px;
+        background-color: var(--primary-color)
+    }
 
-.notificacao {
-    /* Remove o posicionamento antigo no topo */
-    top: auto; 
-    /* Posiciona acima da barra de navegação (65px) com uma margem de 15px */
-    bottom: 80px; 
-    /* Ajusta a animação para vir de baixo */
-    transform: translate(-50%, 150%); 
-}
+    .notificacao {
+        top: auto; 
+        bottom: 80px; 
+        transform: translate(-50%, 150%); 
+    }
 
     .apenas-desktop { display: none !important; }
     .apenas-mobile { display: block; }
 
-    /* Mantém a barra de navegação no topo, fixa. */
     .barra-navegacao {
         padding: 10px 15px;
         flex-direction: column;
@@ -1257,17 +1311,9 @@ label.metodo-pagamento-card-sub:has(input:checked) {
         top: 0;
     }
     
-    /* Adicione este novo bloco para garantir que o conteúdo principal não fique por baixo do cabeçalho fixo. */
     .container-principal {
-        padding-top: 140px; /* Adiciona espaço no topo para acomodar o cabeçalho. O valor 140px é um ajuste para a maioria das telas. */
+        padding-top: 140px; 
     }
-    .header-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-    }
-
 
     .header-greeting {
         order: 2;
@@ -1345,14 +1391,11 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     .container-secao h2 { font-size: 1.3rem; }
 
 
-    .container-detalhes-produto img { height: 120px; }
     .texto-info-produto h3 { font-size: 1rem; }
     .texto-info-produto h4 { font-size: 0.8rem; min-height: 35px; }
 
 
     .acoes-produto { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .botoes-container { width: 100%; justify-content: space-between; }
-
 
     .painel-carrinho {
         width: 100%;
@@ -1370,12 +1413,6 @@ label.metodo-pagamento-card-sub:has(input:checked) {
         transform: translateY(0);
     }
     
-    /* Adiciona padding apenas na tela de entrega para não afetar outras telas do carrinho */
-    #tela-entrega {
-        padding-bottom: 100px;
-    }
-
-
     .form-endereco input,
     .area-observacao textarea,
     .input-cupom-container input,
@@ -1404,7 +1441,6 @@ label.metodo-pagamento-card-sub:has(input:checked) {
 
 
     .container-detalhes-produto { padding: 10px; }
-    .container-detalhes-produto img { height: 110px; margin-bottom: 10px; }
     .texto-info-produto h3 { font-size: 0.9rem; }
     .texto-info-produto h4 { font-size: 0.75rem; min-height: 30px; }
 
@@ -1423,7 +1459,6 @@ label.metodo-pagamento-card-sub:has(input:checked) {
 /* --- 7. PÁGINAS DE AUTENTICAÇÃO (LOGIN/CADASTRO) --- */
 /* ======================================================= */
 
-/* Estilo base para a página de autenticação */
 body.auth-page {
     display: flex;
     justify-content: center;
@@ -1732,7 +1767,6 @@ body.auth-page {
     color: var(--grey-dark);
 }
 
-/* Responsividade para telas menores */
 @media (max-width: 768px) {
     .rodape-container {
         flex-direction: column;
@@ -1753,9 +1787,6 @@ body.auth-page {
     }
 }
 
-
-
-/* ... (todo o seu CSS existente) ... */
 
 /* ======================================================= */
 /* --- 8. PÁGINA DE PEDIDOS --- */
@@ -1825,7 +1856,6 @@ body.pagina-pedidos .container-principal {
     color: var(--grey-dark);
 }
 
-/* Linha do Tempo do Status */
 .linha-tempo-status {
     display: flex;
     justify-content: space-between;
@@ -1938,11 +1968,8 @@ body.pagina-pedidos .container-principal {
 }
 
 
-/* EM /frontend/static/css/style.css */
-
-/* --- ESTILOS PARA TELA DE SUCESSO DO PEDIDO --- */
 .tela-sucesso {
-    display: none; /* Começa escondida */
+    display: none; 
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -1965,7 +1992,7 @@ body.pagina-pedidos .container-principal {
 }
 
 .tela-sucesso p {
-    color: var(--text-secondary);
+    color: var(--grey-dark);
     line-height: 1.5;
 }
 
@@ -1980,82 +2007,30 @@ body.pagina-pedidos .container-principal {
     }
 }
 
-/* ======================================================= */
-/* --- 10. REFORMULAÇÃO COMPLETA DO CARRINHO --- */
-/* ======================================================= */
-
-/* --- ESTRUTURA PRINCIPAL DO PAINEL --- */
 .painel-carrinho {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Ocupa a altura total da tela */
-    overflow: hidden; /* Impede o painel inteiro de rolar */
+    height: 100vh;
+    overflow: hidden;
 }
 
 .carrinho-cabecalho {
-    flex-shrink: 0; /* Impede o cabeçalho de encolher */
+    flex-shrink: 0;
     border-bottom: 1px solid var(--grey-medium);
 }
 
 .carrinho-corpo {
-    flex-grow: 1;  /* Faz o corpo ocupar todo o espaço restante */
-    overflow-y: auto; /* ADICIONA A ROLAGEM APENAS AQUI */
+    flex-grow: 1;
+    overflow-y: auto;
     padding: 20px;
 }
 
 .carrinho-rodape {
-    flex-shrink: 0; /* Impede o rodapé de encolher */
+    flex-shrink: 0;
     background-color: var(--navbar-bg);
     box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
 }
 
-/* --- ESTILO DO NOVO FORMULÁRIO VERTICAL --- */
-.novo-form-vertical .form-titulo-secao {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-top: 24px;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-}
-.novo-form-vertical .form-titulo-secao:first-of-type {
-    margin-top: 0;
-}
-
-.novo-form-vertical .form-campo {
-    margin-bottom: 16px;
-}
-
-.novo-form-vertical .form-campo label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-}
-
-.novo-form-vertical .form-campo input {
-    width: 100%;
-    padding: 14px;
-    font-size: 1rem;
-    border: 1px solid var(--grey-medium);
-    border-radius: 8px;
-    background-color: var(--navbar-bg);
-}
-
-.novo-form-vertical .form-campo input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
-}
-
-.novo-form-vertical .form-campo input:read-only {
-    background-color: #e9ecef;
-    cursor: not-allowed;
-}
-
-/* Deixa a barra de rolagem um pouco mais visível */
 .carrinho-corpo::-webkit-scrollbar {
   width: 8px;
 }
@@ -2068,7 +2043,6 @@ body.pagina-pedidos .container-principal {
 }
 
 
-/* Estilos para usuário logado */
 .info-usuario-logado {
     display: flex;
     align-items: center;
@@ -2083,4 +2057,9 @@ body.pagina-pedidos .container-principal {
     font-size: 1.8rem;
     display: flex;
     align-items: center;
+}
+
+/* ADIÇÃO PARA OCULTAR IMAGEM DO MODAL DE PRODUTO */
+.modal-produto .container-imagem-modal {
+    display: none;
 }

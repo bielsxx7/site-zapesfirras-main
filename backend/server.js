@@ -4,14 +4,11 @@ const { Server } = require("socket.io");
 const cors = require('cors');
 const pool = require('./db');
 const stringSimilarity = require("string-similarity");
-
-// BIBLIOTECAS ADICIONADAS PARA CONTAS DE CLIENTE
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
-// BIBLIOTECAS ADICIONADAS PARA RECUPERAÇÃO DE SENHA
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
@@ -23,89 +20,14 @@ const io = new Server(server, {
 });
 
 const port = 3000;
-// IMPORTANTE: Troque esta chave por uma frase secreta e segura de sua escolha
-const JWT_SECRET = 'seu_segredo_super_secreto_aqui_troque_depois'; 
+const JWT_SECRET = process.env.JWT_SECRET; 
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// DICIONÁRIO FINAL DE BAIRROS ESPECIAIS (sem alterações)
-const bairrosEspeciais = [
-    {
-        nomeOficial: 'conjunto habitacional gilberto rossetti',
-        aliases: ['cohab 2', 'cohab ii', 'cohab2', 'gilberto rossetti']
-    },
-    {
-        nomeOficial: 'loteamento residencial vale verde',
-        aliases: ['vale verde', 'valeverde']
-    },
-    {
-        nomeOficial: 'altos do vale ii',
-        aliases: ['altos do vale ii', 'altos do vale 2', 'altos do vale']
-    },
-    {
-        nomeOficial: 'parque dos manacas i',
-        aliases: ['parque manacas', 'parque manacás', 'manacas', 'manacás', 'parque dos manacas i']
-    },
-    {
-        nomeOficial: 'chacara palmeirinha',
-        aliases: ['chacara palmeirinha', 'chacara da palmeirinha', 'palmeirinha']
-    },
-    {
-        nomeOficial: 'chacara da pamonha',
-        aliases: ['chacara da pamonha', 'pamonha', 'chacara pamonha', 'chacara das suculentas']
-    },
-    {
-        nomeOficial: 'distrito industrial ii',
-        aliases: ['distrito industrial 2', 'distrito 2', 'distrito industrial']
-    }
-];
-
-// ROTA ATUALIZADA COM A NOVA BIBLIOTECA
-app.post('/api/calculate-delivery-fee', (req, res) => {
-    try {
-        const { bairro } = req.body;
-        if (!bairro) {
-            return res.status(400).json({ message: "O nome do bairro é obrigatório." });
-        }
-
-        const bairroNormalizado = bairro.toLowerCase()
-                                      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                                      .trim();
-
-        let taxa = 5.00;
-        const SIMILARITY_THRESHOLD = 0.7;
-
-        for (const bairroConfig of bairrosEspeciais) {
-            let match = false;
-
-            for (const alias of bairroConfig.aliases) {
-                const similaridade = stringSimilarity.compareTwoStrings(bairroNormalizado, alias);
-                if (similaridade >= SIMILARITY_THRESHOLD) {
-                    match = true;
-                    break;
-                }
-            }
-
-            if (!match && bairroNormalizado.includes(bairroConfig.nomeOficial)) {
-                match = true;
-            }
-
-            if (match) {
-                taxa = 10.00;
-                break;
-            }
-        }
-        
-        res.json({ taxaDeEntrega: taxa });
-
-    } catch (error) {
-        console.error("Erro ao calcular taxa de entrega:", error);
-        res.status(500).json({ message: "Erro no servidor ao calcular a taxa." });
-    }
-});
-
+// --- ROTAS EXISTENTES (PRODUTOS, CATEGORIAS, PEDIDOS, CLIENTES, ADMIN) ---
+// ... (todo o seu código de rotas anterior permanece aqui, sem alterações) ...
 // --- ROTAS DE PRODUTOS ---
 app.get('/api/products', async (req, res) => {
     try {
@@ -322,11 +244,10 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// ROTA DE CADASTRO DE NOVO CLIENTE (ATUALIZADA)
 app.post('/api/customers/register', async (req, res) => {
     try {
-        const { name, email, phone, password } = req.body; // Adicionado 'email'
-        if (!name || !email || !phone || !password) { // Adicionado 'email'
+        const { name, email, phone, password } = req.body;
+        if (!name || !email || !phone || !password) {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
         }
 
@@ -343,7 +264,6 @@ app.post('/api/customers/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Adicionado 'email' na query SQL
         const sql = "INSERT INTO customers (name, email, phone, password) VALUES (?, ?, ?, ?)";
         const [result] = await pool.query(sql, [name, email, phone, hashedPassword]);
 
@@ -395,11 +315,6 @@ app.get('/api/customers/me', verifyToken, async (req, res) => {
     }
 });
 
-// =======================================================
-// ---      INÍCIO DAS NOVAS ROTAS DE RECUPERAÇÃO DE SENHA     ---
-// =======================================================
-
-// ROTA PARA SOLICITAR A REDEFINIÇÃO DE SENHA
 app.post('/api/customers/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -418,20 +333,19 @@ app.post('/api/customers/forgot-password', async (req, res) => {
             [token, expires, user.id]
         );
 
-        // ATENÇÃO: Configure seu e-mail e senha de app aqui!
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
             auth: {
-                user: 'jsdatorres2@gmail.com', // <-- COLOQUE SEU E-MAIL
-                pass: 'vkzc qtaw zrbz ahru'      // <-- COLOQUE SUA SENHA DE APP
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
             }
         });
 
         const resetLink = `http://127.0.0.1:5500/frontend/resetar-senha.html?token=${token}`;
         const mailOptions = {
-            from: '"Zap Esfirras" <seu-email@gmail.com>',
+            from: `"Zap Esfirras" <${process.env.EMAIL_USER}>`,
             to: user.email,
             subject: 'Redefinição de Senha - Zap Esfirras',
             html: `
@@ -452,7 +366,6 @@ app.post('/api/customers/forgot-password', async (req, res) => {
     }
 });
 
-// ROTA PARA EFETIVAMENTE REDEFINIR A SENHA
 app.post('/api/customers/reset-password', async (req, res) => {
     try {
         const { token, password } = req.body;
@@ -483,9 +396,75 @@ app.post('/api/customers/reset-password', async (req, res) => {
     }
 });
 
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Usuário e senha são obrigatórios.' });
+        }
+
+        const [admins] = await pool.query("SELECT * FROM admins WHERE username = ?", [username]);
+        if (admins.length === 0) {
+            return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+        }
+
+        const admin = admins[0];
+        const isMatch = await bcrypt.compare(password, admin.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+        }
+
+        const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '8h' });
+
+        res.json({
+            message: "Login de administrador bem-sucedido!",
+            token: token,
+            admin: { username: admin.username }
+        });
+
+    } catch (error) {
+        console.error("Erro no login do administrador:", error);
+        res.status(500).json({ message: "Erro no servidor ao fazer login do admin." });
+    }
+});
+
+
 // =======================================================
-// ---       FIM DAS ROTAS DE RECUPERAÇÃO DE SENHA       ---
+// --- NOVA ROTA PARA VALIDAR CUPONS ---
 // =======================================================
+app.post('/api/coupons/validate', async (req, res) => {
+    try {
+        const { couponCode, subtotal } = req.body;
+
+        if (!couponCode) {
+            return res.status(400).json({ message: 'O código do cupom é obrigatório.' });
+        }
+
+        const [coupons] = await pool.query("SELECT * FROM coupons WHERE code = ? AND is_active = true", [couponCode.toUpperCase()]);
+
+        if (coupons.length === 0) {
+            return res.status(404).json({ message: 'Cupom inválido ou expirado.' });
+        }
+
+        const coupon = coupons[0];
+
+        if (subtotal < coupon.min_purchase_value) {
+            return res.status(400).json({ message: `Este cupom requer um pedido mínimo de R$ ${coupon.min_purchase_value.toFixed(2)}.` });
+        }
+
+        // Se todas as validações passaram, retorna o cupom
+        res.json({
+            message: 'Cupom aplicado com sucesso!',
+            coupon: coupon
+        });
+
+    } catch (error) {
+        console.error("Erro ao validar cupom:", error);
+        res.status(500).json({ message: "Erro no servidor ao validar o cupom." });
+    }
+});
+
 
 // --- SOCKET.IO ---
 io.on('connection', (socket) => {

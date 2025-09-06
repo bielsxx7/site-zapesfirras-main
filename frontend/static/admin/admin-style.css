@@ -180,7 +180,6 @@ body.dark-mode .stat-card.mes-anterior .icon { background-color: #5a5a5a30; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 .product-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all var(--transition-speed); position: relative;}
 .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-.product-image { width: 100%; height: 160px; object-fit: cover; }
 .product-info { padding: 16px; flex-grow: 1; }
 .product-info h4 { font-family: var(--font-header); font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
 .product-info .price { font-size: 1.1rem; font-weight: 600; color: var(--primary-color); margin-bottom: 8px; }
@@ -228,10 +227,6 @@ body.dark-mode .product-options { background-color: rgba(30,30,30,0.8); }
 .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
 .close-modal-button { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--text-secondary); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border-radius: 50%; transition: background-color 0.2s ease;}
 .close-modal-button:hover { background-color: var(--background-color); }
-.image-upload-container { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
-.image-preview-wrapper { flex-shrink: 0; }
-#image-preview { width: 120px; height: 120px; border-radius: 8px; object-fit: cover; border: 2px dashed var(--border-color); }
-.image-upload-options { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
 .notification-area { position: fixed; bottom: 20px; right: 20px; z-index: 1002; }
 .notification-message { background-color: var(--text-primary); color: white; padding: 14px 22px; border-radius: 8px; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(20px); transition: all 0.4s ease; font-weight: 500; }
 .notification-message.error { background-image: linear-gradient(to right, #D32F2F, #B71C1C); }
@@ -356,4 +351,9 @@ body.dark-mode .btn-remove-addition:hover {
 
 .audio-prompt.visible {
     display: flex; /* Torna o aviso visível */
+}
+
+/* ADIÇÃO PARA OCULTAR ÁREA DE IMAGEM NO FORMULÁRIO ADMIN */
+#product-form .image-upload-container {
+    display: none;
 }
