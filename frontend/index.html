@@ -20,63 +20,51 @@
         <img src="assets/zapesfiiras.png" alt="Logo Zap Esfirras" class="logo-pulso">
     </div>
 
-    <div id="conteudo-principal" style="display: none;">
-        
-        <header>
-            <div class="barra-superior-info apenas-desktop">
-                <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Sábado, 6 de setembro</span>
+    <header>
+        <div class="barra-superior-info apenas-desktop">
+            <span id="greeting">Boa noite!</span> &#8226; <span id="current-date">Domingo, 7 de setembro</span>
+        </div>
+    
+        <div class="barra-navegacao">
+            <div class="marca-navegacao">
+                <a href="#">
+                    <img src="assets/zapesfiiras.png" alt="Zap Esfirras">
+                </a>
             </div>
-        
-            <div class="barra-navegacao">
-                
-                <div class="marca-navegacao">
-                    <a href="#">
-                        <img src="assets/zapesfiiras.png" alt="Zap Esfirras">
+            <nav class="menu-navegacao apenas-desktop">
+                <ul class="nav-links">
+                    <li><a href="#" class="ativo">Opções</a></li>
+                    <li><a href="pedidos.html">Pedidos</a></li>
+                    <li><a href="promocoes.html">Promoções</a></li>
+                </ul>
+            </nav>
+            <div class="acoes-navegacao apenas-desktop">
+                <div class="caixa-pesquisa">
+                    <input type="text" class="texto-pesquisa" placeholder="Buscar...">
+                    <a href="#" class="botao-pesquisa">
+                        <ion-icon name="search-outline"></ion-icon>
                     </a>
                 </div>
-                
-                <nav class="menu-navegacao apenas-desktop">
-                    <ul class="nav-links">
-                        <li><a href="#" class="ativo">Opções</a></li>
-                        <li><a href="pedidos.html">Pedidos</a></li>
-                        <li><a href="promocoes.html">Promoções</a></li>
-                    </ul>
-                </nav>
-                
-                <div class="acoes-navegacao apenas-desktop">
-                    <div class="caixa-pesquisa">
-                        <input type="text" class="texto-pesquisa" placeholder="Buscar...">
-                        <a href="#" class="botao-pesquisa">
-                            <ion-icon name="search-outline"></ion-icon>
-                        </a>
-                    </div>
-                    <button class="botao-carrinho-desktop" id="botao-carrinho-desktop">
-                        <ion-icon name="cart-outline"></ion-icon>
-                        <span class="contador-carrinho" id="contador-carrinho-desktop">0</span>
+                <button class="botao-carrinho-desktop" id="botao-carrinho-desktop">
+                    <ion-icon name="cart-outline"></ion-icon>
+                    <span class="contador-carrinho" id="contador-carrinho-desktop">0</span>
+                </button>
+                <a href="login-cliente.html" class="botao-conta" id="botao-conta-desktop">CONTA</a>
+                <div class="info-usuario-logado" id="info-usuario-desktop" style="display: none;">
+                    <span id="nome-usuario-desktop"></span>
+                    <button id="botao-logout-desktop" class="botao-logout" title="Sair">
+                        <ion-icon name="log-out-outline"></ion-icon>
                     </button>
-
-                    <a href="login-cliente.html" class="botao-conta" id="botao-conta-desktop">CONTA</a>
-
-                    <div class="info-usuario-logado" id="info-usuario-desktop" style="display: none;">
-                        <span id="nome-usuario-desktop"></span>
-                        <button id="botao-logout-desktop" class="botao-logout" title="Sair">
-                            <ion-icon name="log-out-outline"></ion-icon>
-                        </button>
-                    </div>
-                    
-                    </div>
-    
-                <div class="header-greeting apenas-mobile" id="header-greeting-mobile">
                 </div>
-                </div>
-        </header>
-
-        <div class="promo-banner">
-            <ion-icon name="sparkles-outline"></ion-icon>
-            <span>Compras acima de R$ 100,00, a entrega é por nossa conta! Use o cupom: <strong>ENTREGAGRATIS</strong></span>
+            </div>
+            <div class="header-greeting apenas-mobile" id="header-greeting-mobile">
+            </div>
         </div>
+    </header>
 
 
+
+    <div id="conteudo-principal" style="display: none;">
         <main class="container-principal">
             <section class="container-pesquisa-mobile apenas-mobile">
                 <div class="caixa-pesquisa">
@@ -108,17 +96,14 @@
                 <button class="botao-fechar" id="botao-fechar-modal">&times;</button>
                 <div class="conteudo-modal">
                     <div class="container-imagem-modal">
-                        
                     </div>
                     <div class="detalhes-modal">
                         <h2 id="nome-produto-modal">Nome do Produto</h2>
                         <h3 id="desc-produto-modal">Breve descrição.</h3>
-                        
                         <div class="area-observacao">
                             <h3>Alguma observação?</h3>
                             <textarea id="observacao-produto" placeholder="Ex: sem cebola, maionese à parte..."></textarea>
                         </div>
-
                         <div class="area-adicionais">
                             <button type="button" class="botao-toggle-adicionais" id="toggle-adicionais">
                                 <span>Deseja algum adicional?</span>
@@ -127,7 +112,6 @@
                             <div class="lista-adicionais-container" id="lista-adicionais">
                             </div>
                         </div>
-
                         <div class="opcoes-modal">
                             <div class="seletor-quantidade">
                                 <button class="botao-quantidade botao-menos">-</button>
@@ -156,10 +140,24 @@
         </header>
     
         <div class="carrinho-corpo">
-    
             <div id="tela-itens" class="tela-carrinho tela-ativa">
                 <div id="lista-itens-carrinho" class="lista-itens-carrinho">
                     <p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>
+                </div>
+                <div class="entrega-gratis-tracker" id="entrega-gratis-tracker" style="display: none;">
+                    <div class="tracker-icon">
+                        <ion-icon name="bicycle-outline"></ion-icon>
+                    </div>
+                    <div class="tracker-info">
+                        <p id="entrega-gratis-texto">Faltam R$ 60,00 para entrega grátis!</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="entrega-gratis-progress"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="entrega-gratis-success" id="entrega-gratis-success" style="display: none;">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    <p>Parabéns! Você conseguiu entrega grátis!</p>
                 </div>
                 <a href="#" id="adicionar-mais-itens" class="adicionar-mais-itens">
                     <ion-icon name="add-circle-outline"></ion-icon>
@@ -213,7 +211,6 @@
                        <label for="cliente-telefone">Seu telefone / WhatsApp*</label>
                        <input type="tel" id="cliente-telefone" placeholder="(99) 99999-9999" required>
                    </div>
-
                     <h4 class="form-titulo-secao">Onde entregar?</h4>
                     <div class="form-campo">
                         <label for="endereco-cep">CEP*</label>
@@ -336,7 +333,6 @@
                 <p>Obrigado pela preferência!</p>
                 <p>Acompanhe o status na aba "Pedidos".</p>
             </div>
-    
         </div>
     
         <footer class="carrinho-rodape">
