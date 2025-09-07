@@ -4,6 +4,9 @@
 /* ======================================================= */
 /* --- 1. GERAL, VARIÁVEIS E LAYOUT BASE --- */
 /* ======================================================= */
+
+
+
 :root {
     --primary-color: #D32F2F;
     --secondary-color: #E0E0E0;
@@ -285,6 +288,12 @@ body {
     font-weight: 600;
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s;
+}
+.notificacao.error {
+    background-color: var(--primary-color);
+}
+.notificacao.success {
+    background-color: var(--green-color);
 }
 
 .notificacao.mostrar {
@@ -597,6 +606,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
+    cursor: pointer;
 }
 
 
@@ -1273,14 +1283,30 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     transform: scale(1);
 }
 
-    .promo-banner {
-        font-size: 0.8rem;
-        padding: 10px;
-        background-color: var(--primary-color);
-        justify-content: center;
-        text-align: center;
-        display: flex;
-    }
+.promo-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    width: 100%;
+    position: sticky;
+    top: 105px; /* Altura do header desktop */
+    z-index: 980;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.promo-banner ion-icon {
+    font-size: 1.2rem;
+}
+.promo-banner strong {
+    font-weight: 700;
+    text-transform: uppercase;
+}
 
 
 @media screen and (max-width: 768px) {
@@ -1289,9 +1315,12 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     }
 
     .promo-banner {
+        top: 60px; /* Altura do header mobile */
         font-size: 0.8rem;
-        padding: 10px;
-        background-color: var(--primary-color)
+        padding: 8px 10px;
+        flex-direction: column;
+        gap: 5px;
+        line-height: 1.3;
     }
 
     .notificacao {
@@ -1304,24 +1333,21 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     .apenas-mobile { display: block; }
 
     .barra-navegacao {
-        padding: 10px 15px;
-        flex-direction: column;
-        align-items: center;
-        height: auto;
+        padding: 5px 15px;
+        height: 60px;
         top: 0;
+        flex-direction: row; /* Manter na mesma linha no mobile */
     }
     
     .container-principal {
-        padding-top: 140px; 
+        padding-top: 20px; 
     }
 
-    .header-greeting {
-        order: 2;
-        text-align: center;
-        margin-top: 5px;
-        color: var(--grey-dark);
-        font-size: 0.9em;
+    .marca-navegacao img {
+        height: 45px;
     }
+
+    .header-greeting { display: none; }
 
 
     .bottom-nav {
@@ -1329,7 +1355,7 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     }
 
 
-    .container-pesquisa-mobile { display: block; padding: 15px; }
+    .container-pesquisa-mobile { display: block; padding: 0 15px 15px 15px; }
     .container-pesquisa-mobile .caixa-pesquisa {
         width: 100%;
         background-color: #f1f1f1;
@@ -1387,7 +1413,7 @@ label.metodo-pagamento-card-sub:has(input:checked) {
     }
 
 
-    .container-principal { padding: 15px; }
+    .container-principal { padding-left: 15px; padding-right: 15px; }
     .container-secao h2 { font-size: 1.3rem; }
 
 
