@@ -384,10 +384,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const botaoPerfilMobileText = botaoPerfilMobileLink ? botaoPerfilMobileLink.querySelector('.bottom-nav-text') : null;
 
         if (token && customerInfo) {
+            // --- USUÁRIO LOGADO ---
             if (botaoContaDesktop) botaoContaDesktop.style.display = 'none';
             if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'flex';
             if (nomeUsuarioDesktop) nomeUsuarioDesktop.textContent = `Olá, ${customerInfo.name.split(' ')[0]}!`;
             if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Minha Conta';
+            
+            // NOVO: Altera o link para a página de perfil
+            if (botaoPerfilMobileLink) botaoPerfilMobileLink.href = 'perfil.html';
 
             if (botaoLogoutDesktop) {
                 if (!botaoLogoutDesktop.dataset.listener) {
@@ -400,9 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else {
+            // --- USUÁRIO DESLOGADO ---
             if (botaoContaDesktop) botaoContaDesktop.style.display = 'flex';
             if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'none';
             if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Perfil';
+            
+            // NOVO: Garante que o link aponte para o login
+            if (botaoPerfilMobileLink) botaoPerfilMobileLink.href = 'login-cliente.html';
         }
     }
 

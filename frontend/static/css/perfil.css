@@ -1,0 +1,226 @@
+/* ======================================================= */
+/* --- ESTILOS DA PÁGINA DE PERFIL --- */
+/* ======================================================= */
+
+.titulo-pagina-perfil {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+/* --- Layout Principal --- */
+.perfil-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr; /* Coluna fixa para navegação, coluna flexível para conteúdo */
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* --- Navegação Lateral (Coluna 1) --- */
+.perfil-nav {
+    background-color: var(--navbar-bg);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--grey-light);
+}
+
+.perfil-nav ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.perfil-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.perfil-nav-link ion-icon {
+    font-size: 1.4rem;
+    min-width: 24px; /* Garante alinhamento */
+}
+
+.perfil-nav-link:hover {
+    background-color: var(--grey-light);
+}
+
+.perfil-nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    transform: translateX(5px);
+    box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3);
+}
+
+/* --- Conteúdo Principal (Coluna 2) --- */
+.perfil-conteudo {
+    background-color: var(--navbar-bg);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--grey-light);
+    min-height: 400px;
+}
+
+.perfil-secao {
+    display: none; /* Esconde todas as seções por padrão */
+    animation: fadeIn 0.4s ease; /* Efeito de transição */
+}
+
+.perfil-secao.active {
+    display: block; /* Mostra apenas a seção ativa */
+}
+
+.perfil-secao h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+}
+
+.perfil-secao p {
+    color: var(--grey-dark);
+    margin-top: 5px;
+    margin-bottom: 25px;
+}
+
+.secao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.secao-header h2 {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.secao-header .btn {
+    padding: 10px 20px;
+}
+
+/* --- Cards (para Endereços, Pedidos, etc.) --- */
+.lista-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.endereco-card {
+    border: 1px solid var(--grey-medium);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.endereco-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(211, 47, 47, 0.1);
+}
+
+.endereco-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.endereco-card-alias {
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.default-badge {
+    background-color: var(--green-color);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.endereco-card-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-card-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--grey-dark);
+    padding: 5px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.btn-card-action:hover {
+    background-color: var(--grey-light);
+    color: var(--primary-color);
+}
+
+.endereco-card-body p {
+    margin: 0 0 5px 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+
+/* --- Responsividade --- */
+@media screen and (max-width: 900px) {
+    .perfil-layout {
+        grid-template-columns: 1fr; /* Coluna única em telas menores */
+    }
+
+    .perfil-nav {
+        margin-bottom: 20px;
+    }
+
+    .perfil-nav ul {
+        flex-direction: row; /* Navegação fica na horizontal */
+        overflow-x: auto;   /* Permite rolar se não couber na tela */
+        padding-bottom: 10px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    }
+
+    .perfil-nav ul::-webkit-scrollbar { 
+        display: none;  /* Safari and Chrome */
+    }
+    
+    .perfil-nav li {
+        flex-shrink: 0; /* Impede que os itens se espremam */
+    }
+
+    .perfil-nav-link.active {
+        transform: translateY(-2px) translateX(0);
+    }
+
+    .perfil-conteudo {
+        padding: 20px;
+    }
+}
