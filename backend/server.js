@@ -26,7 +26,6 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// DICIONÁRIO DE BAIRROS ESPECIAIS
 const bairrosEspeciais = [
     {
         nomeOficial: 'conjunto habitacional gilberto rossetti',
@@ -58,44 +57,32 @@ const bairrosEspeciais = [
     }
 ];
 
-// ROTA PARA CALCULAR TAXA DE ENTREGA
 app.post('/api/calculate-delivery-fee', (req, res) => {
     try {
         const { bairro } = req.body;
         if (!bairro) {
             return res.status(400).json({ message: "O nome do bairro é obrigatório." });
         }
-
-        const bairroNormalizado = bairro.toLowerCase()
-                                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                                        .trim();
-
-        let taxa = 5.00; // Taxa padrão
+        const bairroNormalizado = bairro.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        let taxa = 5.00;
         const SIMILARITY_THRESHOLD = 0.7;
-
         for (const bairroConfig of bairrosEspeciais) {
             let match = false;
-
             for (const alias of bairroConfig.aliases) {
-                const similaridade = stringSimilarity.compareTwoStrings(bairroNormalizado, alias);
-                if (similaridade >= SIMILARITY_THRESHOLD) {
+                if (stringSimilarity.compareTwoStrings(bairroNormalizado, alias) >= SIMILARITY_THRESHOLD) {
                     match = true;
                     break;
                 }
             }
-
             if (!match && bairroNormalizado.includes(bairroConfig.nomeOficial)) {
                 match = true;
             }
-
             if (match) {
-                taxa = 10.00; // Taxa para bairros especiais/distantes
+                taxa = 10.00;
                 break;
             }
         }
-        
         res.json({ taxaDeEntrega: taxa });
-
     } catch (error) {
         console.error("Erro ao calcular taxa de entrega:", error);
         res.status(500).json({ message: "Erro no servidor ao calcular a taxa." });
@@ -106,6 +93,12 @@ app.post('/api/calculate-delivery-fee', (req, res) => {
 // --- ROTAS DE PRODUTOS ---
 app.get('/api/products', async (req, res) => {
     try {
+        // --- CORREÇÃO APLICADA AQUI: Rotina de limpeza simplificada ---
+        // Desativa promoções onde a data de expiração já passou da hora atual do servidor.
+        const cleanupSql = "UPDATE products SET is_on_promo = false, promo_price = NULL, promo_expires_at = NULL WHERE is_on_promo = true AND promo_expires_at < NOW()";
+        await pool.query(cleanupSql);
+        
+        // Agora busca os produtos com o status de promoção já corrigido.
         const sql = `SELECT p.*, c.name AS category_name, c.is_visible AS category_is_visible FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY c.display_order, c.name, p.name`;
         const [rows] = await pool.query(sql);
         res.json(rows);
@@ -155,22 +148,30 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// --- ROTA DE PROMOÇÃO ATUALIZADA ---
 app.put('/api/products/:id/promotion', async (req, res) => {
     try {
         const { id } = req.params;
-        const { is_on_promo, promo_price } = req.body;
+        const { is_on_promo, promo_price, duration_hours } = req.body;
 
         if (is_on_promo && (promo_price === null || promo_price === undefined)) {
-            return res.status(400).json({ message: 'O preço promocional é obrigatório para ativar uma promoção.' });
+            return res.status(400).json({ message: 'O preço promocional é obrigatório.' });
+        }
+        if (is_on_promo && (duration_hours === null || duration_hours === undefined || duration_hours <= 0)) {
+            return res.status(400).json({ message: 'A duração em horas é obrigatória.' });
+        }
+
+        let promo_expires_at = null;
+        if (is_on_promo) {
+            const now = new Date();
+            const durationInMilliseconds = parseFloat(duration_hours) * 60 * 60 * 1000;
+            promo_expires_at = new Date(now.getTime() + durationInMilliseconds);
         }
 
         const finalPromoPrice = is_on_promo ? promo_price : null;
 
-        const sql = "UPDATE products SET is_on_promo = ?, promo_price = ? WHERE id = ?";
-        await pool.query(sql, [is_on_promo, finalPromoPrice, id]);
+        const sql = "UPDATE products SET is_on_promo = ?, promo_price = ?, promo_expires_at = ? WHERE id = ?";
+        await pool.query(sql, [is_on_promo, finalPromoPrice, promo_expires_at, id]);
         
-        // CORREÇÃO APLICADA AQUI: Notifica o frontend do cliente sobre a mudança
         io.emit('menu_updated');
 
         res.json({ message: "Status da promoção atualizado com sucesso." });
@@ -179,7 +180,6 @@ app.put('/api/products/:id/promotion', async (req, res) => {
         res.status(500).json({ message: "Erro no servidor ao atualizar promoção." });
     }
 });
-
 
 // --- ROTAS DE CATEGORIAS ---
 app.get('/api/categories', async (req, res) => {
@@ -463,7 +463,7 @@ app.post('/api/customers/forgot-password', async (req, res) => {
         const user = users[0];
 
         const token = crypto.randomBytes(20).toString('hex');
-        const expires = Date.now() + 3600000; // 1 hora em milissegundos
+        const expires = Date.now() + 3600000;
 
         await pool.query(
             "UPDATE customers SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?",

@@ -25,7 +25,7 @@
     <div class="admin-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src ="/frontend/assets/zapesfiiras.png" alt="Zap Esfirras Logo" class="logo">
+                <img src="assets/zapesfiiras.png" alt="Zap Esfirras Logo" class="logo">
                 <h2>Painel Admin</h2>
             </div>
             <nav class="sidebar-nav">
@@ -61,36 +61,66 @@
             <section class="admin-view" id="view-configuracoes"></section>
         </main>
     </div>
-<div class="modal-overlay" id="product-modal-overlay">
-    <div class="modal-content">
-        <h2 id="modal-title">Adicionar Novo Produto</h2>
-        <form id="product-form">
-            <input type="hidden" id="product-id">
-            <div class="form-group"><label for="product-name">Nome do Produto</label><input type="text" id="product-name" required></div>
-            <div class="form-group"><label for="product-category">Categoria</label><select id="product-category" required></select></div>
-            <div class="form-group"><label for="product-price">Preço (R$)</label><input type="number" id="product-price" step="0.01" placeholder="Ex: 5.50" required></div>
-            <div class="form-group"><label for="product-description">Descrição</label><textarea id="product-description" rows="3" placeholder="Ex: Deliciosa esfirra de carne..."></textarea></div>
-            
-            <div class="form-group">
-                <label>Adicionais do Produto</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="adicionais-option" value="default" checked> Manter Padrões da Categoria</label>
-                    <label><input type="radio" name="adicionais-option" value="custom"> Personalizar Adicionais</label>
-                </div>
-            </div>
-            <div id="custom-additions-container" class="custom-additions-container" style="display: none;">
-                <div id="custom-additions-list">
-                </div>
-                <button type="button" class="btn btn-secondary btn-add-more" id="add-new-addition-btn"><ion-icon name="add-outline"></ion-icon> Adicionar Novo Adicional</button>
-            </div>
 
-            <div class="form-group"><label>Imagem do Produto</label><div class="image-upload-container"><div class="image-preview-wrapper"><img id="image-preview" src="https://via.placeholder.com/150x150.png?text=Sem+Imagem" alt="Pré-visualização"></div><div class="image-upload-options"><p>Escolha uma imagem:</p><input type="file" id="product-image-file" accept="image/*" style="display: none;"><button type="button" class="btn btn-secondary" id="upload-image-button"><ion-icon name="cloud-upload-outline"></ion-icon> Enviar do Computador</button><p class="separator">ou</p><input type="text" id="product-image-url" placeholder="Cole a URL de uma imagem aqui"></div></div></div>
-            
-            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-modal-button">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
-        </form>
-        <button class="close-modal-button" id="close-modal-button"><ion-icon name="close-outline"></ion-icon></button>
+    <div class="modal-overlay" id="product-modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">Adicionar Novo Produto</h2>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="form-group"><label for="product-name">Nome do Produto</label><input type="text" id="product-name" required></div>
+                <div class="form-group"><label for="product-category">Categoria</label><select id="product-category" required></select></div>
+                <div class="form-group"><label for="product-price">Preço (R$)</label><input type="number" id="product-price" step="0.01" placeholder="Ex: 5.50" required></div>
+                <div class="form-group"><label for="product-description">Descrição</label><textarea id="product-description" rows="3" placeholder="Ex: Deliciosa esfirra de carne..."></textarea></div>
+                
+                <div class="form-group">
+                    <label>Adicionais do Produto</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="adicionais-option" value="default" checked> Manter Padrões da Categoria</label>
+                        <label><input type="radio" name="adicionais-option" value="custom"> Personalizar Adicionais</label>
+                    </div>
+                </div>
+                <div id="custom-additions-container" class="custom-additions-container" style="display: none;">
+                    <div id="custom-additions-list">
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-add-more" id="add-new-addition-btn"><ion-icon name="add-outline"></ion-icon> Adicionar Novo Adicional</button>
+                </div>
+
+                <div class="form-group"><label>Imagem do Produto</label><div class="image-upload-container"><div class="image-preview-wrapper"><img id="image-preview" src="https://via.placeholder.com/150x150.png?text=Sem+Imagem" alt="Pré-visualização"></div><div class="image-upload-options"><p>Escolha uma imagem:</p><input type="file" id="product-image-file" accept="image/*" style="display: none;"><button type="button" class="btn btn-secondary" id="upload-image-button"><ion-icon name="cloud-upload-outline"></ion-icon> Enviar do Computador</button><p class="separator">ou</p><input type="text" id="product-image-url" placeholder="Cole a URL de uma imagem aqui"></div></div></div>
+                
+                <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-modal-button">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
+            </form>
+            <button class="close-modal-button" id="close-modal-button"><ion-icon name="close-outline"></ion-icon></button>
+        </div>
     </div>
-</div>
+
+    <div class="modal-overlay" id="promo-modal-overlay">
+        <div class="modal-content">
+            <h2 id="promo-modal-title">Configurar Promoção</h2>
+            <form id="promo-form">
+                <input type="hidden" id="promo-product-id">
+                <div class="form-group">
+                    <label for="promo-price">Preço Promocional (R$)</label>
+                    <input type="number" id="promo-price" step="0.01" placeholder="Ex: 0.99" required>
+                </div>
+                <div class="form-group">
+                    <label>Duração da Promoção</label>
+                    <div class="time-inputs">
+                        <input type="number" id="promo-hours" placeholder="Horas" min="0" value="1">
+                        <span>:</span>
+                        <input type="number" id="promo-minutes" placeholder="Min" min="0" max="59" value="0">
+                        <span>:</span>
+                        <input type="number" id="promo-seconds" placeholder="Seg" min="0" max="59" value="0">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" id="btn-deactivate-promo" style="margin-right: auto;">Desativar Promoção</button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancelar-promo-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Promoção</button>
+                </div>
+            </form>
+            <button class="close-modal-button" id="btn-fechar-promo-modal"><ion-icon name="close-outline"></ion-icon></button>
+        </div>
+    </div>
     
     <div class="modal-overlay" id="confirm-modal-overlay">
         <div class="modal-content">

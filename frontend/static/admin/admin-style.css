@@ -364,3 +364,71 @@ body.dark-mode .btn-remove-addition:hover {
     color: var(--orange-accent-color);
     background-color: #FB8C0020; /* Laranja com 20% de opacidade */
 }
+
+
+/* --- ESTILOS PARA O MODAL DE PROMOÇÃO --- */
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-inputs input {
+    width: 100%;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.time-inputs span {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Remove as setas de 'number' dos inputs de tempo */
+.time-inputs input::-webkit-outer-spin-button,
+.time-inputs input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.time-inputs input[type=number] {
+  -moz-appearance: textfield;
+}
+
+#btn-deactivate-promo {
+    margin-right: auto; /* Joga este botão para a esquerda */
+}
+
+
+/* ======================================================= */
+/* --- ESTILOS MELHORADOS PARA O BOTÃO DE PROMOÇÃO --- */
+/* ======================================================= */
+
+/* Estilo base específico para o botão de promoção */
+.product-actions .btn-promo-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Efeito ao passar o mouse por cima */
+.product-actions .btn-promo-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--orange-accent-color);
+    color: var(--orange-accent-color);
+}
+
+/* Estilo quando a promoção está ATIVA */
+.product-actions .btn-promo-toggle.active {
+    background-color: var(--orange-accent-color);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 0 12px rgba(251, 140, 0, 0.6);
+    transform: scale(1.1);
+}

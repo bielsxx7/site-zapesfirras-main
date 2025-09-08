@@ -123,7 +123,7 @@ body {
 .menu-navegacao .nav-links {
     list-style: none;
     display: flex;
-    gap: 50px;
+    gap: 70px;
     padding: 0;
     margin: 0;
 }
@@ -2077,3 +2077,115 @@ body.pagina-pedidos .container-principal {
 .btn-secondary:hover {
     background-color: var(--grey-medium);
 }
+
+
+#nome-usuario-desktop{
+    color: black
+}
+
+
+/* ======================================================= */
+/* --- ESTILOS MODERNOS PARA PROMOÇÕES (ADICIONADO) --- */
+/* ======================================================= */
+
+/* Adicionando a variável de cor laranja para consistência */
+:root {
+    --orange-accent-color: #FB8C00;
+}
+
+/* Animação de brilho pulsante */
+@keyframes pulse-glow-promo {
+    0% {
+        box-shadow: 0 0 0 0 rgba(251, 140, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 12px rgba(251, 140, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(251, 140, 0, 0);
+    }
+}
+
+/* Novo estilo para o título da seção de promoções */
+.titulo-secao-imperdivel {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+    color: var(--orange-accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Atualizando o card em promoção */
+.cartao-produto.em-promocao {
+    border: 2px solid var(--orange-accent-color);
+    box-shadow: var(--shadow-md);
+    animation: pulse-glow-promo 2s infinite;
+}
+
+/* Ajustando o preço promocional para ser mais chamativo */
+.preco-promocional {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--orange-accent-color); /* Mudado para laranja */
+}
+
+
+/* --- ESTILO PARA BOTAO DE PROMOCAO ATIVO (MELHORADO) --- */
+
+.btn-card-action {
+    transition: all 0.2s ease; /* Garante uma transição suave */
+}
+
+.btn-promo-toggle.active {
+    background-color: var(--orange-accent-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--orange-accent-color);
+}
+
+/* --- ESTILO PARA O CRONÔMETRO DA PROMOÇÃO --- */
+.promo-countdown {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background-color: #fff0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+/* ... (seu CSS existente) ... */
+
+/* Estilo para a Oferta Relâmpago estilizada */
+.promo-badge-estilizado {
+    position: absolute;
+    top: -10px; /* Ajuste para sair um pouco do topo */
+    left: -10px; /* Ajuste para sair um pouco da lateral */
+    background: linear-gradient(45deg, #FF6F00, #FFD700); /* Laranja vibrante para dourado */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.85em; /* Um pouco menor para caber bem */
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    z-index: 10; /* Garante que fique acima de outros elementos */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para profundidade */
+    transform: rotate(-5deg) translateY(-2px); /* Uma leve inclinação e flutuação */
+    white-space: nowrap; /* Evita quebra de linha */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Sombra no texto */
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Espaçamento entre o ícone e o texto */
+}
+
+/* Ajuste no card para acomodar o novo badge, se necessário */
+.cartao-produto.em-promocao {
+    position: relative; /* Essencial para o posicionamento absoluto do badge */
+    overflow: visible; /* Permite que o badge "saia" um pouco do card */
+    border: 2px solid #FF6F00; /* Borda mais destacada para cards em promoção */
+    box-shadow: 0 0 15px rgba(255, 111, 0, 0.4); /* Sombra luminosa */
+}
+
