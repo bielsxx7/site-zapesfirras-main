@@ -106,7 +106,6 @@ app.post('/api/calculate-delivery-fee', (req, res) => {
 // --- ROTAS DE PRODUTOS ---
 app.get('/api/products', async (req, res) => {
     try {
-        // CORREÇÃO: Removido o espaço em branco antes do SELECT
         const sql = `SELECT p.*, c.name AS category_name, c.is_visible AS category_is_visible FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY c.display_order, c.name, p.name`;
         const [rows] = await pool.query(sql);
         res.json(rows);
@@ -155,6 +154,32 @@ app.delete('/api/products/:id', async (req, res) => {
         res.status(500).json({ message: "Erro no servidor ao excluir produto." });
     }
 });
+
+// --- ROTA DE PROMOÇÃO ATUALIZADA ---
+app.put('/api/products/:id/promotion', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { is_on_promo, promo_price } = req.body;
+
+        if (is_on_promo && (promo_price === null || promo_price === undefined)) {
+            return res.status(400).json({ message: 'O preço promocional é obrigatório para ativar uma promoção.' });
+        }
+
+        const finalPromoPrice = is_on_promo ? promo_price : null;
+
+        const sql = "UPDATE products SET is_on_promo = ?, promo_price = ? WHERE id = ?";
+        await pool.query(sql, [is_on_promo, finalPromoPrice, id]);
+        
+        // CORREÇÃO APLICADA AQUI: Notifica o frontend do cliente sobre a mudança
+        io.emit('menu_updated');
+
+        res.json({ message: "Status da promoção atualizado com sucesso." });
+    } catch (error) {
+        console.error("Erro ao atualizar promoção do produto:", error);
+        res.status(500).json({ message: "Erro no servidor ao atualizar promoção." });
+    }
+});
+
 
 // --- ROTAS DE CATEGORIAS ---
 app.get('/api/categories', async (req, res) => {
@@ -386,9 +411,6 @@ app.get('/api/customers/me', verifyToken, async (req, res) => {
     }
 });
 
-// =======================================================================
-// === NOVO BLOCO DE ROTAS PARA GERENCIAMENTO DE ENDEREÇOS ===
-// =======================================================================
 app.get('/api/customers/me/addresses', verifyToken, async (req, res) => {
     try {
         const [addresses] = await pool.query("SELECT * FROM customer_addresses WHERE customer_id = ?", [req.customerId]);
@@ -429,10 +451,6 @@ app.delete('/api/customers/me/addresses/:id', verifyToken, async (req, res) => {
         res.status(500).json({ message: "Erro no servidor ao excluir endereço." });
     }
 });
-// =======================================================================
-// === FIM DO NOVO BLOCO DE ROTAS ===
-// =======================================================================
-
 
 app.post('/api/customers/forgot-password', async (req, res) => {
     try {

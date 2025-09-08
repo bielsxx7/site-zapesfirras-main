@@ -1,0 +1,3 @@
+ALTER TABLE products
+ADD COLUMN is_on_promo BOOLEAN DEFAULT false,
+ADD COLUMN promo_price DECIMAL(10, 2) NULL;

@@ -357,3 +357,10 @@ body.dark-mode .btn-remove-addition:hover {
 #product-form .image-upload-container {
     display: none;
 }
+
+/* --- ESTILO PARA BOTAO DE PROMOCAO ATIVO --- */
+
+.btn-promo-toggle.active {
+    color: var(--orange-accent-color);
+    background-color: #FB8C0020; /* Laranja com 20% de opacidade */
+}

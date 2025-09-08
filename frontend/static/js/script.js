@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('menu_updated', () => {
         mostrarNotificacao('O cardápio foi atualizado!');
+        // Quando o menu atualiza, recarregamos os dados da API
         carregarDadosDaAPI();
     });
 
@@ -65,24 +66,38 @@ document.addEventListener('DOMContentLoaded', () => {
             ]);
             if (!categoriesResponse.ok) throw new Error('Erro ao buscar categorias.');
             if (!productsResponse.ok) throw new Error('Erro de rede ao buscar produtos.');
+            
             const categoriasVisiveis = await categoriesResponse.json();
             const todosProdutos = await productsResponse.json();
+            
+            // DEBUG: Vamos ver os dados que a API está retornando
+            console.log("Dados recebidos da API:", todosProdutos);
+
             if (barraFiltros) renderizarFiltros(categoriasVisiveis);
             const produtosVisiveis = todosProdutos.filter(p => p.available && p.category_is_visible);
+            
             menuData = produtosVisiveis.reduce((acc, produto) => {
                 const categoria = produto.category_name;
                 if (!acc[categoria]) acc[categoria] = [];
                 acc[categoria].push(produto);
                 return acc;
             }, {});
+
             const containerPrincipal = document.querySelector('main.container-principal');
             if (containerPrincipal) {
                 const secoesAntigas = containerPrincipal.querySelectorAll('.container-secao[data-category]');
                 secoesAntigas.forEach(secao => secao.remove());
+                
                 categoriasVisiveis.forEach(categoria => {
                     const produtosDaCategoria = menuData[categoria.name];
                     if (produtosDaCategoria && produtosDaCategoria.length > 0) {
-                        const secaoHTML = `<section class="container-secao" data-category="${categoria.name}"><h2 class="titulo-secao">${categoria.name}</h2><div class="grade-produtos">${produtosDaCategoria.map(produto => criarCardProdutoHTML(produto)).join('')}</div></section>`;
+                        const secaoHTML = `
+                            <section class="container-secao" data-category="${categoria.name}">
+                                <h2 class="titulo-secao">${categoria.name}</h2>
+                                <div class="grade-produtos">
+                                    ${produtosDaCategoria.map(produto => criarCardProdutoHTML(produto)).join('')}
+                                </div>
+                            </section>`;
                         containerPrincipal.insertAdjacentHTML('beforeend', secaoHTML);
                     }
                 });
@@ -108,8 +123,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const formatCurrency = (value) => (value != null ? parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00');
+
     function criarCardProdutoHTML(produto) {
-        return `<div class="cartao-produto" data-id="${produto.id}" data-category="${produto.category_name}"><div class="container-detalhes-produto"><img src="${produto.image}" alt="${produto.name}"><div class="texto-info-produto"><h3>${produto.name}</h3><h4>${produto.description || ''}</h4></div></div><div class="acoes-produto"><span class="preco">R$ ${parseFloat(produto.price).toFixed(2).replace('.', ',')}</span><button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button></div></div>`;
+        // A lógica de promoção agora verifica se is_on_promo é 1 (true do MySQL)
+        const isPromo = produto.is_on_promo == 1 && produto.promo_price > 0;
+    
+        const priceHTML = isPromo
+            ? `
+                <span class="preco-antigo"><s>${formatCurrency(produto.price)}</s></span>
+                <span class="preco-promocional">${formatCurrency(produto.promo_price)}</span>
+            `
+            : `<span class="preco">${formatCurrency(produto.price)}</span>`;
+    
+        return `
+        <div class="cartao-produto ${isPromo ? 'em-promocao' : ''}" data-id="${produto.id}" data-category="${produto.category_name}">
+            ${isPromo ? '<div class="promo-badge">OFERTA RELÂMPAGO</div>' : ''}
+            <div class="container-detalhes-produto">
+                <img src="${produto.image}" alt="${produto.name}">
+                <div class="texto-info-produto">
+                    <h3>${produto.name}</h3>
+                    <h4>${produto.description || ''}</h4>
+                </div>
+            </div>
+            <div class="acoes-produto">
+                <div class="precos-container">
+                    ${priceHTML}
+                </div>
+                <button class="botao-adicionar"><ion-icon name="add-outline"></ion-icon></button>
+            </div>
+        </div>`;
     }
 
     function renderizarSugestoes() {
@@ -123,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function atualizarInfoCabecalho() { const greetingEl = document.getElementById('greeting'); const dateEl = document.getElementById('current-date'); const mobileGreetingContainer = document.getElementById('header-greeting-mobile'); if (!greetingEl || !dateEl) return; const agora = new Date(); const hora = agora.getHours(); let saudacao; if (hora >= 5 && hora < 12) { saudacao = 'Bom dia!'; } else if (hora >= 12 && hora < 18) { saudacao = 'Boa tarde!'; } else { saudacao = 'Boa noite!'; } const opcoesData = { weekday: 'long', month: 'long', day: 'numeric' }; let dataFormatada = agora.toLocaleDateString('pt-BR', opcoesData); dataFormatada = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1); greetingEl.textContent = saudacao; dateEl.textContent = dataFormatada; if (mobileGreetingContainer) { mobileGreetingContainer.innerHTML = `<span>${saudacao}</span> &#8226; <span>${dataFormatada}</span>`; } }
+    function atualizarInfoCabecalho() { const greetingEl = document.getElementById('greeting'); const dateEl = document.getElementById('current-date'); const mobileGreetingContainer = document.getElementById('header-greeting-mobile'); if (!greetingEl || !dateEl) return; const agora = new Date(); const hora = agora.getHours(); let saudacao; if (hora >= 5 && hora < 12) { saudacao = 'Bom dia!'; } else if (hora >= 12 && hora < 18) { saudacao = 'Boa noite!'; } else { saudacao = 'Boa noite!'; } const opcoesData = { weekday: 'long', month: 'long', day: 'numeric' }; let dataFormatada = agora.toLocaleDateString('pt-BR', opcoesData); dataFormatada = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1); greetingEl.textContent = saudacao; dateEl.textContent = dataFormatada; if (mobileGreetingContainer) { mobileGreetingContainer.innerHTML = `<span>${saudacao}</span> &#8226; <span>${dataFormatada}</span>`; } }
     
     function ajustarPaddingCorpo() {
         const headerNav = document.querySelector('.barra-navegacao');
@@ -150,7 +193,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DO CARRINHO ---
     const salvarCarrinhoLocalStorage = () => localStorage.setItem('carrinhoZapEsfirras', JSON.stringify(carrinho));
     const carregarCarrinhoLocalStorage = () => { carrinho = JSON.parse(localStorage.getItem('carrinhoZapEsfirras')) || []; renderizarItensCarrinho(); };
-    const adicionarAoCarrinho = (produto, quantidade = 1, observacao = null, adicionais = []) => { cupomAplicado = null; const nomesAdicionais = adicionais.map(a => a.nome).sort().join(','); const idUnicoItem = produto.id + (observacao || '').trim().toLowerCase() + nomesAdicionais; const itemExistente = carrinho.find(item => item.idUnico === idUnicoItem); if (itemExistente) { itemExistente.quantity += quantidade; } else { carrinho.push({ ...produto, price: parseFloat(produto.price), quantity: quantidade, observacao: observacao, adicionais, idUnico: idUnicoItem }); } salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); mostrarNotificacao(`${quantidade} "${produto.name}" adicionado(s)!`, 'success'); };
+    
+    const adicionarAoCarrinho = (produto, quantidade = 1, observacao = null, adicionais = []) => {
+        cupomAplicado = null;
+        const nomesAdicionais = adicionais.map(a => a.nome).sort().join(',');
+        const idUnicoItem = produto.id + (observacao || '').trim().toLowerCase() + nomesAdicionais;
+        const itemExistente = carrinho.find(item => item.idUnico === idUnicoItem);
+
+        // LÓGICA ATUALIZADA: Verifica se o produto está em promoção e usa o preço correto
+        const precoFinal = (produto.is_on_promo == 1 && produto.promo_price > 0) ? parseFloat(produto.promo_price) : parseFloat(produto.price);
+        
+        if (itemExistente) {
+            itemExistente.quantity += quantidade;
+        } else {
+            carrinho.push({
+                ...produto,
+                price: precoFinal, // Usa o preço final (promocional ou normal)
+                quantity: quantidade,
+                observacao: observacao,
+                adicionais,
+                idUnico: idUnicoItem
+            });
+        }
+        
+        salvarCarrinhoLocalStorage();
+        renderizarItensCarrinho();
+        mostrarNotificacao(`${quantidade} "${produto.name}" adicionado(s)!`, 'success');
+    };
+
     const removerItemDoCarrinho = (idUnico) => { carrinho = carrinho.filter(item => item.idUnico !== idUnico); cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
     const atualizarQuantidade = (idUnico, novaQuantidade) => { const item = carrinho.find(i => i.idUnico === idUnico); if (item) { if (novaQuantidade > 0) { item.quantity = novaQuantidade; } else { removerItemDoCarrinho(idUnico); } } cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
     const renderizarItensCarrinho = () => { const container = document.getElementById('lista-itens-carrinho'); if (!container) return; if (carrinho.length === 0) { container.innerHTML = '<p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>'; } else { container.innerHTML = carrinho.map(item => ` <div class="item-carrinho-novo" data-id-unico="${item.idUnico}"><div class="info-item"><p class="nome-item">${item.name}</p> ${item.adicionais && item.adicionais.length > 0 ? ` <div class="adicionais-carrinho"> ${item.adicionais.map(ad => `<span>+ ${ad.nome}</span>`).join('')} </div> ` : ''} <span class="preco-unitario-item">${formatCurrency(item.price)}</span> ${item.observacao ? `<p class="observacao-item">Obs: ${item.observacao}</p>` : ''} </div> <div class="acoes-item"> <div class="seletor-quantidade-carrinho"> <button class="diminuir-item">-</button> <span>${item.quantity}</span> <button class="aumentar-item">+</button> </div> <button class="botao-remover-item"> <ion-icon name="trash-outline"></ion-icon> </button> </div> </div> `).join(''); } atualizarTodosResumos(); };
@@ -219,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (contadorCarrinhoDesktopEl) { contadorCarrinhoDesktopEl.textContent = totalItens; contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0); }
     };
     
-    const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const atualizarDisplayPagamento = () => { const container = document.getElementById('card-info-pagamento'); if (!container) return; let iconName = 'card-outline'; let titulo = ''; let subtitulo = ''; if (pedido.pagamento.metodo === 'Pix') { iconName = 'logo-paypal'; titulo = 'Pix'; subtitulo = pedido.pagamento.tipo; } else if (pedido.pagamento.metodo === 'Dinheiro') { iconName = 'wallet-outline'; titulo = 'Dinheiro'; subtitulo = 'Pagamento na entrega'; if (pedido.pagamento.trocoPara > 0) { subtitulo = `Troco para ${formatCurrency(pedido.pagamento.trocoPara)}`; } } else { iconName = 'card-outline'; titulo = `Cartão de ${pedido.pagamento.tipo}`; subtitulo = 'Pagamento na entrega'; } container.innerHTML = ` <ion-icon name="${iconName}"></ion-icon> <div class="card-info-texto"> <p>${titulo}</p> <span>${subtitulo}</span> </div> <a href="#" id="btn-trocar-pagamento">Trocar</a> `; const btnTrocar = document.getElementById('btn-trocar-pagamento'); if (btnTrocar) btnTrocar.addEventListener('click', (e) => { e.preventDefault(); navegarCarrinho('escolher-pagamento'); }); };
     const atualizarLinkWhatsapp = () => { const btnWhatsapp = document.getElementById('btn-whatsapp-comprovante'); if (!btnWhatsapp) return; const nome = document.getElementById('cliente-nome').value || document.getElementById('retirada-nome').value; const telefone = document.getElementById('cliente-telefone').value || document.getElementById('retirada-telefone').value; const mensagem = `Olá, aqui está o comprovante do meu pedido. \nNome: ${nome}\nTelefone: ${telefone}`; const mensagemCodificada = encodeURIComponent(mensagem); btnWhatsapp.href = `https://wa.me/5519991432597?text=${mensagemCodificada}`; };
 
@@ -384,13 +453,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const botaoPerfilMobileText = botaoPerfilMobileLink ? botaoPerfilMobileLink.querySelector('.bottom-nav-text') : null;
 
         if (token && customerInfo) {
-            // --- USUÁRIO LOGADO ---
             if (botaoContaDesktop) botaoContaDesktop.style.display = 'none';
             if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'flex';
             if (nomeUsuarioDesktop) nomeUsuarioDesktop.textContent = `Olá, ${customerInfo.name.split(' ')[0]}!`;
             if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Minha Conta';
             
-            // NOVO: Altera o link para a página de perfil
             if (botaoPerfilMobileLink) botaoPerfilMobileLink.href = 'perfil.html';
 
             if (botaoLogoutDesktop) {
@@ -404,12 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else {
-            // --- USUÁRIO DESLOGADO ---
             if (botaoContaDesktop) botaoContaDesktop.style.display = 'flex';
             if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'none';
             if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Perfil';
             
-            // NOVO: Garante que o link aponte para o login
             if (botaoPerfilMobileLink) botaoPerfilMobileLink.href = 'login-cliente.html';
         }
     }
@@ -505,9 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
         configurarBuscaPorCEP();
         
         window.addEventListener('resize', ajustarPaddingCorpo);
-
-        // O listener de scroll que causava o problema no header foi removido daqui.
-        // O CSS já cuida para que o header seja fixo.
 
         const mainContainer = document.querySelector('main.container-principal');
         if (mainContainer) {

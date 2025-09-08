@@ -119,11 +119,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPedidosView() { const viewElement = document.getElementById('view-pedidos'); const statuses = ['Novo', 'Em Preparo', 'Prontos', 'Em Entrega', 'Finalizado']; const statusConfig = { 'Novo': { icon: 'sparkles-outline', title: 'Novos Pedidos' }, 'Em Preparo': { icon: 'flame-outline', title: 'Em Preparo' }, 'Prontos': { icon: 'checkmark-done-outline', title: 'Prontos (Retirada)' }, 'Em Entrega': { icon: 'bicycle-outline', title: 'Em Entrega' }, 'Finalizado': { icon: 'archive-outline', title: 'Finalizados' } }; viewElement.innerHTML = `<div class="pedidos-layout"><div class="pedidos-lista-vertical">${statuses.map(status => renderOrderStatusSection(status, statusConfig[status])).join('')}</div><div class="pedidos-detalhes-coluna" id="pedidos-detalhes-coluna"></div></div>`; renderOrderDetails(state.selectedOrderId); }
     function renderOrderStatusSection(status, config) { const ordersInSection = state.orders.filter(order => order.status === status); const isCollapsed = state.collapsedSections.has(status); return `<div class="status-section ${isCollapsed ? 'collapsed' : ''}" data-status="${status}"><div class="section-header"><ion-icon name="${config.icon}"></ion-icon><h3>${config.title}</h3><span class="count">${ordersInSection.length}</span><ion-icon name="chevron-down-outline" class="toggle-arrow"></ion-icon></div><div class="section-body">${ordersInSection.length > 0 ? ordersInSection.map(renderOrderCard).join('') : '<p style="color: var(--text-secondary); text-align: center; padding: 16px 0;">Nenhum pedido nesta etapa.</p>'}</div></div>`; }
     function renderOrderCard(order) { let actionButtonHTML = ''; if (order.status === 'Novo') { actionButtonHTML = `<button class="btn btn-primary action-button" data-order-id="${order.id}" data-next-status="Em Preparo"><ion-icon name="checkmark-outline"></ion-icon>Aceitar Pedido</button>`; } else if (order.status === 'Em Preparo') { actionButtonHTML = order.delivery_info.tipo === 'Entrega' ? `<button class="btn btn-primary action-button dispatch" data-order-id="${order.id}" data-next-status="Em Entrega"><ion-icon name="bicycle-outline"></ion-icon>Despachar Pedido</button>` : `<button class="btn btn-primary action-button ready" data-order-id="${order.id}" data-next-status="Prontos"><ion-icon name="checkmark-outline"></ion-icon>Pedido Pronto</button>`; } else if (order.status === 'Prontos' || order.status === 'Em Entrega') { actionButtonHTML = `<button class="btn btn-primary action-button complete" data-order-id="${order.id}" data-next-status="Finalizado"><ion-icon name="archive-outline"></ion-icon>Finalizar</button>`; } let addressHTML = ''; if (order.delivery_info.tipo === 'Entrega' && order.delivery_info.rua !== 'Retirar no local') { const { rua, numero, bairro, complemento } = order.delivery_info; addressHTML = `<div class="order-card-address"><p><ion-icon name="location-outline"></ion-icon> <b>Rua:</b> ${rua}, ${numero}</p><p><b>Bairro:</b> ${bairro}</p>${complemento ? `<p><b>Comp:</b> ${complemento}</p>` : ''}</div>`; } const isNew = order.status === 'Novo'; const orderTime = new Date(order.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); return `<div class="order-card ${state.selectedOrderId == order.id ? 'active' : ''} ${isNew ? 'new-order' : ''}" data-order-id="${order.id}"><div class="order-card-header"><b>#${order.id}</b><span>${formatCurrency(order.total_value)}</span></div><p class="order-card-customer">${order.client_info.nome}</p>${addressHTML}<div class="order-card-info"><span><ion-icon name="time-outline"></ion-icon>${orderTime}</span><span><ion-icon name="${order.delivery_info.tipo === 'Entrega' ? 'bicycle-outline' : 'walk-outline'}"></ion-icon>${order.delivery_info.tipo}</span></div><div class="order-card-footer">${actionButtonHTML}</div></div>`; }
-    function renderOrderDetails(orderId) { const detailsColumn = document.getElementById('pedidos-detalhes-coluna'); const order = state.orders.find(o => o.id == orderId); if (!order) { detailsColumn.innerHTML = `<div class="placeholder-detalhes"><ion-icon name="receipt-outline"></ion-icon><h3>Selecione um Pedido</h3><p>Clique em um card para ver os detalhes.</p></div>`; return; } const itemsHtml = order.items.map(item => ` <div class="order-item-container"> <div class="order-item-row"> <span>${item.quantity || 1}x ${item.name || 'Item não encontrado'}</span> <span>${formatCurrency(item.price * item.quantity)}</span> </div> ${item.observacao ? `<div class="order-item-obs"><b>Obs:</b> ${item.observacao}</div>` : ''} </div> `).join(''); let paymentHtml = `<p><b>Método:</b> ${order.payment_info.metodo || 'Não informado'}</p>`; if (order.payment_info.metodo === 'Dinheiro' && order.payment_info.trocoPara > 0) { const change = order.payment_info.trocoPara - order.total_value; paymentHtml += `<p><b>Pagar com:</b> ${formatCurrency(order.payment_info.trocoPara)}</p>`; if (change >= 0) { paymentHtml += `<p style="color:var(--primary-color); font-weight: bold;"><b>LEVAR TROCO: ${formatCurrency(change)}</b></p>`; } else { paymentHtml += `<p style="color: orange; font-weight: bold;"><b>ATENÇÃO: Valor do troco é menor que o total.</b></p>`; } } else if (order.payment_info.tipo) { paymentHtml += `<p><b>Detalhes:</b> ${order.payment_info.tipo}</p>`; } const address = order.delivery_info.rua === 'Retirar no local' ? '<p><b>Endereço:</b> Retirar no local</p>' : `<p><b>Endereço:</b> ${order.delivery_info.rua}, ${order.delivery_info.numero}</p> <p><b>Bairro:</b> ${order.delivery_info.bairro}</p> ${order.delivery_info.complemento ? `<p><b>Comp:</b> ${order.delivery_info.complemento}</p>` : ''} ${order.delivery_info.referencia ? `<p><b>Ref:</b> ${order.delivery_info.referencia}</p>` : ''}`; detailsColumn.innerHTML = ` <div class="details-content"> <div class="details-header"><h3>Pedido #${order.id}</h3></div> <div class="details-card-header"><ion-icon name="person-outline"></ion-icon>Cliente</div> <div class="details-card-body"><p><b>Nome:</b> ${order.client_info.nome}</p></div> <div class="details-card-header"><ion-icon name="location-outline"></ion-icon>Entrega</div> <div class="details-card-body"><p><b>Tipo:</b> ${order.delivery_info.tipo}</p>${address}</div> <div class="details-card-header"><ion-icon name="fast-food-outline"></ion-icon>Itens</div> <div class="details-card-body"> ${itemsHtml} <div class="details-total-row"><span>Total</span><span>${formatCurrency(order.total_value)}</span></div> </div> <div class="details-card-header"><ion-icon name="wallet-outline"></ion-icon>Pagamento</div> <div class="details-card-body">${paymentHtml}</div> </div> <div class="details-footer"><button class="btn btn-primary print-button"><ion-icon name="print-outline"></ion-icon>Imprimir</button></div>`; }    
+    function renderOrderDetails(orderId) { const detailsColumn = document.getElementById('pedidos-detalhes-coluna'); const order = state.orders.find(o => o.id == orderId); if (!order) { detailsColumn.innerHTML = `<div class="placeholder-detalhes"><ion-icon name="receipt-outline"></ion-icon><h3>Selecione um Pedido</h3><p>Clique em um card para ver os detalhes.</p></div>`; return; } const itemsHtml = order.items.map(item => ` <div class="order-item-container"> <div class="order-item-row"> <span>${item.quantity || 1}x ${item.name || 'Item não encontrado'}</span> <span>${formatCurrency(item.price * item.quantity)}</span> </div> ${item.observacao ? `<div class="order-item-obs"><b>Obs:</b> ${item.observacao}</div>` : ''} </div> `).join(''); let paymentHtml = `<p><b>Método:</b> ${order.payment_info.metodo || 'Não informado'}</p>`; if (order.payment_info.metodo === 'Dinheiro' && order.payment_info.trocoPara > 0) { const change = order.payment_info.trocoPara - order.total_value; paymentHtml += `<p><b>Pagar com:</b> ${formatCurrency(order.payment_info.trocoPara)}</p>`; if (change >= 0) { paymentHtml += `<p style="color:var(--primary-color); font-weight: bold;"><b>LEVAR TROCO: ${formatCurrency(change)}</b></p>`; } else { paymentHtml += `<p style="color: orange; font-weight: bold;"><b>ATENÇÃO: Valor do troco é menor que o total.</b></p>`; } } else if (order.payment_info.tipo) { paymentHtml += `<p><b>Detalhes:</b> ${order.payment_info.tipo}</p>`; } const address = order.delivery_info.rua === 'Retirar no local' ? '<p><b>Endereço:</b> Retirar no local</p>' : `<p><b>Endereço:</b> ${order.delivery_info.rua}, ${order.delivery_info.numero}</p> <p><b>Bairro:</b> ${order.delivery_info.bairro}</p> ${order.delivery_info.complemento ? `<p><b>Comp:</b> ${order.delivery_info.complemento}</p>` : ''} ${order.delivery_info.referencia ? `<p><b>Ref:</b> ${order.delivery_info.referencia}</p>` : ''}`; detailsColumn.innerHTML = ` <div class="details-content"> <div class="details-header"><h3>Pedido #${order.id}</h3></div> <div class="details-card-header"><ion-icon name="person-outline"></ion-icon>Cliente</div> <div class="details-card-body"><p><b>Nome:</b> ${order.client_info.nome}</p></div> <div class="details-card-header"><ion-icon name="location-outline"></ion-icon>Entrega</div> <div class="details-card-body"><p><b>Tipo:</b> ${order.delivery_info.tipo}</p>${address}</div> <div class="details-card-header"><ion-icon name="fast-food-outline"></ion-icon>Itens</div> <div class="details-card-body"> ${itemsHtml} <div class="details-total-row"><span>Total</span><span>${formatCurrency(order.total_value)}</span></div> </div> <div class="details-card-header"><ion-icon name="wallet-outline"></ion-icon>Pagamento</div> <div class="details-card-body">${paymentHtml}</div> </div> <div class="details-footer"><button class="btn btn-primary print-button"><ion-icon name="print-outline"></ion-icon>Imprimir</button></div>`; }
     function renderCardapioView() { const viewElement = document.getElementById('view-cardapio'); const sortedCategories = [...state.categories].sort((a, b) => (a.display_order || 99) - (b.display_order || 99)); let categoriesHTML = sortedCategories.map(category => { const productsInCategory = state.menu[category.name] || []; return ` <div class="category-section" data-category-name="${category.name.toLowerCase()}"> <h3 class="category-header"> <span>${category.name}</span> <div class="category-actions"> <button class="btn-category-action btn-edit-category" data-category-id="${category.id}" title="Renomear Categoria"> <ion-icon name="pencil-outline"></ion-icon> </button> <button class="btn-category-action btn-toggle-visibility ${!category.is_visible ? 'invisible' : ''}" data-category-id="${category.id}" title="${category.is_visible ? 'Tornar Invisível' : 'Tornar Visível'}"> <ion-icon name="${category.is_visible ? 'eye-outline' : 'eye-off-outline'}"></ion-icon> </button> </div> </h3> <div class="product-grid"> ${productsInCategory.map(createProductCardHTML).join('')} </div> </div>`; }).join(''); viewElement.innerHTML = ` <div class="view-header"> <div><h2>Cardápio</h2><p>Gerencie os produtos e categorias.</p></div> <div class="category-search-container"> <ion-icon name="search-outline"></ion-icon> <input type="search" id="category-search-input" placeholder="Pesquisar Categoria..."> </div> <div class="view-header-actions"> <button class="btn btn-secondary" id="add-new-category-btn"><ion-icon name="add-outline"></ion-icon>Nova Categoria</button> <button class="btn btn-primary" id="add-new-product-btn"><ion-icon name="add-outline"></ion-icon>Adicionar Produto</button> </div> </div> <div class="cardapio-grid">${categoriesHTML}</div>`; }
     
+    // --- FUNÇÃO createProductCardHTML ATUALIZADA ---
     function createProductCardHTML(product) {
-        return `<div class="product-card" data-product-id="${product.id}"><div class="product-options"><button class="options-button"><ion-icon name="ellipsis-vertical"></ion-icon></button><div class="options-menu"><button class="edit-product-btn" data-product-id="${product.id}">Editar</button><button class="delete-product-btn delete-btn" data-product-id="${product.id}">Excluir</button></div></div><div class="product-info"><h4>${product.name}</h4><p class="price">${formatCurrency(product.price)}</p><p class="description">${product.description || 'Sem descrição.'}</p></div><div class="product-actions"><div class="product-availability-switch"><span>Disponível</span><label class="switch"><input type="checkbox" class="availability-toggle" data-product-id="${product.id}" ${product.available ? 'checked' : ''}><span class="slider"></span></label></div></div></div>`;
+        return `
+        <div class="product-card" data-product-id="${product.id}">
+            <div class="product-options">
+                <button class="options-button"><ion-icon name="ellipsis-vertical"></ion-icon></button>
+                <div class="options-menu">
+                    <button class="edit-product-btn" data-product-id="${product.id}">Editar</button>
+                    <button class="delete-product-btn delete-btn" data-product-id="${product.id}">Excluir</button>
+                </div>
+            </div>
+            <div class="product-info">
+                <h4>${product.name}</h4>
+                <p class="price">${formatCurrency(product.price)}</p>
+                <p class="description">${product.description || 'Sem descrição.'}</p>
+            </div>
+            <div class="product-actions">
+                <div class="product-availability-switch">
+                    <span>Disponível</span>
+                    <label class="switch">
+                        <input type="checkbox" class="availability-toggle" data-product-id="${product.id}" ${product.available ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button class="btn-card-action btn-promo-toggle ${product.is_on_promo ? 'active' : ''}" title="Ativar/Desativar Promoção Relâmpago">
+                    <ion-icon name="flash-outline"></ion-icon>
+                </button>
+            </div>
+        </div>`;
     }
 
     function renderRelatoriosView() { const viewElement = document.getElementById('view-relatorios'); const salesByProduct = (state.orders || []).flatMap(o => o.items || []).reduce((acc, item) => { const itemName = item.name || 'Item desconhecido'; if (!acc[itemName]) { acc[itemName] = { quantity: 0, total: 0 }; } acc[itemName].quantity += (item.quantity || 1); acc[itemName].total += (item.price * item.quantity); return acc; }, {}); viewElement.innerHTML = `<div class="view-header"><h2>Relatórios</h2><p>Analise o desempenho de suas vendas.</p></div><div class="report-container"><div class="report-filters"><div class="form-group"><label for="report-type">Tipo de Relatório</label><select id="report-type"><option>Vendas por Produto</option></select></div><div class="form-group"><label for="date-range">Período</label><input type="text" id="date-range" value="Últimos 30 dias"></div><button class="btn btn-primary">Gerar</button></div><div class="report-table-container"><table class="report-table"><thead><tr><th>Produto</th><th>Itens Vendidos</th><th>Receita Bruta</th></tr></thead><tbody>${Object.entries(salesByProduct).map(([name, data]) => `<tr><td>${name}</td><td>${data.quantity}</td><td>${formatCurrency(data.total)}</td></tr>`).join('')}</tbody></table></div></div>`; }
@@ -147,14 +174,42 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateOrderStatus(orderId, newStatus) { const order = state.orders.find(o => o.id == orderId); if (!order) return; const oldStatus = order.status; let deliveryNumber = order.delivery_number; if (order.delivery_info.tipo === 'Entrega' && oldStatus === 'Novo' && newStatus === 'Em Preparo') { if (!deliveryNumber) { deliveryNumber = incrementAndGetDeliveryNumber(); } } const updateData = { status: newStatus, delivery_number: deliveryNumber }; try { const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updateData) }); if (!response.ok) { throw new Error('Falha ao atualizar o status do pedido no servidor.'); } order.status = newStatus; if (deliveryNumber) { order.delivery_number = deliveryNumber; } renderPedidosView(); showNotification(`Pedido #${orderId} atualizado para "${newStatus}".`, 'success'); } catch (error) { console.error("Erro ao atualizar status:", error); showNotification(error.message, "error"); } }
     function toggleSidebar() { const sidebar = document.getElementById('sidebar'); const sidebarOverlay = document.getElementById('sidebar-overlay'); sidebar.classList.toggle('visible'); sidebarOverlay.classList.toggle('active'); }
     
+    // --- NOVA FUNÇÃO PARA GERENCIAR PROMOÇÕES ---
+    async function togglePromotion(productId, isOnPromo, promoPrice) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/products/${productId}/promotion`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    is_on_promo: isOnPromo,
+                    promo_price: promoPrice
+                })
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Falha ao atualizar a promoção.');
+            }
+    
+            showNotification('Promoção atualizada com sucesso!', 'success');
+            
+            await fetchCategoriesAndProducts();
+            renderCardapioView();
+    
+        } catch (error) {
+            console.error('Erro ao alternar promoção:', error);
+            showNotification(error.message, 'error');
+        }
+    }
+
     document.body.addEventListener('click', unlockAudio, { once: true });
     
     menuToggle.addEventListener('click', toggleSidebar);
     sidebarOverlay.addEventListener('click', toggleSidebar);
     logoutButton.addEventListener('click', (e) => {
         e.preventDefault();
-        sessionStorage.removeItem('adminAuthToken'); // Remove o token
-        sessionStorage.removeItem('loggedInUser'); // Remove o nome do usuário
+        sessionStorage.removeItem('adminAuthToken');
+        sessionStorage.removeItem('loggedInUser');
         window.location.href = 'login.html';
     });
     
@@ -169,7 +224,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.id === 'upload-image-button') { document.getElementById('product-image-file').click(); return; }
         const navLink = target.closest('.nav-link'); if (navLink && !navLink.id.includes('logout')) { if (window.innerWidth <= 992 && sidebar.classList.contains('visible')) { toggleSidebar(); } if (!navLink.classList.contains('active')) { e.preventDefault(); document.querySelector('.nav-link.active')?.classList.remove('active'); navLink.classList.add('active'); renderView(navLink.dataset.view); } return; }
         if (state.currentView === 'pedidos') { const card = target.closest('.order-card'); const button = target.closest('.action-button'); const sectionHeader = target.closest('.section-header'); if (button) { e.stopPropagation(); updateOrderStatus(button.dataset.orderId, button.dataset.nextStatus); } else if (card) { state.selectedOrderId = card.dataset.orderId; const currentActive = document.querySelector('.order-card.active'); if (currentActive) { currentActive.classList.remove('active'); } card.classList.add('active'); renderOrderDetails(state.selectedOrderId); } else if (sectionHeader) { const status = sectionHeader.parentElement.dataset.status; if (state.collapsedSections.has(status)) { state.collapsedSections.delete(status); } else { state.collapsedSections.add(status); } renderPedidosView(); } return; }
-        if (state.currentView === 'cardapio') { if (target.closest('.btn-edit-category')) { renameCategory(parseInt(target.closest('.btn-edit-category').dataset.categoryId)); return; } if (target.closest('.btn-toggle-visibility')) { toggleCategoryVisibility(parseInt(target.closest('.btn-toggle-visibility').dataset.categoryId)); return; } const optionsButton = target.closest('.options-button'); if (optionsButton) { const menu = optionsButton.nextElementSibling; const isVisible = menu.style.display === 'block'; document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); menu.style.display = isVisible ? 'none' : 'block'; return; } if (!target.closest('.product-options')) { document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); } if (target.closest('#add-new-product-btn')) { openProductModal(); return; } if (target.closest('#add-new-category-btn')) { createNewCategory(); return; } if (target.classList.contains('edit-product-btn')) { const productId = target.dataset.productId; const product = Object.values(state.menu).flat().find(p => p.id == productId); if (product) openProductModal(product); return; } if (target.classList.contains('delete-product-btn')) { openConfirmModal(target.dataset.productId); return; } }
+        if (state.currentView === 'cardapio') {
+            if (target.closest('.btn-edit-category')) { renameCategory(parseInt(target.closest('.btn-edit-category').dataset.categoryId)); return; }
+            if (target.closest('.btn-toggle-visibility')) { toggleCategoryVisibility(parseInt(target.closest('.btn-toggle-visibility').dataset.categoryId)); return; }
+            const optionsButton = target.closest('.options-button');
+            if (optionsButton) { const menu = optionsButton.nextElementSibling; const isVisible = menu.style.display === 'block'; document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); menu.style.display = isVisible ? 'none' : 'block'; return; }
+            if (!target.closest('.product-options')) { document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none'); }
+            if (target.closest('#add-new-product-btn')) { openProductModal(); return; }
+            if (target.closest('#add-new-category-btn')) { createNewCategory(); return; }
+            if (target.classList.contains('edit-product-btn')) { const productId = target.dataset.productId; const product = Object.values(state.menu).flat().find(p => p.id == productId); if (product) openProductModal(product); return; }
+            if (target.classList.contains('delete-product-btn')) { openConfirmModal(target.dataset.productId); return; }
+            
+            // --- LÓGICA DE CLIQUE NO BOTÃO DE PROMOÇÃO ---
+            const promoButton = target.closest('.btn-promo-toggle');
+            if (promoButton) {
+                const card = promoButton.closest('.product-card');
+                const productId = card.dataset.productId;
+                const product = Object.values(state.menu).flat().find(p => p.id == productId);
+                
+                if (product.is_on_promo) {
+                    if (confirm(`Deseja desativar a promoção para "${product.name}"?`)) {
+                        togglePromotion(productId, false, null);
+                    }
+                } else {
+                    const promoPriceInput = prompt(`Ativar promoção para "${product.name}".\n\nDigite o novo preço (ex: 0.99):`);
+                    if (promoPriceInput) {
+                        const promoPrice = parseFloat(promoPriceInput.replace(',', '.'));
+                        if (!isNaN(promoPrice) && promoPrice > 0) {
+                            togglePromotion(productId, true, promoPrice);
+                        } else {
+                            alert("Preço inválido. A promoção não foi ativada.");
+                        }
+                    }
+                }
+            }
+        }
         if (target.closest('#cancel-modal-button') || target.closest('#close-modal-button')) { closeProductModal(); return; }
         if (target.closest('#cancel-confirm-button')) { closeConfirmModal(); return; }
         if (target.closest('#confirm-delete-button')) { deleteProduct(document.getElementById('confirm-modal-overlay').dataset.productIdToDelete); return; }
@@ -200,3 +289,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
+
