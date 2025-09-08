@@ -1331,6 +1331,7 @@ label.metodo-pagamento-card-sub:has(input:checked) {
         border-radius: 50px;
         padding: 8px 15px;
         display: flex;
+        top: 40px;
         align-items: center;
     }
 
