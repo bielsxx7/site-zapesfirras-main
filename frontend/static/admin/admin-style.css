@@ -432,3 +432,14 @@ body.dark-mode .btn-remove-addition:hover {
     box-shadow: 0 0 12px rgba(251, 140, 0, 0.6);
     transform: scale(1.1);
 }
+
+
+/* Adicionado para ocultar a área de upload de imagem no modal do admin sem quebrar o layout */
+#product-form .image-upload-container {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
+}

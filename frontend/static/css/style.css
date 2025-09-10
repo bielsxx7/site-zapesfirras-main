@@ -2189,3 +2189,30 @@ body.pagina-pedidos .container-principal {
     box-shadow: 0 0 15px rgba(255, 111, 0, 0.4); /* Sombra luminosa */
 }
 
+
+/* --- AJUSTES DE LAYOUT SEM IMAGEM DO PRODUTO --- */
+
+/* Remove a altura fixa e a margem que eram para a imagem */
+.container-detalhes-produto img {
+    display: none; /* Garante que qualquer imagem remanescente seja escondida */
+}
+
+.container-detalhes-produto {
+    display: flex; /* Faz o container de texto ocupar todo o espaço */
+    flex-direction: column;
+}
+
+/* Remove a margem que era para a imagem */
+.texto-info-produto {
+    margin-bottom: 0;
+}
+
+/* Garante que o texto da descrição tenha um pouco mais de espaço */
+.texto-info-produto h4 {
+    min-height: 45px;
+}
+
+/* Remove a imagem do item no carrinho */
+.item-carrinho-novo img {
+    display: none;
+}

@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pagamento: { metodo: 'Cartão', tipo: 'Crédito', trocoPara: 0 }
     };
     let menuData = {};
-    let activeTimers = []; // NOVO: Array para controlar os timers ativos
+    let activeTimers = [];
 
     const adicionaisPorCategoria = {
         'Esfirras Salgadas': [{ name: 'Bacon', price: 3.50 }, { name: 'Catupiry Extra', price: 3.00 }, { name: 'Cheddar', price: 3.00 }, { name: 'Alho Frito', price: 2.00 }],
@@ -58,13 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let secoesProdutos = [];
 
 
-    // --- NOVA FUNÇÃO PARA INICIAR E GERENCIAR CRONÔMETROS ---
     function iniciarContadoresDePromocao() {
-        // 1. Limpa timers antigos para evitar acúmulo
         activeTimers.forEach(timerId => clearInterval(timerId));
         activeTimers = [];
 
-        // 2. Encontra todos os elementos de cronômetro na tela
         const countdownElements = document.querySelectorAll('.promo-countdown');
 
         countdownElements.forEach(element => {
@@ -76,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
-                    // 3. QUANDO O TEMPO ACABA, RECARREGA O CARDÁPIO!
                     console.log("Promoção expirada! Recarregando cardápio...");
                     mostrarNotificacao("Uma oferta relâmpago acabou!");
                     carregarDadosDaAPI();
@@ -90,11 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 element.innerHTML = `Termina em: <b>${hours}:${minutes}:${seconds}</b>`;
             }, 1000);
 
-            activeTimers.push(timerId); // Guarda a referência do timer para poder limpá-lo depois
+            activeTimers.push(timerId);
         });
     }
 
-    // --- FUNÇÕES DE CARREGAMENTO E RENDERIZAÇÃO ---
     async function carregarDadosDaAPI() {
         try {
             const [categoriesResponse, productsResponse] = await Promise.all([
@@ -188,9 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
         return `
         <div class="cartao-produto ${isPromo ? 'em-promocao' : ''}" data-id="${produto.id}" data-category="${produto.category_name}">
-            ${isPromo ? '<div class="promo-badge-estilizado">⚡ OFERTA RELÂMPAGO</div>' : ''}
+            ${isPromo ? `<div class="promo-badge-estilizado">⚡ OFERTA RELÂMPAGO</div>` : ''}
             <div class="container-detalhes-produto">
-                <img src="${produto.image}" alt="${produto.name}">
                 <div class="texto-info-produto">
                     <h3>${produto.name}</h3>
                     <h4>${produto.description || ''}</h4>
@@ -255,19 +249,27 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContent.style.paddingTop = `${totalHeaderHeight + 20}px`;
     }
     
+    // --- FUNÇÃO DE FILTRO (CORRIGIDA) ---
     function filtrarEBuscarProdutos(termo) {
         if (!todosCartoesProduto) return;
         let produtoEncontrado = false;
+        
         todosCartoesProduto.forEach(cartao => {
             const nomeProduto = cartao.querySelector('h3').textContent.toLowerCase();
             const deveMostrar = nomeProduto.includes(termo);
-            cartao.style.display = deveMostrar ? 'flex' : 'none';
+            
+            // CORREÇÃO APLICADA AQUI
+            // Em vez de 'flex', removemos o estilo para que a folha de estilo principal (style.css) decida
+            cartao.style.display = deveMostrar ? '' : 'none'; 
+            
             if (deveMostrar) produtoEncontrado = true;
         });
+
         secoesProdutos.forEach(secao => {
-            const produtosVisiveis = secao.querySelectorAll('.cartao-produto[style*="display: flex"]').length;
+            const produtosVisiveis = secao.querySelectorAll('.cartao-produto:not([style*="display: none"])').length;
             secao.style.display = produtosVisiveis > 0 || termo === '' ? 'block' : 'none';
         });
+
         if (mensagemSemResultados) {
             mensagemSemResultados.style.display = !produtoEncontrado && termo !== '' ? 'block' : 'none';
         }
@@ -382,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const removerItemDoCarrinho = (idUnico) => { carrinho = carrinho.filter(item => item.idUnico !== idUnico); cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
     const atualizarQuantidade = (idUnico, novaQuantidade) => { const item = carrinho.find(i => i.idUnico === idUnico); if (item) { if (novaQuantidade > 0) { item.quantity = novaQuantidade; } else { removerItemDoCarrinho(idUnico); } } cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
-    const renderizarItensCarrinho = () => { const container = document.getElementById('lista-itens-carrinho'); if (!container) return; if (carrinho.length === 0) { container.innerHTML = '<p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>'; } else { container.innerHTML = carrinho.map(item => ` <div class="item-carrinho-novo" data-id-unico="${item.idUnico}"><div class="info-item"><p class="nome-item">${item.name}</p> ${item.adicionais && item.adicionais.length > 0 ? ` <div class="adicionais-carrinho"> ${item.adicionais.map(ad => `<span>+ ${ad.nome}</span>`).join('')} </div> ` : ''} <span class="preco-unitario-item">${formatCurrency(item.price)}</span> ${item.observacao ? `<p class="observacao-item">Obs: ${item.observacao}</p>` : ''} </div> <div class="acoes-item"> <div class="seletor-quantidade-carrinho"> <button class="diminuir-item">-</button> <span>${item.quantity}</span> <button class="aumentar-item">+</button> </div> <button class="botao-remover-item"> <ion-icon name="trash-outline"></ion-icon> </button> </div> </div> `).join(''); } atualizarTodosResumos(); };
+    const renderizarItensCarrinho = () => { const container = document.getElementById('lista-itens-carrinho'); if (!container) return; if (carrinho.length === 0) { container.innerHTML = '<p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>'; } else { container.innerHTML = carrinho.map(item => ` <div class="item-carrinho-novo" data-id-unico="${item.idUnico}"><div class="info-item"><p class="nome-item">${item.name}</p> ${item.adicionais && item.adicionais.length > 0 ? ` <div class="adicionais-carrinho">${item.adicionais.map(ad => `<span>+ ${ad.nome}</span>`).join('')}</div>` : ''} <span class="preco-unitario-item">${formatCurrency(item.price)}</span> ${item.observacao ? `<p class="observacao-item">Obs: ${item.observacao}</p>` : ''} </div> <div class="acoes-item"> <div class="seletor-quantidade-carrinho"> <button class="diminuir-item">-</button> <span>${item.quantity}</span> <button class="aumentar-item">+</button> </div> <button class="botao-remover-item"> <ion-icon name="trash-outline"></ion-icon> </button> </div> </div> `).join(''); } atualizarTodosResumos(); };
     const atualizarTodosResumos = () => { const subtotal = carrinho.reduce((acc, item) => { const precoAdicionais = item.adicionais ? item.adicionais.reduce((sum, ad) => sum + ad.price, 0) : 0; const precoBase = parseFloat(item.price); return acc + ((precoBase + precoAdicionais) * item.quantity); }, 0); const trackerEl = document.getElementById('entrega-gratis-tracker'); const successEl = document.getElementById('entrega-gratis-success'); if (trackerEl && successEl) { if (subtotal > 0 && subtotal < metaEntregaGratis) { const faltam = metaEntregaGratis - subtotal; const progresso = (subtotal / metaEntregaGratis) * 100; trackerEl.style.display = 'flex'; successEl.style.display = 'none'; document.getElementById('entrega-gratis-texto').textContent = `Faltam ${formatCurrency(faltam)} para entrega grátis!`; document.getElementById('entrega-gratis-progress').style.width = `${progresso}%`; } else if (subtotal >= metaEntregaGratis) { trackerEl.style.display = 'none'; successEl.style.display = 'flex'; } else { trackerEl.style.display = 'none'; successEl.style.display = 'none'; } } let taxaEntregaFinal = pedido.metodoEntrega === 'retirada' || carrinho.length === 0 ? 0 : taxaDeEntrega; let desconto = 0; let linhaDescontoHTML = ''; if (cupomAplicado && cupomAplicado.discount_type === 'free_delivery' && subtotal >= cupomAplicado.min_purchase_value) { desconto = taxaEntregaFinal; taxaEntregaFinal = 0; linhaDescontoHTML = `<div class="linha-resumo desconto"><span>Desconto (${cupomAplicado.code})</span><span>- ${formatCurrency(desconto)}</span></div>`; } else if (subtotal >= metaEntregaGratis && pedido.metodoEntrega !== 'retirada') { desconto = taxaDeEntrega; taxaEntregaFinal = 0; linhaDescontoHTML = `<div class="linha-resumo desconto"><span>Promoção Entrega Grátis</span><span>- ${formatCurrency(desconto)}</span></div>`; } const total = subtotal - desconto + taxaEntregaFinal; const resumoHTML = ` <div class="linha-resumo"> <span>Subtotal</span> <span>${formatCurrency(subtotal)}</span> </div> ${linhaDescontoHTML} <div class="linha-resumo"> <span>Taxa de entrega</span> <span>${(taxaEntregaFinal === 0 && pedido.metodoEntrega !== 'retirada') ? 'Grátis' : formatCurrency(taxaEntregaFinal)}</span> </div> <div class="linha-resumo total"> <span>Total</span> <span>${formatCurrency(total)}</span> </div> `; const resumoRodapeEl = document.getElementById('resumo-rodape-geral'); if (resumoRodapeEl) { if (carrinho.length > 0) { resumoRodapeEl.innerHTML = resumoHTML; resumoRodapeEl.style.display = 'block'; } else { resumoRodapeEl.style.display = 'none'; } } const totalItens = carrinho.reduce((acc, item) => acc + item.quantity, 0); if (contadorCarrinhoMobileEl) { contadorCarrinhoMobileEl.textContent = totalItens; contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0); } if (contadorCarrinhoDesktopEl) { contadorCarrinhoDesktopEl.textContent = totalItens; contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0); } };
     const atualizarDisplayPagamento = () => { const container = document.getElementById('card-info-pagamento'); if (!container) return; let iconName = 'card-outline'; let titulo = ''; let subtitulo = ''; if (pedido.pagamento.metodo === 'Pix') { iconName = 'logo-paypal'; titulo = 'Pix'; subtitulo = pedido.pagamento.tipo; } else if (pedido.pagamento.metodo === 'Dinheiro') { iconName = 'wallet-outline'; titulo = 'Dinheiro'; subtitulo = 'Pagamento na entrega'; if (pedido.pagamento.trocoPara > 0) { subtitulo = `Troco para ${formatCurrency(pedido.pagamento.trocoPara)}`; } } else { iconName = 'card-outline'; titulo = `Cartão de ${pedido.pagamento.tipo}`; subtitulo = 'Pagamento na entrega'; } container.innerHTML = ` <ion-icon name="${iconName}"></ion-icon> <div class="card-info-texto"> <p>${titulo}</p> <span>${subtitulo}</span> </div> <a href="#" id="btn-trocar-pagamento">Trocar</a> `; const btnTrocar = document.getElementById('btn-trocar-pagamento'); if (btnTrocar) btnTrocar.addEventListener('click', (e) => { e.preventDefault(); navegarCarrinho('escolher-pagamento'); }); };
     const atualizarLinkWhatsapp = () => { const btnWhatsapp = document.getElementById('btn-whatsapp-comprovante'); if (!btnWhatsapp) return; const nome = document.getElementById('cliente-nome').value || document.getElementById('retirada-nome').value; const telefone = document.getElementById('cliente-telefone').value || document.getElementById('retirada-telefone').value; const mensagem = `Olá, aqui está o comprovante do meu pedido. \nNome: ${nome}\nTelefone: ${telefone}`; const mensagemCodificada = encodeURIComponent(mensagem); btnWhatsapp.href = `https://wa.me/5519991432597?text=${mensagemCodificada}`; };
