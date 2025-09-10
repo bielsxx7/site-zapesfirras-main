@@ -385,7 +385,101 @@ document.addEventListener('DOMContentLoaded', () => {
     const removerItemDoCarrinho = (idUnico) => { carrinho = carrinho.filter(item => item.idUnico !== idUnico); cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
     const atualizarQuantidade = (idUnico, novaQuantidade) => { const item = carrinho.find(i => i.idUnico === idUnico); if (item) { if (novaQuantidade > 0) { item.quantity = novaQuantidade; } else { removerItemDoCarrinho(idUnico); } } cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); };
     const renderizarItensCarrinho = () => { const container = document.getElementById('lista-itens-carrinho'); if (!container) return; if (carrinho.length === 0) { container.innerHTML = '<p class="mensagem-carrinho-vazio">Seu carrinho está vazio.</p>'; } else { container.innerHTML = carrinho.map(item => ` <div class="item-carrinho-novo" data-id-unico="${item.idUnico}"><div class="info-item"><p class="nome-item">${item.name}</p> ${item.adicionais && item.adicionais.length > 0 ? ` <div class="adicionais-carrinho">${item.adicionais.map(ad => `<span>+ ${ad.nome}</span>`).join('')}</div>` : ''} <span class="preco-unitario-item">${formatCurrency(item.price)}</span> ${item.observacao ? `<p class="observacao-item">Obs: ${item.observacao}</p>` : ''} </div> <div class="acoes-item"> <div class="seletor-quantidade-carrinho"> <button class="diminuir-item">-</button> <span>${item.quantity}</span> <button class="aumentar-item">+</button> </div> <button class="botao-remover-item"> <ion-icon name="trash-outline"></ion-icon> </button> </div> </div> `).join(''); } atualizarTodosResumos(); };
-    const atualizarTodosResumos = () => { const subtotal = carrinho.reduce((acc, item) => { const precoAdicionais = item.adicionais ? item.adicionais.reduce((sum, ad) => sum + ad.price, 0) : 0; const precoBase = parseFloat(item.price); return acc + ((precoBase + precoAdicionais) * item.quantity); }, 0); const trackerEl = document.getElementById('entrega-gratis-tracker'); const successEl = document.getElementById('entrega-gratis-success'); if (trackerEl && successEl) { if (subtotal > 0 && subtotal < metaEntregaGratis) { const faltam = metaEntregaGratis - subtotal; const progresso = (subtotal / metaEntregaGratis) * 100; trackerEl.style.display = 'flex'; successEl.style.display = 'none'; document.getElementById('entrega-gratis-texto').textContent = `Faltam ${formatCurrency(faltam)} para entrega grátis!`; document.getElementById('entrega-gratis-progress').style.width = `${progresso}%`; } else if (subtotal >= metaEntregaGratis) { trackerEl.style.display = 'none'; successEl.style.display = 'flex'; } else { trackerEl.style.display = 'none'; successEl.style.display = 'none'; } } let taxaEntregaFinal = pedido.metodoEntrega === 'retirada' || carrinho.length === 0 ? 0 : taxaDeEntrega; let desconto = 0; let linhaDescontoHTML = ''; if (cupomAplicado && cupomAplicado.discount_type === 'free_delivery' && subtotal >= cupomAplicado.min_purchase_value) { desconto = taxaEntregaFinal; taxaEntregaFinal = 0; linhaDescontoHTML = `<div class="linha-resumo desconto"><span>Desconto (${cupomAplicado.code})</span><span>- ${formatCurrency(desconto)}</span></div>`; } else if (subtotal >= metaEntregaGratis && pedido.metodoEntrega !== 'retirada') { desconto = taxaDeEntrega; taxaEntregaFinal = 0; linhaDescontoHTML = `<div class="linha-resumo desconto"><span>Promoção Entrega Grátis</span><span>- ${formatCurrency(desconto)}</span></div>`; } const total = subtotal - desconto + taxaEntregaFinal; const resumoHTML = ` <div class="linha-resumo"> <span>Subtotal</span> <span>${formatCurrency(subtotal)}</span> </div> ${linhaDescontoHTML} <div class="linha-resumo"> <span>Taxa de entrega</span> <span>${(taxaEntregaFinal === 0 && pedido.metodoEntrega !== 'retirada') ? 'Grátis' : formatCurrency(taxaEntregaFinal)}</span> </div> <div class="linha-resumo total"> <span>Total</span> <span>${formatCurrency(total)}</span> </div> `; const resumoRodapeEl = document.getElementById('resumo-rodape-geral'); if (resumoRodapeEl) { if (carrinho.length > 0) { resumoRodapeEl.innerHTML = resumoHTML; resumoRodapeEl.style.display = 'block'; } else { resumoRodapeEl.style.display = 'none'; } } const totalItens = carrinho.reduce((acc, item) => acc + item.quantity, 0); if (contadorCarrinhoMobileEl) { contadorCarrinhoMobileEl.textContent = totalItens; contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0); } if (contadorCarrinhoDesktopEl) { contadorCarrinhoDesktopEl.textContent = totalItens; contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0); } };
+// EM script.js (substitua a função inteira)
+
+const atualizarTodosResumos = () => {
+    const subtotal = carrinho.reduce((acc, item) => {
+        const precoAdicionais = item.adicionais ? item.adicionais.reduce((sum, ad) => sum + (ad.price || 0), 0) : 0;
+        const precoBase = parseFloat(item.price);
+        return acc + ((precoBase + precoAdicionais) * item.quantity);
+    }, 0);
+
+    const trackerEl = document.getElementById('entrega-gratis-tracker');
+    const successEl = document.getElementById('entrega-gratis-success');
+    if (trackerEl && successEl) {
+        if (subtotal > 0 && subtotal < metaEntregaGratis) {
+            const faltam = metaEntregaGratis - subtotal;
+            const progresso = (subtotal / metaEntregaGratis) * 100;
+            trackerEl.style.display = 'flex';
+            successEl.style.display = 'none';
+            document.getElementById('entrega-gratis-texto').textContent = `Faltam ${formatCurrency(faltam)} para entrega grátis!`;
+            document.getElementById('entrega-gratis-progress').style.width = `${progresso}%`;
+        } else if (subtotal >= metaEntregaGratis) {
+            trackerEl.style.display = 'none';
+            successEl.style.display = 'flex';
+        } else {
+            trackerEl.style.display = 'none';
+            successEl.style.display = 'none';
+        }
+    }
+
+    let taxaEntregaFinal = pedido.metodoEntrega === 'retirada' || carrinho.length === 0 ? 0 : taxaDeEntrega;
+    let desconto = 0;
+    let linhaDescontoHTML = '';
+    if (cupomAplicado && cupomAplicado.discount_type === 'free_delivery' && subtotal >= cupomAplicado.min_purchase_value) {
+        desconto = taxaEntregaFinal;
+        taxaEntregaFinal = 0;
+        linhaDescontoHTML = `<div class="linha-resumo desconto"><span>Desconto (${cupomAplicado.code})</span><span>- ${formatCurrency(desconto)}</span></div>`;
+    } else if (subtotal >= metaEntregaGratis && pedido.metodoEntrega !== 'retirada') {
+        desconto = taxaDeEntrega;
+        taxaEntregaFinal = 0;
+        linhaDescontoHTML = `<div class="linha-resumo desconto"><span>Promoção Entrega Grátis</span><span>- ${formatCurrency(desconto)}</span></div>`;
+    }
+
+    const total = subtotal - desconto + taxaEntregaFinal;
+    const resumoHTML = `
+        <div class="linha-resumo"> <span>Subtotal</span> <span>${formatCurrency(subtotal)}</span> </div>
+        ${linhaDescontoHTML}
+        <div class="linha-resumo"> <span>Taxa de entrega</span> <span>${(taxaEntregaFinal === 0 && pedido.metodoEntrega !== 'retirada') ? 'Grátis' : formatCurrency(taxaEntregaFinal)}</span> </div>
+        <div class="linha-resumo total"> <span>Total</span> <span>${formatCurrency(total)}</span> </div>
+    `;
+
+    const resumoRodapeEl = document.getElementById('resumo-rodape-geral');
+    if (resumoRodapeEl) {
+        if (carrinho.length > 0) {
+            resumoRodapeEl.innerHTML = resumoHTML;
+            resumoRodapeEl.style.display = 'block';
+        } else {
+            resumoRodapeEl.style.display = 'none';
+        }
+    }
+
+    const totalItens = carrinho.reduce((acc, item) => acc + item.quantity, 0);
+    if (contadorCarrinhoMobileEl) {
+        contadorCarrinhoMobileEl.textContent = totalItens;
+        contadorCarrinhoMobileEl.classList.toggle('ativo', totalItens > 0);
+    }
+    if (contadorCarrinhoDesktopEl) {
+        contadorCarrinhoDesktopEl.textContent = totalItens;
+        contadorCarrinhoDesktopEl.classList.toggle('ativo', totalItens > 0);
+    }
+    
+    // ==========================================================
+    // === INÍCIO DO NOVO CÓDIGO PARA A MENSAGEM DE CONVIDADO ===
+    // ==========================================================
+    const guestPromptContainer = document.getElementById('guest-points-prompt');
+    const token = localStorage.getItem('authToken');
+
+    if (guestPromptContainer) {
+        // Se o cliente NÃO está logado E tem itens no carrinho
+        if (!token && subtotal > 0) {
+            const potentialPoints = Math.floor(subtotal / 2);
+            if (potentialPoints > 0) {
+                guestPromptContainer.style.display = 'block';
+                guestPromptContainer.innerHTML = `
+                    <p>Você ganharia <strong>${potentialPoints} pontos</strong> com este pedido!</p>
+                    <p><a href="login-cliente.html">Faça login</a> ou <a href="cadastro-cliente.html">crie uma conta</a> para acumular.</p>
+                `;
+            }
+        } else {
+            // Esconde a mensagem se o usuário estiver logado ou o carrinho estiver vazio
+            guestPromptContainer.style.display = 'none';
+        }
+    }
+    // ==========================================================
+    // === FIM DO NOVO CÓDIGO ===
+    // ==========================================================
+};    
     const atualizarDisplayPagamento = () => { const container = document.getElementById('card-info-pagamento'); if (!container) return; let iconName = 'card-outline'; let titulo = ''; let subtitulo = ''; if (pedido.pagamento.metodo === 'Pix') { iconName = 'logo-paypal'; titulo = 'Pix'; subtitulo = pedido.pagamento.tipo; } else if (pedido.pagamento.metodo === 'Dinheiro') { iconName = 'wallet-outline'; titulo = 'Dinheiro'; subtitulo = 'Pagamento na entrega'; if (pedido.pagamento.trocoPara > 0) { subtitulo = `Troco para ${formatCurrency(pedido.pagamento.trocoPara)}`; } } else { iconName = 'card-outline'; titulo = `Cartão de ${pedido.pagamento.tipo}`; subtitulo = 'Pagamento na entrega'; } container.innerHTML = ` <ion-icon name="${iconName}"></ion-icon> <div class="card-info-texto"> <p>${titulo}</p> <span>${subtitulo}</span> </div> <a href="#" id="btn-trocar-pagamento">Trocar</a> `; const btnTrocar = document.getElementById('btn-trocar-pagamento'); if (btnTrocar) btnTrocar.addEventListener('click', (e) => { e.preventDefault(); navegarCarrinho('escolher-pagamento'); }); };
     const atualizarLinkWhatsapp = () => { const btnWhatsapp = document.getElementById('btn-whatsapp-comprovante'); if (!btnWhatsapp) return; const nome = document.getElementById('cliente-nome').value || document.getElementById('retirada-nome').value; const telefone = document.getElementById('cliente-telefone').value || document.getElementById('retirada-telefone').value; const mensagem = `Olá, aqui está o comprovante do meu pedido. \nNome: ${nome}\nTelefone: ${telefone}`; const mensagemCodificada = encodeURIComponent(mensagem); btnWhatsapp.href = `https://wa.me/5519991432597?text=${mensagemCodificada}`; };
     const navegarCarrinho = (novaEtapa) => { etapaAtualCarrinho = novaEtapa; telasCarrinho.forEach(tela => tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`)); const textoBotao = document.querySelector('#btn-continuar-carrinho span'); const rodapeCarrinho = document.querySelector('.carrinho-rodape'); if (rodapeCarrinho) { rodapeCarrinho.style.display = (novaEtapa === 'sucesso') ? 'none' : 'flex'; } switch (novaEtapa) { case 'itens': if (tituloCarrinho) tituloCarrinho.textContent = 'Meu Carrinho'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'none'; if (textoBotao) textoBotao.textContent = 'Continuar'; break; case 'metodo-entrega': if (tituloCarrinho) tituloCarrinho.textContent = 'Como Deseja Receber?'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Continuar'; break; case 'dados-entrega': if (tituloCarrinho) tituloCarrinho.textContent = 'Endereço de Entrega'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento'; break; case 'dados-retirada': if (tituloCarrinho) tituloCarrinho.textContent = 'Dados para Retirada'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento'; break; case 'pagamento': if (tituloCarrinho) tituloCarrinho.textContent = 'Pagamento'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Finalizar Pedido'; atualizarDisplayPagamento(); break; case 'escolher-pagamento': if (tituloCarrinho) tituloCarrinho.textContent = 'Forma de Pagamento'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Confirmar Seleção'; atualizarLinkWhatsapp(); break; case 'sucesso': if (tituloCarrinho) tituloCarrinho.textContent = 'Pedido Finalizado'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'none'; break; } atualizarTodosResumos(); };

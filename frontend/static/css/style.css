@@ -2216,3 +2216,95 @@ body.pagina-pedidos .container-principal {
 .item-carrinho-novo img {
     display: none;
 }
+
+
+/* --- Estilos para Resgate de Recompensas no Carrinho --- */
+#recompensas-carrinho-container {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+#recompensas-carrinho-container h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color);
+}
+
+.reward-item-cart {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff8f8;
+    border: 1px solid #ffe5e5;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.reward-item-cart p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.reward-item-cart .points {
+    font-size: 0.9rem;
+    color: var(--grey-dark);
+}
+
+.btn-resgatar-carrinho {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-resgatar-carrinho:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.item-carrinho-novo.recompensa .nome-item::after {
+    content: ' (Prêmio)';
+    font-weight: 600;
+    color: var(--green-color);
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+
+
+/* EM style.css (adicione ao final) */
+
+#guest-points-prompt {
+    background-color: #fff8e1; /* Amarelo claro */
+    border: 1px solid #ffecb3;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #6d4c41; /* Marrom escuro */
+}
+
+#guest-points-prompt p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+#guest-points-prompt strong {
+    color: var(--primary-color);
+}
+
+#guest-points-prompt a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: underline;
+}

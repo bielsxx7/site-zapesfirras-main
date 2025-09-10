@@ -6,11 +6,12 @@
     <title>Minha Conta - Zap Esfirras</title>
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="static/css/perfil.css"> 
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/png" href="/assets/zapesfiiras.png">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
@@ -64,6 +65,7 @@
                 <aside class="perfil-nav">
                     <div class="perfil-nav-links">
                         <a href="#meus-dados" class="perfil-nav-link active" data-target="meus-dados"><ion-icon name="person-circle-outline"></ion-icon> <span>Meus Dados</span></a>
+                        <a href="#zapclube" class="perfil-nav-link" data-target="zapclube"><ion-icon name="star-outline"></ion-icon> <span>ZapClube</span></a>
                         <a href="#meus-enderecos" class="perfil-nav-link" data-target="meus-enderecos"><ion-icon name="location-outline"></ion-icon> <span>Meus Endereços</span></a>
                         <a href="#historico-pedidos" class="perfil-nav-link" data-target="historico-pedidos"><ion-icon name="receipt-outline"></ion-icon> <span>Histórico de Pedidos</span></a>
                         <a href="#meus-favoritos" class="perfil-nav-link" data-target="meus-favoritos"><ion-icon name="heart-outline"></ion-icon> <span>Meus Favoritos</span></a>
@@ -75,7 +77,10 @@
                     <div id="secao-meus-dados" class="perfil-secao active">
                         <h2>Meus Dados</h2>
                         <p>Aqui você poderá ver e editar seus dados pessoais.</p>
-                    </div>
+                        </div>
+                    
+                    <div id="secao-zapclube" class="perfil-secao">
+                        </div>
 
                     <div id="secao-meus-enderecos" class="perfil-secao">
                         <div class="secao-header">
@@ -87,118 +92,23 @@
                         </div>
                         <p>Gerencie seus endereços de entrega para finalizar seus pedidos mais rápido.</p>
                         <div id="lista-enderecos-container" class="lista-cards">
-                        </div>
+                            </div>
                     </div>
 
                     <div id="secao-historico-pedidos" class="perfil-secao">
                         <h2>Histórico de Pedidos</h2>
                         <p>Veja os detalhes de todos os seus pedidos anteriores.</p>
-                    </div>
+                        </div>
 
                     <div id="secao-meus-favoritos" class="perfil-secao">
                         <h2>Meus Favoritos</h2>
                         <p>Seus itens preferidos para pedir novamente com um clique.</p>
-                    </div>
+                        </div>
                 </section>
             </div>
         </main>
     </div>
 
-    <div id="sobreposicao-carrinho" class="sobreposicao-carrinho"></div>
-    <div id="painel-carrinho" class="painel-carrinho">
-        <header class="carrinho-cabecalho">
-            <button class="botao-voltar-carrinho" id="btn-voltar-carrinho">
-                <ion-icon name="arrow-back-outline"></ion-icon>
-            </button>
-            <h3 id="titulo-carrinho">Meu Carrinho</h3>
-            <button class="botao-fechar-painel" id="botao-fechar-painel-novo">
-                <ion-icon name="close-outline"></ion-icon>
-            </button>
-        </header>
-        <div class="carrinho-corpo">
-            <div id="tela-itens" class="tela-carrinho tela-ativa">
-                <div id="lista-itens-carrinho" class="lista-itens-carrinho">
-                    </div>
-                <a href="index.html" id="adicionar-mais-itens" class="adicionar-mais-itens">
-                    <ion-icon name="add-circle-outline"></ion-icon>
-                    <span>Adicionar mais itens</span>
-                </a>
-            </div>
-            </div>
-        <footer class="carrinho-rodape">
-            <div class="resumo-valores" id="resumo-rodape-geral" style="display: none;">
-            </div>
-            <a href="index.html" class="botao-continuar-carrinho" id="btn-continuar-carrinho">
-                <span>Ver Cardápio e Finalizar</span>
-            </a>
-        </footer>
-    </div>
-
-    <div class="modal-overlay" id="endereco-modal-overlay">
-        <div class="modal-container">
-            <header class="modal-header">
-                <h2 id="endereco-modal-title">Adicionar Novo Endereço</h2>
-                <button class="close-modal-btn" id="btn-fechar-modal-endereco">&times;</button>
-            </header>
-            <div class="modal-body">
-                <form id="form-endereco" class="novo-form-vertical">
-                    <div class="form-campo">
-                        <label for="endereco-alias">Apelido do Endereço*</label>
-                        <input type="text" id="endereco-alias" placeholder="Ex: Casa, Trabalho" required>
-                    </div>
-                    <div class="form-campo">
-                        <label for="endereco-cep">CEP*</label>
-                        <input type="tel" id="endereco-cep" placeholder="Digite o CEP para buscar o endereço" required>
-                    </div>
-                    <div class="form-campo">
-                        <label for="endereco-rua">Rua / Avenida*</label>
-                        <input type="text" id="endereco-rua" placeholder="Preenchido automaticamente" required readonly>
-                    </div>
-                    <div class="form-campo">
-                        <label for="endereco-bairro">Bairro*</label>
-                        <input type="text" id="endereco-bairro" placeholder="Preenchido automaticamente" required readonly>
-                    </div>
-                    <div class="form-campo">
-                        <label for="endereco-numero">Número*</label>
-                        <input type="text" id="endereco-numero" placeholder="Ex: 123" required>
-                    </div>
-                    <div class="form-campo">
-                        <label for="endereco-complemento">Complemento</label>
-                        <input type="text" id="endereco-complemento" placeholder="Apto, Bloco, Casa dos fundos...">
-                    </div>
-                    <div class="form-campo">
-                        <label for="endereco-referencia">Ponto de Referência</label>
-                        <input type="text" id="endereco-referencia" placeholder="Ex: Próximo ao mercado">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="btn-cancelar-modal-endereco">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar Endereço</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <nav class="bottom-nav">
-        <a href="index.html" class="bottom-nav-item">
-            <ion-icon name="storefront-outline" class="bottom-nav-icon"></ion-icon>
-            <span class="bottom-nav-text">Início</span>
-        </a>
-        <a href="pedidos.html" class="bottom-nav-item">
-            <ion-icon name="receipt-outline" class="bottom-nav-icon"></ion-icon>
-            <span class="bottom-nav-text">Pedidos</span>
-        </a>
-        <a href="perfil.html" class="bottom-nav-item active" id="botao-perfil-mobile">
-            <ion-icon name="person-outline" class="bottom-nav-icon"></ion-icon>
-            <span class="bottom-nav-text">Perfil</span>
-        </a>
-        <button class="bottom-nav-item" id="botao-carrinho-mobile">
-            <span class="contador-carrinho" id="contador-carrinho-mobile">0</span>
-            <ion-icon name="cart-outline" class="bottom-nav-icon"></ion-icon>
-            <span class="bottom-nav-text">Sacola</span>
-        </button>
-    </nav>
-    
     <script src="static/js/perfil.js"></script>
 </body>
 </html>

@@ -443,3 +443,77 @@ body.dark-mode .btn-remove-addition:hover {
     padding: 0;
     border: none;
 }
+
+
+/* EM admin-style.css (adicione no final) */
+
+/* --- TELA DE RECOMPENSAS --- */
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.reward-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all var(--transition-speed);
+}
+
+.reward-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.reward-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.reward-card-header h4 {
+    font-family: var(--font-header);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+.reward-points {
+    background-color: var(--yellow-accent-color);
+    color: var(--text-primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.reward-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    flex-grow: 1;
+    margin-bottom: 16px;
+}
+
+.reward-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.reward-card-actions {
+    display: flex;
+    gap: 8px;
+}

@@ -1,4 +1,4 @@
-/* Arquivo: frontend/static/css/auth-cliente.css (Versão Definitiva com Layout Fixo) */
+/* frontend/static/css/auth-cliente.css (Versão Corrigida e Alinhada) */
 
 :root {
     --primary-color: #D32F2F;
@@ -9,141 +9,308 @@
     --text-primary-light: #1a1a1a;
     --text-secondary-light: #5a5a5a;
     --background-light: #f4f4f7;
-    --surface-light: rgba(255, 255, 255, 0.8);
+    --surface-light: #ffffff;
     --border-light: #dcdcdc;
     --font-header: 'Manrope', sans-serif;
     --font-body: 'Poppins', sans-serif;
     --transition-speed: 0.3s ease;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-@keyframes fadeInScaleUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes shakeError { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
-.form-error-shake { animation: shakeError 0.5s ease-in-out; }
-
-/* ======================================================= */
-/* --- 3. NOVA ESTRUTURA DE LAYOUT FIXO --- */
-/* ======================================================= */
-html, body.auth-page {
-    height: 100%;
-    overflow: hidden; /* Impede a rolagem da página inteira */
+@keyframes fadeInScaleUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 body.auth-page {
     font-family: var(--font-body);
     background-color: var(--background-light);
     color: var(--text-primary-light);
-    position: relative; 
+    position: relative;
+    width: 100%;
 }
 
-body.auth-page::before, body.auth-page::after {
-    content: ''; position: absolute; z-index: 0; width: 50vw; height: 50vw;
-    max-width: 600px; max-height: 600px; border-radius: 50%; filter: blur(100px);
+/* EFEITOS DE FUNDO */
+body.auth-page::before, 
+body.auth-page::after {
+    content: '';
+    position: fixed; /* Usar 'fixed' para não rolar com o conteúdo */
+    z-index: 0;
+    width: 50vw;
+    height: 50vw;
+    max-width: 600px;
+    max-height: 600px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.8;
 }
-body.auth-page::before { top: -10%; left: -20%; background: radial-gradient(circle, rgba(var(--primary-color-rgb), 0.15), transparent 70%); }
-body.auth-page::after { bottom: -15%; right: -20%; background: radial-gradient(circle, rgba(var(--secondary-color-rgb), 0.1), transparent 70%); }
 
+body.auth-page::before {
+    top: -10%;
+    left: -20%;
+    background: radial-gradient(circle, rgba(var(--primary-color-rgb), 0.15), transparent 70%);
+}
+
+body.auth-page::after {
+    bottom: -15%;
+    right: -20%;
+    background: radial-gradient(circle, rgba(var(--secondary-color-rgb), 0.1), transparent 70%);
+}
+
+/* CONTAINER PRINCIPAL PARA O ALINHAMENTO */
 .auth-container {
     width: 100%;
-    height: 100vh; 
-    height: 100dvh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px 20px 85px 20px; /* Adiciona padding inferior para não colar no rodapé */
+    min-height: 100vh;
+    min-height: 100dvh; /* Garante altura total em mobile */
+    display: grid;
+    place-items: center; /* Método moderno e eficaz para centralizar */
+    padding: 20px;
+    padding-bottom: 85px; /* Espaço para a barra de navegação inferior */
     position: relative;
     z-index: 1;
 }
 
-/* ======================================================= */
-/* --- 4. CARTÃO DE FORMULÁRIO COM ROLAGEM INTERNA --- */
-/* ======================================================= */
+/* CARTÃO DO FORMULÁRIO */
 .auth-form-card {
     width: 100%;
     max-width: 420px;
-    max-height: 100%; /* Ocupa a altura máxima disponível no container */
     background-color: var(--surface-light);
     border: 1px solid rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 24px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Essencial para a rolagem interna funcionar */
-}
-
-.auth-form-header {
-    padding: 30px 30px 20px 30px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.auth-logo { width: 60px; height: auto; margin-bottom: 15px; }
-.auth-form-card h2 { font-family: var(--font-header); font-weight: 800; font-size: 1.8rem; margin-bottom: 8px; }
-.auth-form-card .auth-subtitle { color: var(--text-secondary-light); margin-bottom: 0; line-height: 1.5; }
-
-/* A área do formulário agora é a que rola */
-#login-form, #register-form {
-    overflow-y: auto; /* Adiciona rolagem APENAS se necessário */
-    padding: 20px 30px 30px 30px;
+    padding: 30px;
     text-align: center;
 }
 
-#login-form::-webkit-scrollbar, #register-form::-webkit-scrollbar { width: 6px; }
-#login-form::-webkit-scrollbar-thumb, #register-form::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.auth-logo {
+    width: 60px;
+    height: auto;
+    margin-bottom: 15px;
+}
 
-/* ======================================================= */
-/* --- 5. CAMPOS DO FORMULÁRIO (ALINHAMENTO CORRIGIDO) --- */
-/* ======================================================= */
-.form-grupo { position: relative; margin-bottom: 25px; text-align: left;}
-.form-grupo .input-wrapper { position: relative; }
+.auth-form-card h2 {
+    font-family: var(--font-header);
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+.auth-form-card .auth-subtitle {
+    color: var(--text-secondary-light);
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+/* GRUPOS DE FORMULÁRIO E INPUTS */
+.form-grupo {
+    position: relative;
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.form-grupo .input-wrapper {
+    position: relative;
+}
 
 .form-grupo input {
-    width: 100%; height: 58px; padding: 0 16px; border: 2px solid var(--border-light);
-    border-radius: 12px; font-size: 1rem; font-family: var(--font-body);
-    background-color: transparent; color: var(--text-primary-light); transition: all 0.2s ease;
+    width: 100%;
+    height: 58px;
+    padding: 0 16px;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: var(--font-body);
+    background-color: transparent;
+    color: var(--text-primary-light);
+    transition: all 0.2s ease;
 }
 
 .form-grupo label {
-    position: absolute; left: 17px; top: 50%; transform: translateY(-50%);
-    white-space: nowrap; color: var(--text-secondary-light); pointer-events: none;
-    transition: all 0.2s ease; background-color: var(--surface-light); padding: 0 4px;
+    position: absolute;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    color: var(--text-secondary-light);
+    pointer-events: none;
+    transition: all 0.2s ease;
+    background-color: var(--surface-light); /* Para o efeito flutuante */
+    padding: 0 4px;
 }
 
 .form-grupo input:focus + label,
 .form-grupo input:not(:placeholder-shown) + label {
-    top: -10px; left: 12px; font-size: 0.85rem; font-weight: 600;
-    color: var(--primary-color); transform: translateY(0);
+    top: -10px;
+    left: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    transform: translateY(0);
 }
 
-.form-grupo input:focus { outline: none; border-color: var(--primary-color); background-color: var(--surface-light); }
-.form-grupo input:not(:placeholder-shown) { border-color: var(--border-light); }
-.form-grupo input:focus:required:invalid { border-color: var(--primary-color); }
-.form-grupo input:required:valid { border-color: var(--success-color); }
+.form-grupo input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
 
-.password-toggle-icon { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); color: var(--text-secondary-light); cursor: pointer; transition: color var(--transition-speed); }
-.password-toggle-icon:hover { color: var(--primary-color); }
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: var(--text-secondary-light);
+    cursor: pointer;
+    transition: color var(--transition-speed);
+}
+.password-toggle-icon:hover {
+    color: var(--primary-color);
+}
 
-/* (O restante do CSS para botões, links, modais, etc., continua igual) */
-.form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 0.9rem; }
-.form-options .checkbox-container { display: flex; align-items: center; gap: 8px; color: var(--text-secondary-light); cursor: pointer; }
-.form-options a { color: var(--primary-color); text-decoration: none; font-weight: 600; transition: opacity var(--transition-speed); }
-.btn-auth { width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary-color-dark), var(--primary-color)); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3); }
-.btn-auth:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.4); }
-.error-message { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--primary-color); min-height: 20px; margin-bottom: 15px; font-weight: 500; }
-.auth-switch-link { margin-top: 30px; color: var(--text-secondary-light); }
-.auth-switch-link a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
-.terms-container { font-size: 0.85rem; color: var(--text-secondary-light); margin: 25px 0; text-align: left; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
-.terms-container input { margin-top: 4px; flex-shrink: 0; }
-.terms-container a, .modal-trigger { color: var(--primary-color); font-weight: 600; cursor: pointer; text-decoration: underline; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
-.modal-overlay.active { opacity: 1; visibility: visible; }
-.modal-content { background-color: #fff; color: var(--text-primary-light); width: 90%; max-width: 600px; max-height: 80vh; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; transform: scale(0.95); transition: transform 0.3s ease; }
-.modal-overlay.active .modal-content { transform: scale(1); }
-.modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-.modal-header h3 { font-size: 1.2rem; font-family: var(--font-header); font-weight: 700; }
-.modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary-light); }
-.modal-body { padding: 20px 25px; overflow-y: auto; line-height: 1.7; }
+/* OPÇÕES, BOTÕES E LINKS */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+}
+.form-options .checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary-light);
+    cursor: pointer;
+}
+.form-options a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-auth {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color-dark), var(--primary-color));
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3);
+}
+.btn-auth:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.error-message {
+    color: var(--primary-color);
+    min-height: 20px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.auth-switch-link {
+    margin-top: 30px;
+    color: var(--text-secondary-light);
+}
+.auth-switch-link a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* EM auth-cliente.css (adicione ao final) */
+
+/* ESTILOS RESTAURADOS PARA TERMOS E MODAIS */
+.terms-container {
+    font-size: 0.85rem;
+    color: var(--text-secondary-light);
+    margin: 25px 0;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+}
+.terms-container input {
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+.terms-container .modal-trigger {
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+.modal-content {
+    background-color: #fff;
+    color: var(--text-primary-light);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h3 {
+    font-size: 1.2rem;
+    font-family: var(--font-header);
+    font-weight: 700;
+}
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--text-secondary-light);
+}
+.modal-body {
+    padding: 20px 25px;
+    overflow-y: auto;
+    line-height: 1.7;
+}
