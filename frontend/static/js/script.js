@@ -484,7 +484,122 @@ const atualizarTodosResumos = () => {
     const atualizarLinkWhatsapp = () => { const btnWhatsapp = document.getElementById('btn-whatsapp-comprovante'); if (!btnWhatsapp) return; const nome = document.getElementById('cliente-nome').value || document.getElementById('retirada-nome').value; const telefone = document.getElementById('cliente-telefone').value || document.getElementById('retirada-telefone').value; const mensagem = `Olá, aqui está o comprovante do meu pedido. \nNome: ${nome}\nTelefone: ${telefone}`; const mensagemCodificada = encodeURIComponent(mensagem); btnWhatsapp.href = `https://wa.me/5519991432597?text=${mensagemCodificada}`; };
     const navegarCarrinho = (novaEtapa) => { etapaAtualCarrinho = novaEtapa; telasCarrinho.forEach(tela => tela.classList.toggle('tela-ativa', tela.id === `tela-${novaEtapa}`)); const textoBotao = document.querySelector('#btn-continuar-carrinho span'); const rodapeCarrinho = document.querySelector('.carrinho-rodape'); if (rodapeCarrinho) { rodapeCarrinho.style.display = (novaEtapa === 'sucesso') ? 'none' : 'flex'; } switch (novaEtapa) { case 'itens': if (tituloCarrinho) tituloCarrinho.textContent = 'Meu Carrinho'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'none'; if (textoBotao) textoBotao.textContent = 'Continuar'; break; case 'metodo-entrega': if (tituloCarrinho) tituloCarrinho.textContent = 'Como Deseja Receber?'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Continuar'; break; case 'dados-entrega': if (tituloCarrinho) tituloCarrinho.textContent = 'Endereço de Entrega'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento'; break; case 'dados-retirada': if (tituloCarrinho) tituloCarrinho.textContent = 'Dados para Retirada'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Ir para o Pagamento'; break; case 'pagamento': if (tituloCarrinho) tituloCarrinho.textContent = 'Pagamento'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Finalizar Pedido'; atualizarDisplayPagamento(); break; case 'escolher-pagamento': if (tituloCarrinho) tituloCarrinho.textContent = 'Forma de Pagamento'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'block'; if (textoBotao) textoBotao.textContent = 'Confirmar Seleção'; atualizarLinkWhatsapp(); break; case 'sucesso': if (tituloCarrinho) tituloCarrinho.textContent = 'Pedido Finalizado'; if (btnVoltarCarrinho) btnVoltarCarrinho.style.display = 'none'; break; } atualizarTodosResumos(); };
     const togglePainelCarrinho = (abrir = null) => { if (!painelCarrinho) return; const ativo = abrir === null ? !painelCarrinho.classList.contains('ativo') : abrir; if (ativo) { navegarCarrinho('itens'); } painelCarrinho.classList.toggle('ativo', ativo); if (sobreposicaoCarrinho) { sobreposicaoCarrinho.classList.toggle('ativo', ativo); } };
-    const finalizarEEnviarPedido = async () => { const btnTexto = document.querySelector('#btn-continuar-carrinho span'); const btnOriginalText = btnTexto ? btnTexto.textContent : 'Finalizar Pedido'; const btnCarrinho = btnContinuarCarrinho; if (btnTexto) btnTexto.textContent = 'Enviando...'; if (btnCarrinho) btnCarrinho.disabled = true; try { let deliveryInfo, clientInfo; if (pedido.metodoEntrega === 'retirada') { deliveryInfo = { tipo: 'Retirada', rua: 'Retirar no local' }; clientInfo = { nome: document.getElementById('retirada-nome').value, telefone: document.getElementById('retirada-telefone').value || 'Não informado' }; } else { deliveryInfo = { tipo: 'Entrega', rua: document.getElementById('endereco-rua').value, bairro: document.getElementById('endereco-bairro').value, numero: document.getElementById('endereco-numero').value, complemento: document.getElementById('endereco-complemento').value, referencia: document.getElementById('endereco-referencia').value }; clientInfo = { nome: document.getElementById('cliente-nome').value, telefone: document.getElementById('cliente-telefone').value || 'Não informado' }; } const subtotal = carrinho.reduce((acc, item) => { const precoAdicionais = item.adicionais ? item.adicionais.reduce((sum, ad) => sum + ad.price, 0) : 0; const precoBase = parseFloat(item.price); return acc + ((precoBase + precoAdicionais) * item.quantity); }, 0); let taxaEntregaFinal = pedido.metodoEntrega === 'retirada' ? 0 : taxaDeEntrega; let desconto = 0; if (cupomAplicado && cupomAplicado.discount_type === 'free_delivery' && subtotal >= cupomAplicado.min_purchase_value) { desconto = taxaEntregaFinal; taxaEntregaFinal = 0; } else if (subtotal >= metaEntregaGratis && pedido.metodoEntrega !== 'retirada') { desconto = taxaDeEntrega; taxaEntregaFinal = 0; } const total = subtotal - desconto + taxaEntregaFinal; const pedidoParaAPI = { client_info: clientInfo, delivery_info: deliveryInfo, items: carrinho, total_value: total, payment_info: pedido.pagamento, status: 'Novo' }; const response = await fetch('http://localhost:3000/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pedidoParaAPI), }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.message || 'Não foi possível enviar o pedido.'); } const result = await response.json(); console.log('Pedido enviado:', result); const historicoPedidos = JSON.parse(localStorage.getItem('pedidosZapEsfirras')) || []; const novoPedidoHistorico = { id: result.orderId, data: new Date().toISOString(), status: 'Novo', tipoEntrega: pedido.metodoEntrega }; historicoPedidos.push(novoPedidoHistorico); localStorage.setItem('pedidosZapEsfirras', JSON.stringify(historicoPedidos)); navegarCarrinho('sucesso'); carrinho = []; cupomAplicado = null; salvarCarrinhoLocalStorage(); renderizarItensCarrinho(); setTimeout(() => { togglePainelCarrinho(false); setTimeout(() => { if (btnTexto) btnTexto.textContent = btnOriginalText; if (btnCarrinho) btnCarrinho.disabled = false; navegarCarrinho('itens'); }, 500); }, 3000); } catch (error) { console.error('Erro ao finalizar pedido:', error); mostrarNotificacao(error.message || 'Erro ao enviar pedido. Tente novamente.', 'error'); if (btnTexto) btnTexto.textContent = btnOriginalText; if (btnCarrinho) btnCarrinho.disabled = false; } };
+// SUBSTITUA A FUNÇÃO ANTIGA POR ESTA VERSÃO COMPLETA
+const finalizarEEnviarPedido = async () => {
+    const btnContinuar = document.getElementById('btn-continuar-carrinho');
+    const btnTexto = btnContinuar.querySelector('span');
+    const btnOriginalText = btnTexto.textContent;
+
+    btnTexto.textContent = 'Processando...';
+    btnContinuar.disabled = true;
+
+    try {
+        // Prepara o objeto do pedido como antes
+        let deliveryInfo, clientInfo;
+        if (pedido.metodoEntrega === 'retirada') {
+            deliveryInfo = { tipo: 'Retirada', rua: 'Retirar no local' };
+            clientInfo = { nome: document.getElementById('retirada-nome').value, telefone: document.getElementById('retirada-telefone').value || 'Não informado' };
+        } else {
+            deliveryInfo = { tipo: 'Entrega', rua: document.getElementById('endereco-rua').value, bairro: document.getElementById('endereco-bairro').value, numero: document.getElementById('endereco-numero').value, complemento: document.getElementById('endereco-complemento').value, referencia: document.getElementById('endereco-referencia').value };
+            clientInfo = { nome: document.getElementById('cliente-nome').value, telefone: document.getElementById('cliente-telefone').value || 'Não informado' };
+        }
+
+        const subtotal = carrinho.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        let taxaEntregaFinal = pedido.metodoEntrega === 'retirada' ? 0 : (subtotal >= metaEntregaGratis ? 0 : taxaDeEntrega);
+        const total = subtotal + taxaEntregaFinal;
+
+        const customerInfo = JSON.parse(localStorage.getItem('customerInfo'));
+
+        // PASSO 1: Salvar o pedido no nosso banco com status "Aguardando Pagamento"
+        const pedidoParaAPI = {
+            client_info: clientInfo,
+            delivery_info: deliveryInfo,
+            items: carrinho,
+            total_value: total,
+            payment_info: { metodo: 'Mercado Pago', tipo: 'Online' }, // Novo status de pagamento
+            status: 'Aguardando Pagamento', // Novo status inicial
+            customerId: customerInfo ? customerInfo.id : null
+        };
+
+        const orderResponse = await fetch('http://localhost:3000/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pedidoParaAPI),
+        });
+
+        if (!orderResponse.ok) {
+            throw new Error('Não foi possível salvar seu pedido antes de processar o pagamento.');
+        }
+        const orderResult = await orderResponse.json();
+        console.log('Pedido salvo com ID:', orderResult.orderId);
+
+
+        // PASSO 2: Criar a preferência de pagamento no Mercado Pago
+        const itemsParaMP = carrinho.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+        }));
+
+        // Adiciona a taxa de entrega como um item, se houver
+        if (taxaEntregaFinal > 0) {
+            itemsParaMP.push({ id: 'delivery', name: 'Taxa de Entrega', price: taxaEntregaFinal, quantity: 1 });
+        }
+
+        const preferenceResponse = await fetch('http://localhost:3000/api/create-payment-preference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: itemsParaMP })
+        });
+
+        if (!preferenceResponse.ok) {
+            throw new Error('Não foi possível iniciar o pagamento com Mercado Pago.');
+        }
+
+        const preferenceData = await preferenceResponse.json();
+
+        // PASSO 3: Renderizar o botão de pagamento
+        document.getElementById('btn-continuar-carrinho').style.display = 'none'; // Esconde o botão antigo
+        renderMercadoPagoButton(preferenceData.preferenceId);
+
+        // Limpa o carrinho no localStorage, pois o pedido já foi criado
+        carrinho = [];
+        salvarCarrinhoLocalStorage();
+        renderizarItensCarrinho(); // Atualiza a UI para mostrar o carrinho vazio
+
+    } catch (error) {
+        console.error('Erro ao finalizar pedido:', error);
+        mostrarNotificacao(error.message || 'Erro ao processar o pedido. Tente novamente.', 'error');
+        btnTexto.textContent = btnOriginalText;
+        btnContinuar.disabled = false;
+    }
+};   
+
+// ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT.JS
+async function renderMercadoPagoButton(preferenceId) {
+    // Encontre sua PUBLIC KEY no painel do Mercado Pago em: Suas Aplicações -> Credenciais
+    const mp = new MercadoPago('APP_USR-747c5ecf-6392-4bfa-9f6e-0dce6315bece', {
+        locale: 'pt-BR'
+    });
+
+    // O Brick é o componente visual de pagamento do Mercado Pago
+    const bricksBuilder = mp.bricks();
+
+    // Wallet Brick é o botão "Pagar com Mercado Pago"
+    await bricksBuilder.create("wallet", "payment-brick-container", {
+        initialization: {
+            preferenceId: preferenceId,
+            redirectMode: 'self' // Abre na mesma página
+        },
+        customization: {
+            texts: {
+                valueProp: 'smart_option',
+            },
+        },
+    });
+}
+
     function gerenciarEstadoLogin() { const token = localStorage.getItem('authToken'); const customerInfo = JSON.parse(localStorage.getItem('customerInfo')); const botaoContaDesktop = document.getElementById('botao-conta-desktop'); const infoUsuarioDesktop = document.getElementById('info-usuario-desktop'); const nomeUsuarioDesktop = document.getElementById('nome-usuario-desktop'); const botaoLogoutDesktop = document.getElementById('botao-logout-desktop'); const botaoPerfilMobileLink = document.getElementById('botao-perfil-mobile'); const botaoPerfilMobileText = botaoPerfilMobileLink ? botaoPerfilMobileLink.querySelector('.bottom-nav-text') : null; if (token && customerInfo) { if (botaoContaDesktop) botaoContaDesktop.style.display = 'none'; if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'flex'; if (nomeUsuarioDesktop) nomeUsuarioDesktop.textContent = `Olá, ${customerInfo.name.split(' ')[0]}!`; if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Minha Conta'; if (botaoPerfilMobileLink) botaoPerfilMobileLink.href = 'perfil.html'; if (botaoLogoutDesktop) { if (!botaoLogoutDesktop.dataset.listener) { botaoLogoutDesktop.addEventListener('click', () => { localStorage.removeItem('authToken'); localStorage.removeItem('customerInfo'); window.location.reload(); }); botaoLogoutDesktop.dataset.listener = 'true'; } } } else { if (botaoContaDesktop) botaoContaDesktop.style.display = 'flex'; if (infoUsuarioDesktop) infoUsuarioDesktop.style.display = 'none'; if (botaoPerfilMobileText) botaoPerfilMobileText.textContent = 'Perfil'; if (botaoPerfilMobileLink) botaoPerfilMobileLink.href = 'login-cliente.html'; } }
     async function init() { gerenciarEstadoLogin(); atualizarInfoCabecalho(); carregarCarrinhoLocalStorage(); if (barraFiltros) { atualizarDisplayPagamento(); try { await carregarDadosDaAPI(); } catch (e) { console.error("Falha fatal na inicialização ao carregar dados da API.", e) } } setTimeout(() => { if (telaCarregamento) { telaCarregamento.style.opacity = '0'; telaCarregamento.addEventListener('transitionend', () => telaCarregamento.style.display = 'none'); } if (conteudoPrincipal) { conteudoPrincipal.style.display = 'block'; ajustarPaddingCorpo(); if (barraFiltros) gerenciarSetasScroll(); } }, 200); configurarEventListeners(); }
     function configurarBuscaPorCEP() { const inputCEP = document.getElementById('endereco-cep'); if (!inputCEP) return; inputCEP.addEventListener('input', (e) => { let cep = e.target.value.replace(/\D/g, ''); cep = cep.replace(/^(\d{5})(\d)/, '$1-$2'); e.target.value = cep; if (cep.replace('-', '').length === 8) { buscarEnderecoPorCEP(cep); } }); }

@@ -117,21 +117,18 @@ app.post('/api/create-payment-preference', async (req, res) => {
     try {
         const { items } = req.body;
 
-        const preferenceBody = {
-            items: items.map(item => ({
-                id: item.id,
-                title: item.name,
-                unit_price: Number(item.price),
-                quantity: Number(item.quantity),
-                currency_id: 'BRL'
-            })),
-            back_urls: {
-                success: `http://127.0.0.1:5500/frontend/pedidos.html?status=success`,
-                failure: `http://127.0.0.1:5500/frontend/index.html?status=failure`,
-                pending: `http://127.0.0.1:5500/frontend/pedidos.html?status=pending`
-            },
-            auto_return: 'approved',
-        };
+// Dentro de app.post('/api/create-payment-preference', ...)
+
+const preferenceBody = {
+    items: items.map(item => ({
+        id: item.id,
+        title: item.name,
+        unit_price: Number(item.price),
+        quantity: Number(item.quantity),
+        currency_id: 'BRL'
+    })),
+    // As linhas back_urls e auto_return foram removidas para teste local
+};
 
         const preference = new Preference(client);
         const response = await preference.create({ body: preferenceBody });
@@ -143,6 +140,49 @@ app.post('/api/create-payment-preference', async (req, res) => {
         console.error("Erro ao criar preferência do Mercado Pago:", error);
         res.status(500).json({ message: "Erro no servidor ao criar preferência de pagamento." });
     }
+});
+
+
+app.post('/api/mp-webhook', async (req, res) => {
+    console.log('--- Webhook do Mercado Pago recebido ---');
+    
+    const { query } = req;
+    const topic = query.topic || query.type;
+
+    if (topic === 'payment') {
+        const paymentId = query.id || query['data.id'];
+        console.log('Tópico é pagamento, ID:', paymentId);
+
+        try {
+            // Usando a nova sintaxe da SDK V3 para buscar o pagamento
+            const payment = await mercadopago.payment.findById(paymentId);
+
+            if (payment) {
+                console.log('Status do pagamento:', payment.status);
+                
+                // Pega o ID do nosso pedido que guardamos na referência externa
+                const orderId = payment.external_reference;
+
+                // Se o pagamento foi aprovado, atualizamos o status do nosso pedido
+                if (payment.status === 'approved') {
+                    const newStatus = 'Novo';
+                    
+                    // Atualiza o status no banco de dados
+                    await pool.query('UPDATE orders SET status = ? WHERE id = ?', [newStatus, orderId]);
+                    
+                    console.log(`Pedido #${orderId} atualizado para "${newStatus}" via webhook.`);
+
+                    // Avisa o painel admin em tempo real que o status mudou
+                    io.emit('order_status_updated', { orderId: orderId, newStatus: newStatus });
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao processar webhook:', error);
+        }
+    }
+
+    // Responde ao Mercado Pago para confirmar o recebimento
+    res.sendStatus(200);
 });
 
 // --- ROTAS DE PRODUTOS ---

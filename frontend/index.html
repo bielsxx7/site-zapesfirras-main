@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/png" href="/assets/zapesfiiras.png">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -277,6 +278,8 @@
                     </div>
                 </div>
                 <div class="secao-cpf">
+                    <div id="payment-brick-container" style="margin-top: 20px;"></div>
+
                     <label class="checkbox-container">
                         <input type="checkbox" id="cpf-toggle">
                         <span class="checkmark"></span>
