@@ -2308,3 +2308,63 @@ body.pagina-pedidos .container-principal {
     font-weight: 600;
     text-decoration: underline;
 }
+
+
+/* Estilos para o formulário de pagamento do Mercado Pago */
+.form-control-mp {
+    width: 100%;
+    height: 50px;
+    padding: 0 14px;
+    font-size: 1rem;
+    border: 1px solid var(--grey-medium);
+    border-radius: 8px;
+    background-color: var(--navbar-bg);
+}
+
+.form-campo-grupo {
+    display: flex;
+    gap: 15px;
+}
+.form-campo-grupo .form-campo {
+    flex: 1;
+}
+
+
+.secao-opcoes-pagamento-online {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.metodo-pagamento-card-online {
+    display: flex;
+    align-items: center;
+    background-color: var(--navbar-bg);
+    border: 2px solid var(--grey-medium);
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.metodo-pagamento-card-online:has(input:checked) {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
+}
+.metodo-pagamento-card-online input { display: none; }
+.metodo-pagamento-card-online .card-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+.metodo-pagamento-card-online .card-content ion-icon { font-size: 1.8rem; }
+.metodo-pagamento-card-online .card-check {
+    font-size: 1.8rem;
+    color: var(--grey-medium);
+    transition: color 0.3s;
+}
+.metodo-pagamento-card-online:has(input:checked) .card-check {
+    color: var(--green-color);
+}

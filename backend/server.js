@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const { MercadoPagoConfig, Preference } = require('mercadopago');
+const { MercadoPagoConfig, Payment } = require('mercadopago');
 require('dotenv').config();
 
 const app = express();
@@ -21,18 +21,23 @@ const io = new Server(server, {
 });
 
 const port = 3000;
-const JWT_SECRET = process.env.JWT_SECRET; 
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(cors());
+
+// IMPORTANTE: O middleware express.raw para webhooks deve vir ANTES do express.json
+// para garantir que o corpo da requisição não seja modificado.
+app.use('/api/mp-webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- CONFIGURAÇÃO DO MERCADO PAGO ---
-const client = new MercadoPagoConfig({ 
-    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN 
+const client = new MercadoPagoConfig({
+    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
+// Instância de pagamento reutilizável
+const payment = new Payment(client);
 
-// --- MIDDLEWARE DE AUTENTICAÇÃO (MOVIDO PARA CIMA PARA FICAR DISPONÍVEL GLOBALMENTE) ---
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -47,37 +52,15 @@ const verifyToken = (req, res, next) => {
         next();
     });
 };
-// ------------------------------------------------------------------------------------
 
 const bairrosEspeciais = [
-    {
-        nomeOficial: 'conjunto habitacional gilberto rossetti',
-        aliases: ['cohab 2', 'cohab ii', 'cohab2', 'gilberto rossetti']
-    },
-    {
-        nomeOficial: 'loteamento residencial vale verde',
-        aliases: ['vale verde', 'valeverde']
-    },
-    {
-        nomeOficial: 'altos do vale ii',
-        aliases: ['altos do vale ii', 'altos do vale 2', 'altos do vale']
-    },
-    {
-        nomeOficial: 'parque dos manacas i',
-        aliases: ['parque manacas', 'parque manacás', 'manacas', 'manacás', 'parque dos manacas i']
-    },
-    {
-        nomeOficial: 'chacara palmeirinha',
-        aliases: ['chacara palmeirinha', 'chacara da palmeirinha', 'palmeirinha']
-    },
-    {
-        nomeOficial: 'chacara da pamonha',
-        aliases: ['chacara da pamonha', 'pamonha', 'chacara pamonha', 'chacara das suculentas']
-    },
-    {
-        nomeOficial: 'distrito industrial ii',
-        aliases: ['distrito industrial 2', 'distrito 2', 'distrito industrial']
-    }
+    { nomeOficial: 'conjunto habitacional gilberto rossetti', aliases: ['cohab 2', 'cohab ii', 'cohab2', 'gilberto rossetti'] },
+    { nomeOficial: 'loteamento residencial vale verde', aliases: ['vale verde', 'valeverde'] },
+    { nomeOficial: 'altos do vale ii', aliases: ['altos do vale ii', 'altos do vale 2', 'altos do vale'] },
+    { nomeOficial: 'parque dos manacas i', aliases: ['parque manacas', 'parque manacás', 'manacas', 'manacás', 'parque dos manacas i'] },
+    { nomeOficial: 'chacara palmeirinha', aliases: ['chacara palmeirinha', 'chacara da palmeirinha', 'palmeirinha'] },
+    { nomeOficial: 'chacara da pamonha', aliases: ['chacara da pamonha', 'pamonha', 'chacara pamonha', 'chacara das suculentas'] },
+    { nomeOficial: 'distrito industrial ii', aliases: ['distrito industrial 2', 'distrito 2', 'distrito industrial'] }
 ];
 
 app.post('/api/calculate-delivery-fee', (req, res) => {
@@ -112,85 +95,155 @@ app.post('/api/calculate-delivery-fee', (req, res) => {
     }
 });
 
-// --- ROTA PARA CRIAR PREFERÊNCIA DE PAGAMENTO ---
-app.post('/api/create-payment-preference', async (req, res) => {
+// Rota para processar pagamentos com Cartão (via Brick)
+app.post('/api/process-payment', async (req, res) => {
     try {
-        const { items } = req.body;
-
-// Dentro de app.post('/api/create-payment-preference', ...)
-
-const preferenceBody = {
-    items: items.map(item => ({
-        id: item.id,
-        title: item.name,
-        unit_price: Number(item.price),
-        quantity: Number(item.quantity),
-        currency_id: 'BRL'
-    })),
-    // As linhas back_urls e auto_return foram removidas para teste local
-};
-
-        const preference = new Preference(client);
-        const response = await preference.create({ body: preferenceBody });
-        
-        console.log('Preferência do Mercado Pago criada:', response.id);
-        res.json({ preferenceId: response.id });
-
+        const { token, issuer_id, payment_method_id, transaction_amount, installments, payer, orderData } = req.body;
+        const { clientInfo, deliveryInfo, items } = orderData;
+        const paymentData = {
+            transaction_amount: transaction_amount,
+            description: `Pedido de ${clientInfo.nome} - Zap Esfirras`,
+            payment_method_id: payment_method_id,
+            payer: { email: payer.email, identification: payer.identification },
+            token: token,
+            issuer_id: issuer_id,
+            installments: installments,
+        };
+        const paymentResult = await payment.create({ body: paymentData });
+        const payment_info = { metodo: payment_method_id, id_transacao_mp: paymentResult.id, status_detail: paymentResult.status_detail };
+        let status = 'Aguardando Pagamento';
+        if (paymentResult.status === 'approved') { status = 'Novo'; }
+        const sqlInsertOrder = `INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) VALUES (?, ?, ?, ?, ?, ?)`;
+        const [result] = await pool.query(sqlInsertOrder, [JSON.stringify(clientInfo), JSON.stringify(deliveryInfo), JSON.stringify(items), transaction_amount, JSON.stringify(payment_info), status]);
+        const newOrderId = result.insertId;
+        console.log(`Pedido #${newOrderId} criado com status '${status}'.`);
+        // Aqui também existe o bug do .update, mas vamos focar no Pix primeiro.
+        // await payment.update({ id: paymentResult.id, body: { external_reference: newOrderId.toString() } });
+        if (status === 'Novo') {
+            const [orderRows] = await pool.query("SELECT * FROM orders WHERE id = ?", [newOrderId]);
+            io.emit('new_order', orderRows[0]);
+            io.emit('print_new_order', orderRows[0]);
+        }
+        if (paymentResult.status !== 'approved' && paymentResult.status !== 'in_process' && paymentResult.status !== 'pending') {
+            return res.status(400).json({ message: paymentResult.status_detail || 'Pagamento recusado.' });
+        }
+        res.status(201).json({ message: "Pagamento processado com sucesso!", orderId: newOrderId, payment_status: paymentResult.status });
     } catch (error) {
-        console.error("Erro ao criar preferência do Mercado Pago:", error);
-        res.status(500).json({ message: "Erro no servidor ao criar preferência de pagamento." });
+        console.error("ERRO AO PROCESSAR PAGAMENTO:", error.cause || error);
+        res.status(500).json({ message: error.message || "Erro no servidor ao processar o pagamento." });
     }
 });
 
+// Rota para criar o pagamento Pix e o pedido no banco
+app.post('/api/criar-pagamento-pix', async (req, res) => {
+    try {
+        const { transaction_amount, payer_email, payer_first_name, payer_last_name, payer_cpf, description, orderData } = req.body;
+        if (!transaction_amount || !payer_email || !payer_cpf) {
+            return res.status(400).json({ message: 'Valor, e-mail e CPF do pagador são obrigatórios.' });
+        }
+        const sqlInsertOrder = `INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) VALUES (?, ?, ?, ?, ?, ?)`;
+        const initialPaymentInfo = { metodo: 'pix', status_detail: 'pending' };
+        const [dbResult] = await pool.query(sqlInsertOrder, [JSON.stringify(orderData.clientInfo), JSON.stringify(orderData.deliveryInfo), JSON.stringify(orderData.items), transaction_amount, JSON.stringify(initialPaymentInfo), 'Pendente de Pagamento']);
+        const newOrderId = dbResult.insertId;
+        console.log(`Pedido #${newOrderId} inserido no banco de dados com status pendente.`);
+        const payment_data = {
+            transaction_amount: Number(transaction_amount),
+            description: description || `Pedido #${newOrderId} - Zap Esfirras`,
+            payment_method_id: 'pix',
+            external_reference: newOrderId.toString(),
+            payer: {
+                email: payer_email,
+                first_name: payer_first_name || 'Cliente',
+                last_name: payer_last_name || 'Zap Esfirras',
+                identification: { type: 'CPF', number: payer_cpf.replace(/\D/g, '') }
+            }
+        };
+        const result = await payment.create({ body: payment_data });
+        console.log("Pagamento Pix criado no Mercado Pago com ID:", result.id);
+        const finalPaymentInfo = { metodo: 'pix', id_transacao_mp: result.id, status_detail: result.status_detail };
+        const sqlUpdateOrder = `UPDATE orders SET payment_info = ?, status = ? WHERE id = ?`;
+        await pool.query(sqlUpdateOrder, [JSON.stringify(finalPaymentInfo), 'Aguardando Pagamento', newOrderId]);
+        console.log(`Pedido #${newOrderId} atualizado com o ID de pagamento do MP.`);
+        res.status(201).json({
+            message: "Cobrança Pix criada com sucesso!",
+            orderId: newOrderId,
+            qr_code_base64: result.point_of_interaction.transaction_data.qr_code_base64,
+            qr_code: result.point_of_interaction.transaction_data.qr_code
+        });
+    } catch (error) {
+        console.error("ERRO AO CRIAR PAGAMENTO PIX:", error.cause || error.message);
+        res.status(500).json({ message: "Ocorreu um erro no servidor ao criar a cobrança Pix.", error_details: error.cause || error.message });
+    }
+});
 
+// ROTA PARA RECEBER NOTIFICAÇÕES DE PAGAMENTO DO MERCADO PAGO (WEBHOOK)
 app.post('/api/mp-webhook', async (req, res) => {
-    console.log('--- Webhook do Mercado Pago recebido ---');
-    
-    const { query } = req;
-    const topic = query.topic || query.type;
-
-    if (topic === 'payment') {
-        const paymentId = query.id || query['data.id'];
-        console.log('Tópico é pagamento, ID:', paymentId);
-
-        try {
-            // Usando a nova sintaxe da SDK V3 para buscar o pagamento
-            const payment = await mercadopago.payment.findById(paymentId);
-
-            if (payment) {
-                console.log('Status do pagamento:', payment.status);
-                
-                // Pega o ID do nosso pedido que guardamos na referência externa
-                const orderId = payment.external_reference;
-
-                // Se o pagamento foi aprovado, atualizamos o status do nosso pedido
-                if (payment.status === 'approved') {
-                    const newStatus = 'Novo';
-                    
-                    // Atualiza o status no banco de dados
-                    await pool.query('UPDATE orders SET status = ? WHERE id = ?', [newStatus, orderId]);
-                    
-                    console.log(`Pedido #${orderId} atualizado para "${newStatus}" via webhook.`);
-
-                    // Avisa o painel admin em tempo real que o status mudou
-                    io.emit('order_status_updated', { orderId: orderId, newStatus: newStatus });
+    console.log("Webhook do Mercado Pago recebido!");
+    try {
+        const notification = JSON.parse(req.body);
+        if (notification.type === 'payment') {
+            const paymentId = notification.data.id;
+            console.log(`Notificação de pagamento recebida. ID do pagamento: ${paymentId}`);
+            const paymentDetails = await payment.get({ id: paymentId });
+            console.log(`Status do pagamento: ${paymentDetails.status}`);
+            if (paymentDetails.status === 'approved') {
+                const orderId = paymentDetails.external_reference;
+                if (!orderId) {
+                    console.log("Pagamento aprovado, mas sem external_reference (orderId). Ignorando.");
+                    return res.sendStatus(200);
+                }
+                console.log(`Pagamento para o pedido #${orderId} foi APROVADO.`);
+                const [updateResult] = await pool.query("UPDATE orders SET status = 'Novo' WHERE id = ? AND status != 'Novo'", [orderId]);
+                if (updateResult.affectedRows > 0) {
+                    console.log(`Pedido #${orderId} atualizado para 'Novo' no banco de dados.`);
+                    const [orderRows] = await pool.query("SELECT * FROM orders WHERE id = ?", [orderId]);
+                    const updatedOrder = orderRows[0];
+                    io.emit('new_order', updatedOrder);
+                    console.log(`Evento 'new_order' emitido para o painel admin para o pedido #${orderId}.`);
+                    io.to(`order_${orderId}`).emit('payment_success', updatedOrder);
+                    console.log(`Evento 'payment_success' emitido para o cliente na sala 'order_${orderId}'.`);
+                } else {
+                    console.log(`Pedido #${orderId} já estava como 'Novo' ou não foi encontrado. Nenhum evento emitido.`);
                 }
             }
-        } catch (error) {
-            console.error('Erro ao processar webhook:', error);
         }
+        res.sendStatus(200);
+    } catch (error) {
+        console.error("Erro no webhook do Mercado Pago:", error);
+        res.sendStatus(500);
     }
-
-    // Responde ao Mercado Pago para confirmar o recebimento
-    res.sendStatus(200);
 });
 
-// --- ROTAS DE PRODUTOS ---
+app.post('/api/orders', async (req, res) => {
+    try {
+        const { client_info, delivery_info, items, total_value, payment_info, status, customerId } = req.body;
+        const sql = `INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) VALUES (?, ?, ?, ?, ?, ?)`;
+        const [result] = await pool.query(sql, [JSON.stringify(client_info), JSON.stringify(delivery_info), JSON.stringify(items), total_value, JSON.stringify(payment_info), status || 'Novo']);
+        const newOrderId = result.insertId;
+        console.log(`Pedido (não-online) #${newOrderId} inserido.`);
+        const [orderRows] = await pool.query("SELECT * FROM orders WHERE id = ?", [newOrderId]);
+        const newOrder = orderRows[0];
+        if (customerId && total_value > 0) {
+            const pointsEarned = Math.floor(total_value / 2);
+            if (pointsEarned > 0) {
+                await pool.query("UPDATE customers SET points = points + ? WHERE id = ?", [pointsEarned, customerId]);
+                const logSql = "INSERT INTO points_log (customer_id, order_id, points_change, description) VALUES (?, ?, ?, ?)";
+                await pool.query(logSql, [customerId, newOrderId, pointsEarned, `${pointsEarned} pontos ganhos no pedido #${newOrderId}`]);
+            }
+        }
+        io.emit('new_order', newOrder);
+        io.emit('print_new_order', newOrder);
+        res.status(201).json({ message: "Pedido criado com sucesso!", orderId: newOrderId });
+    } catch (error) {
+        console.error("ERRO AO SALVAR PEDIDO:", error);
+        res.status(500).json({ message: "Erro no servidor ao criar pedido." });
+    }
+});
+
 app.get('/api/products', async (req, res) => {
     try {
         const cleanupSql = "UPDATE products SET is_on_promo = false, promo_price = NULL, promo_expires_at = NULL WHERE is_on_promo = true AND promo_expires_at < NOW()";
         await pool.query(cleanupSql);
-        
         const sql = `SELECT p.*, c.name AS category_name, c.is_visible AS category_is_visible FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY c.display_order, c.name, p.name`;
         const [rows] = await pool.query(sql);
         res.json(rows);
@@ -244,28 +297,22 @@ app.put('/api/products/:id/promotion', async (req, res) => {
     try {
         const { id } = req.params;
         const { is_on_promo, promo_price, duration_hours } = req.body;
-
         if (is_on_promo && (promo_price === null || promo_price === undefined)) {
             return res.status(400).json({ message: 'O preço promocional é obrigatório.' });
         }
         if (is_on_promo && (duration_hours === null || duration_hours === undefined || duration_hours <= 0)) {
             return res.status(400).json({ message: 'A duração em horas é obrigatória.' });
         }
-
         let promo_expires_at = null;
         if (is_on_promo) {
             const now = new Date();
             const durationInMilliseconds = parseFloat(duration_hours) * 60 * 60 * 1000;
             promo_expires_at = new Date(now.getTime() + durationInMilliseconds);
         }
-
         const finalPromoPrice = is_on_promo ? promo_price : null;
-
         const sql = "UPDATE products SET is_on_promo = ?, promo_price = ?, promo_expires_at = ? WHERE id = ?";
         await pool.query(sql, [is_on_promo, finalPromoPrice, promo_expires_at, id]);
-        
         io.emit('menu_updated');
-
         res.json({ message: "Status da promoção atualizado com sucesso." });
     } catch (error) {
         console.error("Erro ao atualizar promoção do produto:", error);
@@ -273,7 +320,6 @@ app.put('/api/products/:id/promotion', async (req, res) => {
     }
 });
 
-// --- ROTAS DE CATEGORIAS ---
 app.get('/api/categories', async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM categories WHERE is_visible = true ORDER BY display_order, name");
@@ -299,7 +345,7 @@ app.put('/api/categories/:id', async (req, res) => {
         const { id } = req.params;
         const { name, is_visible } = req.body;
         if (!name || is_visible === undefined) {
-             return res.status(400).json({ message: 'Nome e visibilidade são obrigatórios.' });
+            return res.status(400).json({ message: 'Nome e visibilidade são obrigatórios.' });
         }
         const sql = "UPDATE categories SET name = ?, is_visible = ? WHERE id = ?";
         await pool.query(sql, [name, is_visible, id]);
@@ -333,11 +379,9 @@ app.delete('/api/categories/:id', async (req, res) => {
         const checkSql = "SELECT COUNT(*) AS productCount FROM products WHERE category_id = ?";
         const [rows] = await pool.query(checkSql, [id]);
         const productCount = rows[0].productCount;
-
         if (productCount > 0) {
             return res.status(400).json({ message: 'Não é possível excluir. Esta categoria contém produtos.' });
         }
-
         const deleteSql = "DELETE FROM categories WHERE id = ?";
         await pool.query(deleteSql, [id]);
         io.emit('menu_updated');
@@ -348,11 +392,6 @@ app.delete('/api/categories/:id', async (req, res) => {
     }
 });
 
-// =======================================================
-// --- NOVAS ROTAS PARA GERENCIAR RECOMPENSAS (ZAPCLUBE) ---
-// =======================================================
-
-// Rota para listar TODAS as recompensas para o painel admin
 app.get('/api/admin/rewards', async (req, res) => {
     try {
         const [rewards] = await pool.query("SELECT r.*, p.name as product_name, p.price as product_price FROM rewards r LEFT JOIN products p ON r.product_id = p.id ORDER BY r.points_cost ASC");
@@ -363,7 +402,6 @@ app.get('/api/admin/rewards', async (req, res) => {
     }
 });
 
-// Rota PÚBLICA para o cliente ver as recompensas ativas
 app.get('/api/rewards', async (req, res) => {
     try {
         const [rewards] = await pool.query("SELECT id, name, description, points_cost FROM rewards WHERE is_active = true ORDER BY points_cost ASC");
@@ -378,95 +416,74 @@ app.post('/api/rewards/redeem', verifyToken, async (req, res) => {
     try {
         const { rewardId } = req.body;
         const customerId = req.customerId;
-
         const [rewards] = await pool.query("SELECT * FROM rewards WHERE id = ?", [rewardId]);
         const [customers] = await pool.query("SELECT points FROM customers WHERE id = ?", [customerId]);
-
         if (rewards.length === 0 || customers.length === 0) {
             return res.status(404).json({ message: "Recompensa ou cliente não encontrado." });
         }
-        
         const reward = rewards[0];
         const customer = customers[0];
-
         if (customer.points < reward.points_cost) {
             return res.status(403).json({ message: "Pontos insuficientes para resgatar este prêmio." });
         }
-
         const newPoints = customer.points - reward.points_cost;
         await pool.query("UPDATE customers SET points = ? WHERE id = ?", [newPoints, customerId]);
-
         const logSql = "INSERT INTO points_log (customer_id, reward_id, points_change, description) VALUES (?, ?, ?, ?)";
         const description = `${reward.points_cost} pontos resgatados por: ${reward.name}`;
         await pool.query(logSql, [customerId, reward.id, -reward.points_cost, description]);
-        
         console.log(`Cliente ${customerId} resgatou ${reward.name} por ${reward.points_cost} pontos.`);
-
         const [products] = await pool.query("SELECT * FROM products WHERE id = ?", [reward.product_id]);
         if (products.length === 0) {
             return res.status(404).json({ message: "O produto associado a esta recompensa não existe mais." });
         }
-
         res.json({
             message: "Recompensa resgatada com sucesso!",
             newPointsBalance: newPoints,
             rewardedItem: products[0]
         });
-
     } catch (error) {
         console.error("Erro ao resgatar recompensa:", error);
         res.status(500).json({ message: "Erro no servidor ao tentar resgatar a recompensa." });
     }
 });
 
-// Rota para o admin criar uma nova recompensa (com a calculadora inteligente)
 app.post('/api/admin/rewards', async (req, res) => {
     try {
         const { name, description, productId, difficulty, points_cost_manual } = req.body;
         let points_cost = 0;
-
         if (points_cost_manual && points_cost_manual > 0) {
             points_cost = points_cost_manual;
-        } 
+        }
         else if (productId && difficulty) {
             const [products] = await pool.query("SELECT price FROM products WHERE id = ?", [productId]);
             if (products.length === 0) {
                 return res.status(404).json({ message: "Produto base para a recompensa não encontrado." });
             }
             const productPrice = parseFloat(products[0].price);
-            
             let returnPercentage = 0.07;
             if (difficulty === 'easy') returnPercentage = 0.10;
             if (difficulty === 'hard') returnPercentage = 0.04;
-
             const spendingNeeded = productPrice / returnPercentage;
             const calculatedPoints = spendingNeeded / 2;
-            
             points_cost = Math.ceil(calculatedPoints / 5) * 5;
         } else {
-             return res.status(400).json({ message: "É necessário fornecer um produto e dificuldade ou um custo manual de pontos." });
+            return res.status(400).json({ message: "É necessário fornecer um produto e dificuldade ou um custo manual de pontos." });
         }
-
         const sql = "INSERT INTO rewards (name, description, points_cost, product_id, is_active) VALUES (?, ?, ?, ?, ?)";
         const [result] = await pool.query(sql, [name, description, points_cost, productId || null, true]);
-
         res.status(201).json({ message: "Recompensa criada com sucesso!", id: result.insertId });
-
     } catch (error) {
         console.error("Erro ao criar recompensa:", error);
         res.status(500).json({ message: "Erro no servidor ao criar recompensa." });
     }
 });
 
-// Rota para o admin ATUALIZAR uma recompensa
 app.put('/api/admin/rewards/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, points_cost, is_active } = req.body;
-
         const sql = "UPDATE rewards SET name = ?, description = ?, points_cost = ?, is_active = ? WHERE id = ?";
         await pool.query(sql, [name, description, points_cost, is_active, id]);
-
         res.json({ message: "Recompensa atualizada com sucesso." });
     } catch (error) {
         console.error("Erro ao atualizar recompensa:", error);
@@ -474,7 +491,6 @@ app.put('/api/admin/rewards/:id', async (req, res) => {
     }
 });
 
-// Rota para o admin DELETAR uma recompensa
 app.delete('/api/admin/rewards/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -486,7 +502,6 @@ app.delete('/api/admin/rewards/:id', async (req, res) => {
     }
 });
 
-// Rota auxiliar para o modal de recompensas pegar a lista de produtos
 app.get('/api/admin/products-list', async (req, res) => {
     try {
         const [products] = await pool.query("SELECT id, name, price FROM products ORDER BY name ASC");
@@ -497,7 +512,6 @@ app.get('/api/admin/products-list', async (req, res) => {
     }
 });
 
-// --- ROTAS DE PEDIDOS ---
 app.get('/api/orders', async (req, res) => {
     try {
         const [orders] = await pool.query("SELECT * FROM orders ORDER BY created_at DESC");
@@ -505,52 +519,6 @@ app.get('/api/orders', async (req, res) => {
     } catch (error) {
         console.error("Erro ao buscar pedidos:", error);
         res.status(500).json({ message: "Erro no servidor ao buscar pedidos." });
-    }
-});
-
-app.post('/api/orders', async (req, res) => {
-    try {
-        const { client_info, delivery_info, items, total_value, payment_info, status, customerId } = req.body;
-        const sql = `INSERT INTO orders (client_info, delivery_info, items, total_value, payment_info, status) VALUES (?, ?, ?, ?, ?, ?)`;
-        
-        const [result] = await pool.query(sql, [
-            JSON.stringify(client_info), 
-            JSON.stringify(delivery_info), 
-            JSON.stringify(items), 
-            total_value, 
-            JSON.stringify(payment_info), 
-            status || 'Novo'
-        ]);
-
-        const newOrderId = result.insertId;
-        console.log(`Novo pedido #${newOrderId} inserido no banco de dados.`);
-
-        const [orderRows] = await pool.query("SELECT * FROM orders WHERE id = ?", [newOrderId]);
-        const newOrder = orderRows[0];
-
-        if (customerId && total_value > 0) {
-            const pointsEarned = Math.floor(total_value / 2);
-
-            if (pointsEarned > 0) {
-                const customerUpdateSql = "UPDATE customers SET points = points + ? WHERE id = ?";
-                await pool.query(customerUpdateSql, [pointsEarned, customerId]);
-
-                const logSql = "INSERT INTO points_log (customer_id, order_id, points_change, description) VALUES (?, ?, ?, ?)";
-                const description = `${pointsEarned} pontos ganhos no pedido #${newOrderId}`;
-                await pool.query(logSql, [customerId, newOrderId, pointsEarned, description]);
-                
-                console.log(`Registrado: +${pointsEarned} pontos para o cliente ID ${customerId} do pedido #${newOrderId}.`);
-            }
-        }
-
-        io.emit('new_order', newOrder);
-        io.emit('print_new_order', newOrder);
-
-        res.status(201).json({ message: "Pedido criado com sucesso!", orderId: newOrderId });
-
-    } catch (error) {
-        console.error("ERRO AO SALVAR PEDIDO NO BANCO:", error);
-        res.status(500).json({ message: "Erro no servidor ao criar pedido.", error: error.message });
     }
 });
 
@@ -567,20 +535,14 @@ app.put('/api/orders/:id/status', async (req, res) => {
         sql += ' WHERE id = ?';
         params.push(id);
         await pool.query(sql, params);
-
         console.log(`Status do pedido #${id} atualizado para "${status}".`);
-        
         io.emit('order_status_updated', { orderId: id, newStatus: status });
-
         res.json({ message: "Status do pedido atualizado com sucesso." });
-
     } catch (error) {
         console.error(`Erro ao atualizar status do pedido #${req.params.id}:`, error);
         res.status(500).json({ message: "Erro no servidor ao atualizar o status." });
     }
 });
-
-// --- ROTAS DE CLIENTES (AUTH) ---
 
 app.post('/api/customers/register', async (req, res) => {
     try {
@@ -588,25 +550,19 @@ app.post('/api/customers/register', async (req, res) => {
         if (!name || !email || !phone || !password) {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
         }
-
         const [existingPhone] = await pool.query("SELECT id FROM customers WHERE phone = ?", [phone]);
         if (existingPhone.length > 0) {
             return res.status(409).json({ message: 'Este telefone já está cadastrado.' });
         }
-
         const [existingEmail] = await pool.query("SELECT id FROM customers WHERE email = ?", [email]);
         if (existingEmail.length > 0) {
             return res.status(409).json({ message: 'Este e-mail já está cadastrado.' });
         }
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
         const sql = "INSERT INTO customers (name, email, phone, password) VALUES (?, ?, ?, ?)";
         const [result] = await pool.query(sql, [name, email, phone, hashedPassword]);
-
         res.status(201).json({ message: "Cadastro realizado com sucesso!", customerId: result.insertId });
-
     } catch (error) {
         console.error("Erro no cadastro de cliente:", error);
         res.status(500).json({ message: "Erro no servidor ao realizar cadastro." });
@@ -629,8 +585,8 @@ app.post('/api/customers/login', async (req, res) => {
             return res.status(401).json({ message: 'Senha incorreta.' });
         }
         const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
-        res.json({ 
-            message: "Login bem-sucedido!", 
+        res.json({
+            message: "Login bem-sucedido!",
             token: token,
             customer: { id: user.id, name: user.name, phone: user.phone }
         });
@@ -682,11 +638,9 @@ app.delete('/api/customers/me/addresses/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const [result] = await pool.query("DELETE FROM customer_addresses WHERE id = ? AND customer_id = ?", [id, req.customerId]);
-
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Endereço não encontrado ou não pertence a este usuário.' });
         }
-
         res.json({ message: 'Endereço excluído com sucesso.' });
     } catch (error) {
         console.error("Erro ao excluir endereço:", error);
@@ -698,47 +652,31 @@ app.post('/api/customers/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
         const [users] = await pool.query("SELECT * FROM customers WHERE email = ?", [email]);
-
         if (users.length === 0) {
             return res.json({ message: 'Se um e-mail cadastrado for encontrado, um link de redefinição será enviado.' });
         }
         const user = users[0];
-
         const token = crypto.randomBytes(20).toString('hex');
         const expires = Date.now() + 3600000;
-
         await pool.query(
             "UPDATE customers SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?",
             [token, expires, user.id]
         );
-
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
         });
-
         const resetLink = `http://127.0.0.1:5500/frontend/resetar-senha.html?token=${token}`;
         const mailOptions = {
             from: `"Zap Esfirras" <${process.env.EMAIL_USER}>`,
             to: user.email,
             subject: 'Redefinição de Senha - Zap Esfirras',
-            html: `
-                <p>Olá, ${user.name}!</p>
-                <p>Você solicitou a redefinição da sua senha. Clique no link abaixo para criar uma nova senha:</p>
-                <a href="${resetLink}" style="font-size: 16px;">Redefinir Minha Senha</a>
-                <p>Se você não solicitou isso, por favor, ignore este e-mail.</p>
-                <p>Este link é válido por 1 hora.</p>
-            `
+            html: `<p>Olá, ${user.name}!</p><p>Você solicitou a redefinição da sua senha. Clique no link abaixo para criar uma nova senha:</p><a href="${resetLink}" style="font-size: 16px;">Redefinir Minha Senha</a><p>Se você não solicitou isso, por favor, ignore este e-mail.</p><p>Este link é válido por 1 hora.</p>`
         };
-
         await transporter.sendMail(mailOptions);
         res.json({ message: 'Se um e-mail cadastrado for encontrado, um link de redefinição será enviado.' });
-
     } catch (error) {
         console.error("Erro em /forgot-password:", error);
         res.status(500).json({ message: "Erro no servidor." });
@@ -748,103 +686,89 @@ app.post('/api/customers/forgot-password', async (req, res) => {
 app.post('/api/customers/reset-password', async (req, res) => {
     try {
         const { token, password } = req.body;
-
         const [users] = await pool.query(
             "SELECT * FROM customers WHERE password_reset_token = ? AND password_reset_expires > ?",
             [token, Date.now()]
         );
-
         if (users.length === 0) {
             return res.status(400).json({ message: 'Token de redefinição inválido ou expirado.' });
         }
         const user = users[0];
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
         await pool.query(
             "UPDATE customers SET password = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?",
             [hashedPassword, user.id]
         );
-
         res.json({ message: 'Senha redefinida com sucesso!' });
-
     } catch (error) {
         console.error("Erro em /reset-password:", error);
         res.status(500).json({ message: "Erro no servidor." });
     }
 });
 
-// --- ROTAS DE ADMIN ---
 app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) {
             return res.status(400).json({ message: 'Usuário e senha são obrigatórios.' });
         }
-
         const [admins] = await pool.query("SELECT * FROM admins WHERE username = ?", [username]);
         if (admins.length === 0) {
             return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
         }
-
         const admin = admins[0];
         const isMatch = await bcrypt.compare(password, admin.password);
-
         if (!isMatch) {
             return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
         }
-
         const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '8h' });
-
         res.json({
             message: "Login de administrador bem-sucedido!",
             token: token,
             admin: { username: admin.username }
         });
-
     } catch (error) {
         console.error("Erro no login do administrador:", error);
         res.status(500).json({ message: "Erro no servidor ao fazer login do admin." });
     }
 });
 
-// --- ROTA PARA VALIDAR CUPONS ---
 app.post('/api/coupons/validate', async (req, res) => {
     try {
         const { couponCode, subtotal } = req.body;
-
         if (!couponCode) {
             return res.status(400).json({ message: 'O código do cupom é obrigatório.' });
         }
-
         const [coupons] = await pool.query("SELECT * FROM coupons WHERE code = ? AND is_active = true", [couponCode.toUpperCase()]);
-
         if (coupons.length === 0) {
             return res.status(404).json({ message: 'Cupom inválido ou expirado.' });
         }
-
         const coupon = coupons[0];
-
         if (subtotal < coupon.min_purchase_value) {
             const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             return res.status(400).json({ message: `Este cupom requer um pedido mínimo de ${formatCurrency(coupon.min_purchase_value)}.` });
         }
-        
         res.json({
             message: 'Cupom aplicado com sucesso!',
             coupon: coupon
         });
-
     } catch (error) {
         console.error("Erro ao validar cupom:", error);
         res.status(500).json({ message: "Erro no servidor ao validar o cupom." });
     }
 });
 
-// --- SOCKET.IO ---
 io.on('connection', (socket) => {
     console.log('Um cliente se conectou via WebSocket:', socket.id);
+
+    // Lógica para o cliente entrar em uma "sala" para esperar a confirmação do pedido
+    socket.on('join_order_room', (orderId) => {
+        const roomName = `order_${orderId}`;
+        socket.join(roomName);
+        console.log(`Cliente ${socket.id} entrou na sala ${roomName}`);
+    });
+
     socket.on('disconnect', () => {
         console.log('Cliente desconectou:', socket.id);
     });

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Limpo - Mercado Pago</title>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+<body>
+    <h1>Teste de Pagamento Mercado Pago</h1>
+    <p>Se o botão aparecer abaixo, a integração básica está funcionando.</p>
+
+    <div id="wallet_container"></div>
+
+    <script>
+        // INICIE AQUI A CONFIGURAÇÃO
+        const mp = new MercadoPago('APP_USR-747c5ecf-6392-4bfa-9f6e-0dce6315bece', {
+            locale: 'pt-BR'
+        });
+
+        const bricksBuilder = mp.bricks();
+
+        // Cole o ID da Preferência que vamos gerar no próximo passo
+        const preferenceId = '2685500042-60a5093f-918c-4b52-8637-3b0f8e1eec44';
+
+        bricksBuilder.create("wallet", "wallet_container", {
+            initialization: {
+                preferenceId: preferenceId,
+            },
+        }).catch((error) => {
+            console.error("Erro ao renderizar o botão:", error);
+            alert("Erro ao renderizar o botão. Verifique o console.");
+        });
+        // FIM DA CONFIGURAÇÃO
+    </script>
+</body>
+</html>
